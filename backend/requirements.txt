@@ -3,21 +3,21 @@ tinyfish>=0.1.0
 httpx>=0.27.0
 tenacity>=8.2.0
 
-# Backend Framework & Streaming (Section 3.2)
+# Backend Framework & Streaming
 fastapi>=0.115.0
 uvicorn[standard]>=0.30.0
 sse-starlette>=2.1.0
 
-# Data Validation, ORM & Environment (Section 3.2)
+# Data Validation, ORM & Environment
 pydantic>=2.7.0
 sqlmodel>=0.0.21
 python-dotenv>=1.0.1
 
-# LLM Clients for Markdown Extraction & Analysis (Section 3.2)
+# LLM Clients for Markdown Extraction & Analysis
 google-genai>=0.3.0
 groq>=0.9.0
 
-# Testing & Linting (Section 3.2 / Section 10)
+# Testing & Linting
 pytest>=8.2.0
 pytest-asyncio>=0.23.0
 ruff>=0.5.0
