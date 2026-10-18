@@ -110,15 +110,3 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # Register all API endpoints
 app.include_router(router)
 
-
-@app.get("/")
-def root():
-    """Welcoming endpoint for base URL pings and browser visits."""
-    return {
-        "service": "RepSync API",
-        "version": "1.0.0",
-        "status": "online",
-        "docs_url": "/docs",
-        "health_check": "/health",
-    }
-
