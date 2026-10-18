@@ -27,7 +27,8 @@ engine_kwargs = {}
 if DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
 else:
-    # Supabase / Postgres connection pooling settings for free tier
+    # Supabase / PgBouncer transaction pooler settings (disables prepared statements)
+    connect_args = {"prepare_threshold": None}
     engine_kwargs = {
         "pool_size": 5,
         "max_overflow": 10,
@@ -40,6 +41,7 @@ engine = create_engine(
     connect_args=connect_args,
     **engine_kwargs,
 )
+
 
 
 def init_db() -> None:
