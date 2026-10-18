@@ -8,11 +8,13 @@ from sqlmodel import Session, SQLModel, create_engine
 ROOT_DIR = Path(__file__).resolve().parents[2]
 load_dotenv(ROOT_DIR / ".env")
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./repsync.db")
+DATABASE_URL = os.getenv("DATABASE_URL") or "sqlite:///./repsync.db"
+DATABASE_URL = DATABASE_URL.strip()
 
 # Render / Supabase compatibility: convert postgres:// to postgresql://
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 
 connect_args = {}
 engine_kwargs = {}
