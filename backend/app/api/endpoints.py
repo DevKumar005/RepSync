@@ -1,10 +1,12 @@
 import uuid
 from typing import List, Optional
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from sse_starlette.sse import EventSourceResponse
 from sqlmodel import Session, col, func, select
 from backend.app.auth import create_access_token, get_current_user, hash_password, verify_password
 from backend.app.db import get_session
+from backend.app.limiter import limiter
+
 from backend.app.models.entities import (
     AppUser,
     FixSuggestion,
@@ -148,7 +150,9 @@ def get_platforms(session: Session = Depends(get_session)):
 # --- Outlet Discovery & Creation (FR-1, M3-DB-2/4) ---
 
 @router.post("/api/outlets/search", response_model=List[OutletCandidate])
-def search_outlet_candidates(req: OutletSearchRequest):
+@limiter.limit("30/minute")
+def search_outlet_candidates(request: Request, req: OutletSearchRequest):
+
     """M1 Search candidates for business across platforms."""
     slug = req.name.lower().replace(" ", "-")
     return [
@@ -270,12 +274,17 @@ def get_outlet(id: str, session: Session = Depends(get_session)):
 @router.delete("/api/outlets/{id}")
 def delete_outlet(
     id: str,
+    current_user: AppUser = Depends(get_current_user),
     session: Session = Depends(get_session),
 ):
     """Cascade deletes outlet and all associated reviews, themes, drafts, and sources (NFR-5, M3-SEC-7)."""
     outlet = session.get(Outlet, id)
     if not outlet:
         raise HTTPException(status_code=404, detail="Outlet not found")
+
+    if outlet.user_id and outlet.user_id != current_user.id and not outlet.is_demo:
+        raise HTTPException(status_code=403, detail="You do not have permission to delete this outlet")
+
 
     # Explicit cascade cleanup across SQLite and Postgres
     reviews = session.exec(select(Review).where(Review.outlet_id == id)).all()
@@ -310,11 +319,14 @@ def delete_outlet(
 # --- Sync & Real-Time SSE Stream (FR-2, FR-2.6, M3-PIPE-1) ---
 
 @router.post("/api/outlets/{id}/sync", response_model=SyncResponse)
+@limiter.limit("10/minute")
 async def trigger_sync(
+    request: Request,
     id: str,
     background_tasks: BackgroundTasks,
     session: Session = Depends(get_session),
 ):
+
     outlet = session.get(Outlet, id)
     if not outlet:
         raise HTTPException(status_code=404, detail="Outlet not found")

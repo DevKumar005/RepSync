@@ -5,6 +5,7 @@ from sqlmodel import Session, create_engine, select
 from backend.app.db import get_session
 from backend.app.main import app
 from backend.app.models.entities import (
+    AppUser,
     Outlet,
     ReplyDraft,
     Review,
@@ -256,3 +257,68 @@ def test_health_endpoints(client: TestClient):
     assert res.status_code == 200
     assert res.json()["status"] == "ok"
     assert res.json()["database"] == "connected"
+
+
+# =========================================================================
+# M3-API-7: Correlation ID & Request Logging Middleware
+# =========================================================================
+
+def test_correlation_id_middleware(client: TestClient):
+    # Request without explicit cid
+    res = client.get("/health")
+    assert res.status_code == 200
+    assert "X-Correlation-ID" in res.headers
+
+    # Request with custom cid passed in
+    custom_cid = "custom-trace-id-12345"
+    res2 = client.get("/health", headers={"X-Correlation-ID": custom_cid})
+    assert res2.status_code == 200
+    assert res2.headers.get("X-Correlation-ID") == custom_cid
+
+
+# =========================================================================
+# M3-SEC-3: Outlet Ownership Check
+# =========================================================================
+
+def test_outlet_ownership_forbidden_for_different_user(client: TestClient, session: Session):
+    # Create private outlet belonging to a different user
+    diff_user = AppUser(name="Other Owner", email="other@owner.com")
+    session.add(diff_user)
+    session.commit()
+    session.refresh(diff_user)
+
+    private_outlet = Outlet(
+        user_id=diff_user.id,
+        name="Private Business",
+        category="restaurant",
+        city="Mumbai",
+        is_demo=False,
+    )
+    session.add(private_outlet)
+    session.commit()
+    session.refresh(private_outlet)
+
+    # Calling delete as demo user should be rejected with 403 Forbidden
+    res = client.delete(f"/api/outlets/{private_outlet.id}")
+    assert res.status_code == 403
+    assert "You do not have permission" in res.json()["detail"]
+
+
+# =========================================================================
+# M3-API-8: Agent Step Budget Guard
+# =========================================================================
+
+@pytest.mark.asyncio
+async def test_agent_step_budget_guard(session: Session, monkeypatch):
+    outlet = session.exec(select(Outlet)).first()
+    assert outlet is not None
+
+    # Set budget to 0 to simulate exhausted budget
+    monkeypatch.setenv("AGENT_DAILY_STEP_BUDGET", "0")
+
+    await run_sync_pipeline(outlet.id, "budget-guard-job")
+
+    # Pipeline still finishes successfully without crash
+    sources = session.exec(select(Source).where(Source.outlet_id == outlet.id)).all()
+    assert len(sources) > 0
+

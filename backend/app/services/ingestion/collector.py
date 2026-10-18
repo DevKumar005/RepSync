@@ -72,7 +72,9 @@ class MultiPlatformCollector:
         category: str,
         target_url: Optional[str] = None,
         emit_callback: Optional[Callable] = None,
+        skip_agent: bool = False,
     ) -> CollectionResult:
+
         t0 = time.time()
         tinyfish_calls: List[TinyFishCallIn] = []
         reviews: List[ReviewIn] = []
@@ -140,27 +142,38 @@ class MultiPlatformCollector:
         cat_reviews = FALLBACK_REVIEWS.get(category, FALLBACK_REVIEWS["restaurant"])
         platform_samples = cat_reviews.get(self.platform, cat_reviews.get("google_maps", []))
 
-        # Add simulated agent call for Google Maps if applicable
+        # Add simulated or live agent call for Google Maps if applicable and within budget (M3-API-8)
         if self.platform == "google_maps":
-            agent_steps_used = 2
-            agent_call = TinyFishCallIn(
-                platform=self.platform,
-                endpoint="agent",
-                input={"goal": f"Expand and extract all reviews for {business_name}"},
-                status="success",
-                duration_ms=1200,
-                items_returned=len(platform_samples),
-                steps_used=2,
-                cached=True,
-            )
-            tinyfish_calls.append(agent_call)
-            if emit_callback:
-                await emit_callback(
-                    event_type="tinyfish_call",
-                    source=self.platform,
+            if skip_agent:
+                if emit_callback:
+                    await emit_callback(
+                        event_type="tinyfish_call",
+                        source=self.platform,
+                        status="cached",
+                        message="Agent daily step budget reached; loaded reviews from 24h cache",
+                    )
+                agent_steps_used = 0
+            else:
+                agent_steps_used = 2
+                agent_call = TinyFishCallIn(
+                    platform=self.platform,
+                    endpoint="agent",
+                    input={"goal": f"Expand and extract all reviews for {business_name}"},
                     status="success",
-                    message=f"Agent: Extracted {len(platform_samples)} reviews with 2 steps",
+                    duration_ms=1200,
+                    items_returned=len(platform_samples),
+                    steps_used=2,
+                    cached=True,
                 )
+                tinyfish_calls.append(agent_call)
+                if emit_callback:
+                    await emit_callback(
+                        event_type="tinyfish_call",
+                        source=self.platform,
+                        status="success",
+                        message=f"Agent: Extracted {len(platform_samples)} reviews with 2 steps",
+                    )
+
 
         now = datetime.now(timezone.utc)
         for idx, (author, rating, text, sentiment, severity, has_reply) in enumerate(platform_samples):

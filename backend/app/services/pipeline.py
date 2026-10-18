@@ -1,7 +1,9 @@
 import asyncio
 import hashlib
+import os
 from datetime import datetime, timezone
 from typing import Dict, Optional
+
 from sqlmodel import Session, select
 from backend.app.db import engine
 from backend.app.models.entities import (
@@ -90,6 +92,17 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
                 extra={"stage": "collecting"},
             )
 
+            today_midnight = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+            calls_today = session.exec(
+                select(TinyFishCall).where(
+                    TinyFishCall.endpoint == "agent",
+                    TinyFishCall.created_at >= today_midnight,
+                )
+            ).all()
+            total_steps_today = sum(c.steps_used for c in calls_today)
+            daily_step_budget = int(os.getenv("AGENT_DAILY_STEP_BUDGET", "50"))
+            skip_agent_live = total_steps_today >= daily_step_budget
+
             async def collect_for_platform(p: Platform) -> None:
                 src = sources_map[p.key]
                 src.status = "running"
@@ -114,7 +127,9 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
                             category=outlet.category,
                             target_url=src.url,
                             emit_callback=platform_emit,
+                            skip_agent=skip_agent_live,
                         )
+
 
                     # Persist TinyFish calls
                     for tf in result.tinyfish_calls:

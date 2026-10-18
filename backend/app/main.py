@@ -1,4 +1,7 @@
+import logging
 import os
+import time
+import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 from dotenv import load_dotenv
@@ -6,14 +9,23 @@ from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from backend.app.api.endpoints import router
 from backend.app.db import init_db
+from backend.app.limiter import limiter
 
 # Load environment
 ROOT_DIR = Path(__file__).resolve().parents[2]
 load_dotenv(ROOT_DIR / ".env")
 
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
+
+# Setup Logging (M3-API-7)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logger = logging.getLogger("repsync.api")
+
+
 
 
 @asynccontextmanager
@@ -31,6 +43,25 @@ app = FastAPI(
     redoc_url="/redoc",
     lifespan=lifespan,
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+# Correlation ID and Request Logging Middleware (M3-API-7)
+@app.middleware("http")
+async def correlation_id_and_logging_middleware(request: Request, call_next):
+    correlation_id = request.headers.get("X-Correlation-ID") or str(uuid.uuid4())
+    t0 = time.time()
+    response = await call_next(request)
+    duration_ms = int((time.time() - t0) * 1000)
+    response.headers["X-Correlation-ID"] = correlation_id
+    logger.info(
+        f"cid={correlation_id} method={request.method} path={request.url.path} "
+        f"status={response.status_code} duration_ms={duration_ms}"
+    )
+    return response
+
 
 # CORS configuration (M3-API-2)
 origins = [

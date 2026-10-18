@@ -37,3 +37,10 @@ migrate:
 
 seed:
 	$(VENV_BIN)/python -m backend.app.seed
+
+smoke:
+	$(VENV_BIN)/python scripts/smoke.py
+
+audit:
+	$(VENV_BIN)/python scripts/audit_secrets.py
+

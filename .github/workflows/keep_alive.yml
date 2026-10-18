@@ -1,0 +1,24 @@
+name: Render & Supabase Keep-Alive
+
+on:
+  schedule:
+    # Runs every 14 minutes to prevent Render free instance from spinning down
+    - cron: '*/14 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Backend Health
+        env:
+          BACKEND_URL: ${{ secrets.RENDER_BACKEND_URL }}
+        run: |
+          if [ -n "$BACKEND_URL" ]; then
+            echo "Pinging $BACKEND_URL/health ..."
+            curl -fsSL "$BACKEND_URL/health" || echo "Health check request completed"
+            echo "Pinging $BACKEND_URL/health/db ..."
+            curl -fsSL "$BACKEND_URL/health/db" || echo "DB touch completed"
+          else
+            echo "RENDER_BACKEND_URL secret is not set yet. Skipping keep-alive ping."
+          fi
