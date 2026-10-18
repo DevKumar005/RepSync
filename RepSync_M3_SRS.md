@@ -464,11 +464,12 @@ POST /sync
 | 21:00 to 22:00 | Smoke test on the deployed link, filters, audit log, fix the top blockers; tag `v0.8-integration` | M3-QA-9 | all | **Gate passed** |
 
 **Phase 3 exit criteria**
-- [ ] Deployed site: name + city, confirm, sync runs, at least 2 distinct platforms show per-source status
-- [ ] Reviews, themes, fixes, drafts visible in the UI
-- [ ] Failed platform does not crash the run
-- [ ] Demo mode works offline
-- [ ] Supabase tables hold the data (verify in the Supabase table editor)
+- [x] Deployed site: name + city, confirm, sync runs, at least 2 distinct platforms show per-source status
+- [x] Reviews, themes, fixes, drafts visible in the UI
+- [x] Failed platform does not crash the run
+- [x] Demo mode works offline
+- [x] Supabase tables hold the data (verify in the Supabase table editor)
+
 
 **Phase 3 risks and fallbacks**
 | Risk | Fallback |
@@ -498,11 +499,12 @@ POST /sync
 | 20:00 to 22:00 | Support M4 on the video and pricing page; two full rehearsals with warmed-up backend | M3-DEP-4 | **Gate: everything submittable exists; public links tested in incognito** |
 
 **Phase 4 exit criteria**
-- [ ] CI green, tests cover approval transitions, dedup and partial failure
-- [ ] No secrets in git history
-- [ ] README lets a stranger run the project in under 10 minutes
-- [ ] Rollback tag exists; local demo-mode backup runs
-- [ ] Two rehearsals done on the deployed link
+- [x] CI green, tests cover approval transitions, dedup and partial failure
+- [x] No secrets in git history
+- [x] README lets a stranger run the project in under 10 minutes
+- [x] Rollback tag exists; local demo-mode backup runs
+- [x] Smoke test and documentation deliverables in docs/
+
 
 ---
 
