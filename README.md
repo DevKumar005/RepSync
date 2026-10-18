@@ -6,6 +6,15 @@ RepSync synchronizes and unifies fragmented customer review streams across multi
 
 ---
 
+## 🌐 Live Production Deployment
+
+* **Live API Base URL:** `https://repsync-backend.onrender.com`
+* **Interactive Swagger UI:** [https://repsync-backend.onrender.com/docs](https://repsync-backend.onrender.com/docs)
+* **Health Check Endpoint:** [https://repsync-backend.onrender.com/health](https://repsync-backend.onrender.com/health)
+* **Supabase Database:** Hosted on AWS Singapore (`aws-0-ap-southeast-1.pooler.supabase.com:6543`) with direct transaction pooling.
+
+---
+
 ## ⚡ Quickstart in 5 Commands
 
 ```bash
