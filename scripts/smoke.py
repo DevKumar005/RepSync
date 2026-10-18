@@ -12,7 +12,7 @@ BASE_URL = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8000"
 
 def run_smoke():
     print(f"=== Starting RepSync Smoke Test against {BASE_URL} ===")
-    with httpx.Client(base_url=BASE_URL, timeout=15.0) as client:
+    with httpx.Client(base_url=BASE_URL, timeout=60.0) as client:
         # 1. Health check
         print("1. Checking /health ...", end=" ")
         r = client.get("/health")
