@@ -109,3 +109,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 # Register all API endpoints
 app.include_router(router)
+
+
+@app.get("/", include_in_schema=False)
+def root():
+    """Redirect root to interactive Swagger UI documentation."""
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/docs")
