@@ -1,9 +1,0 @@
-{
-  "name": "repsync",
-  "version": "1.0.0",
-  "description": "RepSync: Local Business Reputation Manager",
-  "scripts": {
-    "backend": ".venv/Scripts/uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload",
-    "dev": "npm run backend"
-  }
-}
