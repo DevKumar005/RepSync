@@ -1,6 +1,8 @@
 # RepSync API Specification & Real-Time SSE Contract
 
-Interactive OpenAPI documentation is live at **`/docs`** (Swagger UI) and **`/redoc`** (ReDoc).
+**Production Backend URL:** `https://repsync-backend.onrender.com`  
+**Live Swagger UI:** [https://repsync-backend.onrender.com/docs](https://repsync-backend.onrender.com/docs)  
+**Live ReDoc:** [https://repsync-backend.onrender.com/redoc](https://repsync-backend.onrender.com/redoc)
 
 ---
 
