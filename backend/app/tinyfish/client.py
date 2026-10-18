@@ -1,3 +1,4 @@
+import json
 import os
 import time
 from pathlib import Path
@@ -207,10 +208,12 @@ class TinyFishService:
         use_cache: bool = True,
         on_log: Optional[Callable[[TinyFishCallLog], None]] = None,
         on_step: Optional[Callable[[int, str], None]] = None,
+        max_duration_seconds: int = 180,
     ) -> tuple[list[dict], TinyFishCallLog]:
         """
         Metered Web Agent endpoint (SSE stream).
         Escalated ONLY when Fetch is blocked or yields < 10 reviews.
+        Guarded by max_duration_seconds (default 180s) to prevent unhandled stream stalls.
         """
         cache_key = f"{platform}:{url}"
         if use_cache:
@@ -233,12 +236,12 @@ class TinyFishService:
                     return reviews, log
 
         goal_prompt = (
-            f"Open this {platform} URL: {url}. "
-            f"Stay strictly on {platform}. If a cookie/consent or login popup appears, dismiss/close it. "
-            f"Find the visible customer reviews or patient stories on the page. "
-            f"Extract up to {max_reviews} customer reviews with author, rating (1 to 5; if 'I recommend the doctor' "
-            f"is shown with no star number, use 5), posted_at, full review text, and owner_reply_text if present. "
-            f"Do NOT log in. Submit immediately once you have extracted the visible reviews."
+            f"Open this exact {platform} URL: {url}. "
+            f"Stay strictly on {platform}. If a cookie, consent, or login modal appears, dismiss/close it. "
+            f"Find the customer reviews or patient stories section on the page. "
+            f"Extract up to {max_reviews} customer reviews with author, rating (1 to 5), posted_at, "
+            f"full review text, and owner_reply_text if present. "
+            f"Do NOT log in. Submit immediately once you have extracted the reviews."
         )
 
         t0 = time.time()
@@ -254,6 +257,11 @@ class TinyFishService:
                 browser_profile="stealth",
             ) as stream:
                 for event in stream:
+                    # Guardrail: Break if execution duration exceeds the hard timeout cap
+                    if time.time() - t0 > max_duration_seconds:
+                        complete_error = f"Agent call exceeded maximum execution limit of {max_duration_seconds}s"
+                        break
+
                     if isinstance(event, ProgressEvent):
                         steps_logged += 1
                         purpose = getattr(event, "purpose", None) or getattr(event, "message", "Working...")
@@ -263,12 +271,12 @@ class TinyFishService:
                         final_result = getattr(event, "result_json", None) or getattr(event, "result", None)
                         if not final_result:
                             complete_error = str(event)
+                        break
 
             duration_ms = int((time.time() - t0) * 1000)
 
             if isinstance(final_result, str):
                 try:
-                    import json
                     final_result = json.loads(final_result)
                 except Exception:
                     pass
