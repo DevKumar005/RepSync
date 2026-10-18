@@ -9,11 +9,16 @@ ROOT_DIR = Path(__file__).resolve().parents[2]
 load_dotenv(ROOT_DIR / ".env")
 
 DATABASE_URL = os.getenv("DATABASE_URL") or "sqlite:///./repsync.db"
-DATABASE_URL = DATABASE_URL.strip()
+DATABASE_URL = DATABASE_URL.strip().strip('"').strip("'")
+
+# Clean pgbouncer parameter which is unsupported by psycopg3 libpq parser
+if "pgbouncer=true" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.replace("?pgbouncer=true", "").replace("&pgbouncer=true", "")
 
 # Render / Supabase compatibility: convert postgres:// to postgresql://
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 
 
 connect_args = {}
