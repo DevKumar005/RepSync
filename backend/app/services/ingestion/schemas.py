@@ -1,4 +1,5 @@
 import hashlib
+import re
 from datetime import datetime, timezone
 from typing import Literal, Optional
 from pydantic import BaseModel, Field
@@ -54,13 +55,12 @@ class CollectionResult(BaseModel):
     tinyfish_calls: list[TinyFishCallLog]
     total_steps_used: int = 0
 
-
 def compute_dedup_hash(platform: str, author: str, rating: float, text: str) -> str:
     """
     Section 7.2: sha256(platform + author + rating + text[:100])
-    Prevents duplicate storage across syncs.
+    Strips whitespace/punctuation variance so Fetch + Agent duplicates always match.
     """
-    clean_author = (author or "Anonymous").strip().lower()
-    clean_text = (text or "").strip().lower()[:100]
+    clean_author = re.sub(r"\W+", "", (author or "anonymous").lower())
+    clean_text = re.sub(r"\W+", "", (text or "").lower())[:100]
     raw = f"{platform.lower()}|{clean_author}|{int(round(rating))}|{clean_text}"
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()

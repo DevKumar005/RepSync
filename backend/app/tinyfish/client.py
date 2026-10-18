@@ -203,7 +203,7 @@ class TinyFishService:
         self,
         url: str,
         platform: str,
-        max_reviews: int = 15,
+        max_reviews: int = 10,
         use_cache: bool = True,
         on_log: Optional[Callable[[TinyFishCallLog], None]] = None,
         on_step: Optional[Callable[[int, str], None]] = None,
@@ -212,37 +212,39 @@ class TinyFishService:
         Metered Web Agent endpoint (SSE stream).
         Escalated ONLY when Fetch is blocked or yields < 10 reviews.
         """
-        cache_key = f"{platform}:{url}:max={max_reviews}"
+        cache_key = f"{platform}:{url}"
         if use_cache:
             cached = read_cache("agent", cache_key)
             if cached:
-                reviews = (cached["data"] or {}).get("reviews", [])
-                steps_used = cached.get("meta", {}).get("steps_used", 0)
-                log = TinyFishCallLog(
-                    endpoint="agent",
-                    input=url,
-                    status="cached",
-                    duration_ms=0,
-                    items_returned=len(reviews),
-                    steps_used=0,  # 0 new steps billed on cache hit!
-                    cached=True,
-                )
-                if on_log:
-                    on_log(log)
-                return reviews, log
+                data_obj = cached.get("data") or cached.get("result") or {}
+                reviews = data_obj.get("reviews", []) if isinstance(data_obj, dict) else []
+                if reviews:
+                    log = TinyFishCallLog(
+                        endpoint="agent",
+                        input=url,
+                        status="cached",
+                        duration_ms=0,
+                        items_returned=len(reviews),
+                        steps_used=0,
+                        cached=True,
+                    )
+                    if on_log:
+                        on_log(log)
+                    return reviews, log
 
         goal_prompt = (
-            f"Open this exact {platform} URL: {url}. "
-            f"Stay strictly on {platform} — do NOT navigate to Google, TripAdvisor, or any other domain. "
-            f"Scroll to the customer reviews or patient stories section and expand any 'Read more' buttons. "
-            f"Extract up to {max_reviews} real customer reviews with author, rating (1-5), posted_at, "
-            f"full review text, and owner reply if visible. Do NOT log in. "
-            f"Stop immediately once you have {max_reviews} reviews."
+            f"Open this {platform} URL: {url}. "
+            f"Stay strictly on {platform}. If a cookie/consent or login popup appears, dismiss/close it. "
+            f"Find the visible customer reviews or patient stories on the page. "
+            f"Extract up to {max_reviews} customer reviews with author, rating (1 to 5; if 'I recommend the doctor' "
+            f"is shown with no star number, use 5), posted_at, full review text, and owner_reply_text if present. "
+            f"Do NOT log in. Submit immediately once you have extracted the visible reviews."
         )
 
         t0 = time.time()
         steps_logged = 0
         final_result = None
+        complete_error = None
 
         try:
             with self.sdk.agent.stream(
@@ -258,10 +260,25 @@ class TinyFishService:
                         if on_step:
                             on_step(steps_logged, str(purpose))
                     elif isinstance(event, CompleteEvent):
-                        final_result = event.result_json
+                        final_result = getattr(event, "result_json", None) or getattr(event, "result", None)
+                        if not final_result:
+                            complete_error = str(event)
 
             duration_ms = int((time.time() - t0) * 1000)
-            reviews = (final_result or {}).get("reviews", []) if isinstance(final_result, dict) else []
+
+            if isinstance(final_result, str):
+                try:
+                    import json
+                    final_result = json.loads(final_result)
+                except Exception:
+                    pass
+
+            if isinstance(final_result, dict):
+                reviews = final_result.get("reviews", [])
+            elif isinstance(final_result, list):
+                reviews = final_result
+            else:
+                reviews = []
 
             if reviews:
                 write_cache(
@@ -279,6 +296,7 @@ class TinyFishService:
                 items_returned=len(reviews),
                 steps_used=steps_logged,
                 cached=False,
+                error_message=complete_error if not reviews else None,
             )
             if on_log:
                 on_log(log)
