@@ -257,7 +257,6 @@ class TinyFishService:
                 browser_profile="stealth",
             ) as stream:
                 for event in stream:
-                    # Guardrail: Break if execution duration exceeds the hard timeout cap
                     if time.time() - t0 > max_duration_seconds:
                         complete_error = f"Agent call exceeded maximum execution limit of {max_duration_seconds}s"
                         break

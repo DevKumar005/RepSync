@@ -8,7 +8,6 @@ from app.services.ingestion.collector import collect
 from app.tinyfish.spike import check_wallet
 
 def run_stress_test():
-    # 5 Real businesses across all 3 supported categories
     targets = [
         ("Karim's Jama Masjid", "Delhi", "restaurant"),
         ("Indian Accent", "New Delhi", "restaurant"),
@@ -26,7 +25,6 @@ def run_stress_test():
     for name, city, category in targets:
         print(f"\n--- Testing: {name} ({city}) [{category.upper()}] ---")
         
-        # We run the live collection pipeline
         result = collect(
             outlet_name=name,
             city=city,

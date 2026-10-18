@@ -90,7 +90,7 @@ def discover_outlet_platforms(
                         snippet=item.get("description") or item.get("snippet") or "",
                     )
                 )
-                break  # Take top matching URL per platform
+                break  # one URL per platform
 
     return candidates, call_logs
 

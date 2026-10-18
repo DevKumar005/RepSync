@@ -104,7 +104,6 @@ async def stream_outlet_sync(
         message=f"Starting TinyFish collection for {outlet_name} ({city})...",
     )
 
-    # Run synchronous TinyFish collector in thread pool while draining SSE queue live
     task = asyncio.create_task(
         asyncio.to_thread(
             collect,
@@ -125,7 +124,6 @@ async def stream_outlet_sync(
         except asyncio.TimeoutError:
             continue
 
-    # Drain remaining log events
     while not queue.empty():
         yield queue.get_nowait()
 

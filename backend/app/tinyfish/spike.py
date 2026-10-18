@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 import httpx
 from tinyfish import TinyFish, CompleteEvent, ProgressEvent
 
-# Load .env from repo root
 ROOT_DIR = Path(__file__).resolve().parents[3]
 load_dotenv(ROOT_DIR / ".env")
 
@@ -157,7 +156,6 @@ def tinyfish_agent_extract_reviews(url: str, platform: str, max_reviews: int = 1
 def run_feasibility_spike():
     check_wallet()
 
-    # 3 Sample Businesses across categories (Restaurant, Clinic, Salon)
     sample_queries = [
         ("Restaurant", "Zomato", "Bukhara ITC Maurya Delhi zomato reviews"),
         ("Restaurant", "Tripadvisor", "Karim's Jama Masjid Delhi tripadvisor reviews"),
@@ -170,7 +168,6 @@ def run_feasibility_spike():
         print(f"\n--- Testing [{category}] on [{platform}] ---")
         try:
             search_res = tinyfish_search(query)
-            # Extract first URL from search response
             results_list = (
                 search_res["data"].get("results")
                 or search_res["data"].get("data")

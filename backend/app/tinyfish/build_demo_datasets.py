@@ -27,8 +27,6 @@ async def build_one_demo(filename: str, name: str, city: str, category: str):
             final_payload = sse_event["data"]
 
     if final_payload:
-        # Ensure all TinyFish call logs in the saved demo file show realistic live statuses
-        # so the Activity Log panel looks impressive during Demo Mode!
         out_path = DEMO_DIR / filename
         out_path.write_text(
             json.dumps(final_payload, indent=2, ensure_ascii=False),
