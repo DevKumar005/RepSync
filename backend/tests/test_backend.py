@@ -344,14 +344,14 @@ def test_tone_endpoints(client: TestClient):
     res_put = client.put(
         "/api/tone",
         json={
-            "style": "professional",
+            "style": "formal",
             "sample_replies": "Thanks for visiting, See you soon",
             "do_not_say": "refund, our fault",
         },
     )
     assert res_put.status_code == 200
     updated = res_put.json()
-    assert updated["style"] == "professional"
+    assert updated["style"] == "formal"
     assert "refund" in updated["do_not_say"]
 
 

@@ -175,7 +175,7 @@ class FixSuggestionRead(BaseModel):
 # --- Tone Profile ---
 
 class ToneProfileUpdate(BaseModel):
-    style: Literal["warm", "professional", "witty", "empathetic"] = "warm"
+    style: Literal["warm", "formal", "apologetic", "concise"] = "warm"
     sample_replies: Union[List[str], str] = []
     do_not_say: Union[List[str], str] = []
 

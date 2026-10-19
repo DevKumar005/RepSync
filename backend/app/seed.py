@@ -130,7 +130,7 @@ def seed_demo_outlets(session: Session, user: AppUser) -> None:
             "city": "Mumbai",
             "address": "Bandra West, Mumbai",
             "platforms": ["google_maps", "practo", "justdial"],
-            "style": "empathetic",
+            "style": "apologetic",
             "sample_replies": [
                 "Thank you for trusting us with your dental health! We are glad your visit was painless.",
                 "We truly appreciate your feedback regarding wait times. We are refining our appointment slots.",

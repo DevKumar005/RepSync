@@ -34,25 +34,24 @@ def mock_generate_reply_draft(
     style = tone.style if tone else "warm"
     do_not_say = tone.do_not_say if tone else []
 
-    if style == "empathetic":
+    if style == "apologetic":
         base_reply = (
             f"Dear {author}, we are truly sorry to hear that your experience did not meet expectations. "
             f"Your comfort and peace of mind are our absolute priority. "
             f"We are actively reviewing our procedures with the team. "
             f"Please reach out to us directly so we can personally ensure your next visit is seamless."
         )
-    elif style == "professional":
+    elif style == "formal":
         base_reply = (
             f"Dear {author}, thank you for taking the time to share your feedback. "
             f"We hold our standards to the highest level and regret the inconvenience caused. "
             f"Our management team has noted your remarks regarding service turnaround. "
             f"Please contact our management desk so we may address this promptly."
         )
-    elif style == "witty":
+    elif style == "concise":
         base_reply = (
-            f"Hey {author}, ouch! That is definitely not the standard we pride ourselves on. "
-            f"We dropped the ball this time, and we want to make it up to you. "
-            f"Give us another shot to show you how we really roll—reach out to us directly!"
+            f"Dear {author}, thank you for your feedback. "
+            f"We have noted your comments and our management team is taking steps to address them promptly."
         )
     else:  # warm (default)
         base_reply = (
