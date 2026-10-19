@@ -4,7 +4,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, R
 from sse_starlette.sse import EventSourceResponse
 from sqlmodel import Session, col, func, select
 from backend.app.auth import create_access_token, get_current_user, hash_password, verify_password
-from backend.app.db import get_session
+from backend.app.db import engine, get_session
 from backend.app.limiter import limiter
 
 from backend.app.models.entities import (
@@ -355,11 +355,12 @@ async def trigger_sync(
 
 
 @router.get("/api/outlets/{id}/sync/stream")
-async def sync_stream(id: str, session: Session = Depends(get_session)):
+async def sync_stream(id: str):
     """Server-Sent Events stream for stage, source status, and TinyFish call events."""
-    outlet = session.get(Outlet, id)
-    if not outlet:
-        raise HTTPException(status_code=404, detail="Outlet not found")
+    with Session(engine) as session:
+        outlet = session.get(Outlet, id)
+        if not outlet:
+            raise HTTPException(status_code=404, detail="Outlet not found")
 
     return EventSourceResponse(
         event_generator(id),

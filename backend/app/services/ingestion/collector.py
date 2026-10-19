@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import os
 from datetime import datetime, timezone
@@ -94,7 +95,7 @@ class MultiPlatformCollector:
                 self.platform, f"{{name}} {{city}} {self.platform} reviews"
             )
             query = tmpl.format(name=business_name, city=city)
-            results, s_log = self.tf.search(query=query)
+            results, s_log = await asyncio.to_thread(self.tf.search, query)
 
             tinyfish_calls.append(
                 TinyFishCallIn(
@@ -130,7 +131,7 @@ class MultiPlatformCollector:
                 )
 
         # 2. Fetch Stage (Free Markdown Extraction)
-        markdown, f_log = self.tf.fetch(url=resolved_url)
+        markdown, f_log = await asyncio.to_thread(self.tf.fetch, resolved_url)
         tinyfish_calls.append(
             TinyFishCallIn(
                 platform=self.platform,
@@ -169,7 +170,8 @@ class MultiPlatformCollector:
                 def on_step(s_num: int, p_text: str):
                     pass
 
-                agent_reviews, a_log = self.tf.run_agent(
+                agent_reviews, a_log = await asyncio.to_thread(
+                    self.tf.run_agent,
                     url=resolved_url,
                     platform=self.display_name,
                     max_reviews=10,
