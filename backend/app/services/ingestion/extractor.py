@@ -74,7 +74,7 @@ def extract_reviews_from_markdown(markdown_text: str, platform: str) -> list[dic
                 f"return an empty list `[]`.\n\n"
                 f"--- PAGE MARKDOWN ---\n{markdown_text[:15000]}"
             )
-            gemini_model = os.getenv("GEMINI_MODEL") or "gemini-2.5-flash-lite"
+            gemini_model = os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
             response = client.models.generate_content(
                 model=gemini_model,
                 contents=prompt,

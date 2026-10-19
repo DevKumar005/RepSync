@@ -23,20 +23,27 @@ API_KEY = os.getenv("TINYFISH_API_KEY", "")
 PLATFORM_SEARCH_TEMPLATES = {
     "restaurant": {
         "zomato": "{name} {city} zomato reviews",
+        "tripadvisor": "{name} {city} tripadvisor restaurant reviews",
+        "google_maps": "{name} {city} google reviews",
         "eazydiner": "{name} {city} eazydiner reviews",
+        "justdial": "{name} {city} justdial reviews",
     },
     "clinic": {
         "practo": "{name} {city} practo clinic stories reviews",
         "lybrate": "{name} {city} lybrate reviews",
+        "google_maps": "{name} {city} google clinic reviews",
+        "justdial": "{name} {city} justdial reviews",
     },
     "salon": {
-        "justdial": "{name} {city} salon justdial",
+        "justdial": "{name} {city} salon justdial reviews",
+        "google_maps": "{name} {city} google salon reviews",
         "eazydiner": "{name} {city} reviews",
     },
 }
 
 PLATFORM_DOMAINS = {
     "zomato": "zomato.com",
+    "tripadvisor": "tripadvisor.com",
     "eazydiner": "eazydiner.com",
     "practo": "practo.com",
     "lybrate": "lybrate.com",
@@ -44,7 +51,7 @@ PLATFORM_DOMAINS = {
     "google_maps": "google.com",
 }
 
-ESCALATION_MIN_REVIEWS = 6
+ESCALATION_MIN_REVIEWS = int(os.getenv("ESCALATION_MIN_REVIEWS", "3"))
 
 
 def compute_dedup_hash(platform: str, author: str, date_str: str, text: str) -> str:
@@ -160,7 +167,7 @@ class MultiPlatformCollector:
                 await emit_callback(
                     event_type="tinyfish_call",
                     source=self.platform,
-                    status="success",
+                    status="ok" if extracted else "empty",
                     message=f"TinyFish Fetch: Extracted {len(extracted)} reviews via Markdown",
                 )
 
