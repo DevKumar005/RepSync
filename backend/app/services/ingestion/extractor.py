@@ -74,7 +74,7 @@ def extract_reviews_from_markdown(markdown_text: str, platform: str) -> list[dic
                 f"return an empty list `[]`.\n\n"
                 f"--- PAGE MARKDOWN ---\n{markdown_text[:15000]}"
             )
-            gemini_model = os.getenv("GEMINI_MODEL") or "gemini-3.5-flash"
+            gemini_model = os.getenv("GEMINI_MODEL") or "gemini-3.5-flash-lite"
             response = client.models.generate_content(
                 model=gemini_model,
                 contents=prompt,
@@ -85,7 +85,9 @@ def extract_reviews_from_markdown(markdown_text: str, platform: str) -> list[dic
                 ),
             )
             parsed = json.loads(response.text)
-            return parsed.get("reviews", [])
+            extracted = parsed.get("reviews", [])
+            if extracted:
+                return extracted
         except Exception as e:
             print(f"  [Extractor Warning] Gemini failed ({e}); attempting Groq fallback...")
 

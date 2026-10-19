@@ -92,10 +92,6 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
             if not target_platforms:
                 target_platforms = [p for p in all_platforms if p.key in {"google_maps", "justdial"}] or all_platforms
 
-            # Prioritize platforms: high-yield review sources (zomato, practo, tripadvisor) first
-            priority_order = {"zomato": 0, "practo": 0, "tripadvisor": 1, "google_maps": 2, "eazydiner": 3, "justdial": 4, "lybrate": 5}
-            target_platforms.sort(key=lambda p: priority_order.get(p.key, 10))
-
             # Ensure Source rows exist
             sources_map: Dict[str, Source] = {}
             for p in target_platforms:

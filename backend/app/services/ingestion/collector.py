@@ -19,25 +19,24 @@ except ImportError:
 
 API_KEY = os.getenv("TINYFISH_API_KEY", "")
 
-# Category -> Platform domain allowlists & query templates
 PLATFORM_SEARCH_TEMPLATES = {
     "restaurant": {
         "zomato": "{name} {city} zomato reviews",
         "tripadvisor": "{name} {city} tripadvisor restaurant reviews",
-        "google_maps": "{name} {city} google reviews",
+        "google_maps": "{name} {city} google maps",
         "eazydiner": "{name} {city} eazydiner reviews",
         "justdial": "{name} {city} justdial reviews",
     },
     "clinic": {
         "practo": "{name} {city} practo clinic stories reviews",
         "lybrate": "{name} {city} lybrate reviews",
-        "google_maps": "{name} {city} google clinic reviews",
+        "google_maps": "{name} {city} google maps",
         "justdial": "{name} {city} justdial reviews",
     },
     "salon": {
-        "justdial": "{name} {city} salon justdial reviews",
-        "google_maps": "{name} {city} google salon reviews",
+        "justdial": "{name} {city} salon justdial",
         "eazydiner": "{name} {city} reviews",
+        "google_maps": "{name} {city} google maps",
     },
 }
 
@@ -51,7 +50,7 @@ PLATFORM_DOMAINS = {
     "google_maps": "google.com",
 }
 
-ESCALATION_MIN_REVIEWS = int(os.getenv("ESCALATION_MIN_REVIEWS", "3"))
+ESCALATION_MIN_REVIEWS = 1
 
 
 def compute_dedup_hash(platform: str, author: str, date_str: str, text: str) -> str:
@@ -125,17 +124,25 @@ class MultiPlatformCollector:
                 )
             )
 
+            found_url = None
             target_domain = PLATFORM_DOMAINS.get(self.platform, self.platform)
             for item in results:
                 u = item.get("url") or item.get("link") or ""
                 if _matches_domain(u, target_domain):
                     if self.platform == "zomato" and "/reviews" not in u:
                         u = u.rstrip("/") + "/reviews"
-                    resolved_url = u
+                    found_url = u
                     break
 
-            if not resolved_url:
-                resolved_url = f"https://www.{self.platform}.com/{business_name.lower().replace(' ', '-')}"
+            if found_url:
+                resolved_url = found_url
+            elif not resolved_url or f"www.{self.platform}.com" in resolved_url:
+                if self.platform == "google_maps":
+                    resolved_url = f"https://www.google.com/maps/search/{business_name.replace(' ', '+')}+{city.replace(' ', '+')}"
+                elif self.platform == "tripadvisor":
+                    resolved_url = f"https://www.tripadvisor.com/Search?q={business_name.replace(' ', '+')}+{city.replace(' ', '+')}"
+                else:
+                    resolved_url = f"https://www.{self.platform}.com/{business_name.lower().replace(' ', '-')}"
 
             if emit_callback:
                 await emit_callback(
@@ -167,7 +174,7 @@ class MultiPlatformCollector:
                 await emit_callback(
                     event_type="tinyfish_call",
                     source=self.platform,
-                    status="ok" if extracted else "empty",
+                    status="success",
                     message=f"TinyFish Fetch: Extracted {len(extracted)} reviews via Markdown",
                 )
 
