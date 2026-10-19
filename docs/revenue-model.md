@@ -72,46 +72,62 @@ The 30% is unsourced. To replace it with evidence, look up 20 restaurants in one
 
 ### What we measured
 
-| Item | Measurement |
-|---|---|
-| LLM tokens, 10 real reviews (2 negative) | 12 calls, 7,754 tokens in, 439 out |
-| LLM tokens, 30 synthetic reviews (18 negative), Groq-heavy run | 50 calls, 29,367 tokens in, 24,278 out |
-| TinyFish Agent, one Google Maps run for Bukhara (10 reviews extracted) | 18 steps, about 4 minutes |
-| TinyFish Search and Fetch | Free |
+**TinyFish (M1's stress test), at $0.016 per step.** The cost figures match the step counts (19.5 × $0.016 = $0.312, and 7.4 × $0.016 = $0.118).
+
+| Metric | Cold first sync | Warm incremental check |
+|---|---|---|
+| Agent steps | 19.5 average (range 12 to 25) | 7.4 average (with 24-hour caching) |
+| TinyFish cost per outlet | $0.312 | $0.118 |
+| Search and Fetch | $0 (free) | $0 (free) |
+| Monthly TinyFish cost | n/a | $1.40 to $2.10 |
+
+The monthly range equals about **12 to 18 Agent checks per outlet per month** ($1.40 ÷ $0.118 and $2.10 ÷ $0.118). So the share of days that need the Agent is an assumption built into that range, not a separate measurement. **[TO CONFIRM with M1: how many runs sit behind the averages, which platforms, and whether 19.5 steps covers both platforms.]**
+
+**LLM tokens (M2).**
+
+| Run | Calls | Tokens in | Tokens out |
+|---|---|---|---|
+| 10 real reviews (2 negative) | 12 | 7,754 | 439 |
+| 30 synthetic reviews (18 negative), Groq-heavy | 50 | 29,367 | 24,278 |
 
 ### Prices used
 
 | Item | Price | Source |
 |---|---|---|
-| TinyFish Agent | $0.016 per step (conservative). Official pricing page shows $0.015 pay-as-you-go | tinyfish.ai/pricing and TinyFish blog |
+| TinyFish Agent | $0.016 per step (conservative). The official pricing page shows $0.015 pay-as-you-go | tinyfish.ai/pricing and TinyFish blog |
 | Groq gpt-oss-120b | $0.15 per 1M input tokens, $0.60 per 1M output tokens | GroqCloud pricing, Oct 2026 |
-| Gemini (our primary) | **[TO CONFIRM]** price for the configured `GEMINI_MODEL`. Groq's price is used below as a conservative stand-in | Google AI pricing page |
-| Exchange rate | ₹90 per US$ **[ASSUMPTION: update to today's rate]** | |
+| Gemini (our primary) | **[TO CONFIRM]** price for the configured `GEMINI_MODEL`. Groq's price is a conservative stand-in | Google AI pricing page |
+| Exchange rate | **₹95 per US$ [ASSUMPTION]**. The latest rate found was about ₹96.5 on 22 Jul 2026 (50-day average ₹95.2). Update with today's rate | pluang.com currency converter |
 
 ### LLM cost per outlet
 
-The heavy Groq run costs about $0.019 for 30 reviews, or about **$0.0006 per review**. That run used a reasoning model and a 60% negative mix, so it is a pessimistic estimate. A real outlet is closer to the first run (about 800 tokens per review, about $0.00014 per review). For 80 reviews in a first month (50 existing plus 30 new **[ASSUMPTION]**), LLM cost is **about $0.05 per outlet**. Steady state is under $0.02. **The LLM is not the cost driver.**
+M1's table shows $0.00 because both providers are on free tiers. That is true today, but free tiers have hard limits. Groq's free tier for this model allows 8,000 tokens per minute (our own run hit that limit), and Gemini returned quota errors (429) during our runs. A paid product must budget for paid usage.
 
-### Agent cost drives the margin
+At paid Groq prices, the heavy Groq run costs about $0.019 for 30 reviews, or about $0.0006 per review. That run used a reasoning model and a 60% negative mix, so it is pessimistic. For 80 reviews in a first month (50 existing plus 30 new **[ASSUMPTION]**), LLM cost is **about $0.05 per outlet**, and under $0.02 in steady state. **The LLM is not the cost driver.**
 
-One measured Agent run costs 18 steps × $0.016 = **$0.29**. A first sync with two Agent runs is roughly **$0.58**, assuming the second run is similar **[TO CONFIRM with M1]**. A naive design that re-runs the full Agent daily would cost $14 to $24 per outlet per month, which breaks the ₹999 plan. So re-syncs are incremental: Fetch first (free), and the Agent only for new reviews, estimated at about 4 steps per platform per run **[TO CONFIRM: SRS estimate is 3 to 5 steps]**.
+### Growth plan margin (₹999 = $10.52 at ₹95 per US$)
 
-### Growth plan margin (₹999 = $11.10)
+Costs per outlet per month: TinyFish as shown, plus LLM $0.05, plus hosting share $1.00 **[ASSUMPTION, M3 to confirm]**.
 
-Costs per outlet per month: LLM $0.05, hosting share $1.00 **[ASSUMPTION, M3 to confirm]**, plus the Agent cost below. Agent runs assume 2 platforms × 4 steps = 8 steps per Agent day.
-
-| Scenario | Agent steps | Agent cost | Total cost | Gross margin |
+| Scenario | TinyFish per month | Total cost | Gross margin, all costs | Margin, TinyFish cost only |
 |---|---|---|---|---|
-| Agent needed on about 10% of days (3 days) | 24 | $0.38 | $1.43 | **87%** |
-| Agent needed on about 30% of days (9 days) | 72 | $1.15 | $2.20 | **80%** |
-| Agent used every day, incremental (30 days) | 240 | $3.84 | $4.89 | **56%** |
-| Naive: full Agent re-run every day (SRS warning) | 900 to 1,500 | $14.40 to $24.00 | $15.45 to $25.05 | **−39% to −126%** |
+| M1 low (about 12 Agent checks) | $1.40 | $2.45 | **77%** | 87% |
+| M1 high (about 18 Agent checks) | $2.10 | $3.15 | **70%** | 80% |
+| First month, low (adds the $0.312 cold sync) | $1.71 | $2.76 | 74% | 84% |
+| First month, high | $2.41 | $3.46 | 67% | 77% |
+| Agent runs every day (30 incremental checks) | $3.54 | $4.59 | 56% | 66% |
+| Naive: full Agent re-run every day (SRS warning) | $14.40 to $24.00 | $15.45 to $25.05 | −47% to −138% | −37% to −128% |
 
-**Target margin of 70% or more** holds as long as total cost stays under about $3.33. That leaves about $2.28 for the Agent, which is about 142 steps, or **the Agent being needed on no more than about 17 of 30 days**. The key number to measure is the share of daily checks where Fetch alone finds the new reviews. That decides whether Growth holds its margin.
+**What this says**
+- On M1's measured numbers, the Growth plan stays at or above the **70% target** in steady state (70% to 77% on all costs, 80% to 87% on TinyFish cost alone). The high end sits right on the line.
+- The 70% target holds only up to about **17 Agent checks per month**, which is the key number to protect. The more often Fetch alone is enough, the better the margin.
+- The first month is lower (67% to 74%) because of the one-time cold sync.
+- **GST.** If ₹999 includes GST (18% on software services, verify), net revenue is about ₹847 ($8.91) and every margin above falls by about 4 to 6 points. Decide whether prices are shown before or after GST. **[DECISION for the team]**
+- M1's summary quotes 78.5% to 82.0%. We could not reproduce it from the inputs: we get 80% to 87% on TinyFish cost alone, and 70% to 77% with LLM and hosting. **[TO CONFIRM with M1 how it was calculated.]**
 
-### Starter plan (₹499 = $5.54)
+### Starter plan (₹499 = $5.25)
 
-Weekly sync with the incremental Agent on every sync, the worst case in this design: 4 syncs × 8 steps = 32 steps = $0.51. Total with LLM and hosting is $1.56, a margin of **about 72%**. Starter must also use incremental syncs. Weekly full re-runs would cut the margin below 50%.
+Weekly sync with an incremental Agent check each time, the worst case in this design: 4 × $0.118 = $0.47. With LLM and hosting the total is $1.52, a margin of **about 71%**. Starter must also use incremental syncs. Full weekly re-runs would push the margin well below 50%.
 
 ### Pro plan (₹1,999)
 
@@ -119,11 +135,11 @@ Not modelled. Multi-outlet usage, white-label reports and bulk approvals are not
 
 ### Break-even
 
-Break-even outlets = fixed monthly cost ÷ (price − variable cost per outlet). For Growth in the 30% scenario, the contribution per outlet is $11.10 − $2.20 = **$8.90 (about ₹800)**. With an example fixed cost of ₹5,000 per month **[ASSUMPTION: paid hosting tier, domain, monitoring]**, break-even is about **7 outlets**.
+Break-even outlets = fixed monthly cost ÷ (price − variable cost per outlet). For Growth, the contribution per outlet is **$7.37 to $8.07 (about ₹700 to ₹770)**. With an example fixed cost of ₹5,000 per month **[ASSUMPTION: paid hosting tier, domain, monitoring]**, break-even is about **7 to 8 outlets**.
 
 ### Upside not used in the table
 
-TinyFish's Starter plan ($15 per month for 1,650 steps) works out to about $0.009 per step, which is below the pay-as-you-go rate. At 72 steps per outlet per month, one subscription would cover about 22 outlets. We model the pay-as-you-go price because it is the conservative case.
+TinyFish's Starter plan ($15 per month for 1,650 steps) works out to about $0.009 per step. At 89 to 133 steps per outlet per month (12 to 18 checks × 7.4 steps), one subscription covers about 12 to 18 outlets, and Agent cost per outlet falls by roughly 40%. We model pay-as-you-go because it is the conservative case.
 
 ## 5. Owner validation
 
@@ -143,13 +159,15 @@ The owner enters their own business, and we collect public reviews on demand, fr
 
 | Item | Owner |
 |---|---|
-| Agent steps for a first sync of about 50 reviews, and for an incremental re-sync | M1 |
-| Share of daily checks where Fetch alone is enough | M1 |
+| Runs behind the 19.5 and 7.4 step averages, platforms covered, and whether 19.5 covers both platforms | M1 |
+| How the 78.5% to 82.0% margin was calculated (we get 80% to 87% on TinyFish cost alone, 70% to 77% with LLM and hosting) | M1 |
+| Whether the 12 to 18 Agent checks per month assumption is measured or estimated | M1 |
 | Gemini price for the configured model | M2 |
 | Hosting cost per outlet and fixed monthly costs | M3 |
+| Whether ₹999 includes GST | Team |
 | Owner quote | M4 |
 | Screenshots of the three vendor pricing pages with today's date | M2 |
-| Current USD to INR rate | M2 |
+| Today's USD to INR rate (this doc uses ₹95) | M2 |
 
 ## Sources (checked 19 Oct 2026)
 
@@ -166,3 +184,4 @@ The owner enters their own business, and we collect public reviews on demand, fr
 - Doctors: etvbharat.com (Lok Sabha reply, 1 Aug 2025), eparlib.sansad.in (Lok Sabha unstarred question 867, 29 Nov 2024)
 - Groq pricing: morphllm.com/groq-pricing, getmaxim.ai/bifrost/llm-cost-calculator/provider/groq/model/gpt-oss-120b
 - TinyFish pricing: tinyfish.ai/pricing, tinyfish.ai/blog/firecrawl-pricing
+- Exchange rate: pluang.com/en/tools/currency-converter/usd-inr (rate dated 22 Jul 2026)
