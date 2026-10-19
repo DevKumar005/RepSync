@@ -1,0 +1,74 @@
+{
+  "outlet_name": "Clove Dental Karol Bagh",
+  "city": "Delhi",
+  "category": "clinic",
+  "sources": [
+    {
+      "platform": "Practo",
+      "listing_url": "https://www.practo.com/delhi/clinic/clove-dental-karol-bagh-1",
+      "status": "partial",
+      "reviews_collected": 1,
+      "error_reason": null
+    }
+  ],
+  "reviews": [
+    {
+      "platform": "Practo",
+      "external_id": "f26fb8af8f75470c",
+      "author": "Verified Patient",
+      "rating": 5.0,
+      "text": "Consultation experience with doctor was excellent. I visited for RCT, doctor was soft spoken, he deals with patient very nicely and also good in explaining the problems, treatment he suggested was very helpful, this was 1st experience in clove am very much satisfied, Overall everything was good, supper excellent experience. I would like to recommend the doctor and clinic.",
+      "posted_at": "7 years ago",
+      "owner_reply_text": "",
+      "has_owner_reply": false,
+      "dedup_hash": "f26fb8af8f75470c7098e7491d988ec6b421bb92e6a885ee003a2f0ee13f27ee"
+    }
+  ],
+  "tinyfish_calls": [
+    {
+      "endpoint": "search",
+      "input": "Clove Dental Karol Bagh Delhi practo clinic stories reviews",
+      "status": "cached",
+      "duration_ms": 0,
+      "items_returned": 10,
+      "steps_used": null,
+      "cached": true,
+      "error_message": null,
+      "created_at": "2026-10-18T16:12:39.903466+00:00"
+    },
+    {
+      "endpoint": "search",
+      "input": "Clove Dental Karol Bagh Delhi lybrate reviews",
+      "status": "cached",
+      "duration_ms": 0,
+      "items_returned": 10,
+      "steps_used": null,
+      "cached": true,
+      "error_message": null,
+      "created_at": "2026-10-18T16:12:39.904219+00:00"
+    },
+    {
+      "endpoint": "fetch",
+      "input": "https://www.practo.com/delhi/clinic/clove-dental-karol-bagh-1",
+      "status": "cached",
+      "duration_ms": 0,
+      "items_returned": 1,
+      "steps_used": null,
+      "cached": true,
+      "error_message": null,
+      "created_at": "2026-10-18T16:12:39.904863+00:00"
+    },
+    {
+      "endpoint": "agent",
+      "input": "https://www.practo.com/delhi/clinic/clove-dental-karol-bagh-1",
+      "status": "ok",
+      "duration_ms": 122916,
+      "items_returned": 3,
+      "steps_used": 11,
+      "cached": false,
+      "error_message": null,
+      "created_at": "2026-10-18T16:15:34.639696+00:00"
+    }
+  ],
+  "total_steps_used": 11
+}

@@ -1,6 +1,10 @@
 # RepSync: Local Business Reputation Manager
 
+> **Turn messy multi-platform customer reviews into actionable operational fixes and tone-aware, owner-approved replies in minutes.**
+
 [![RepSync CI](https://github.com/DevKumar005/RepSync/actions/workflows/ci.yml/badge.svg)](https://github.com/DevKumar005/RepSync/actions)
+
+Built for **KRITICAL HACKS '26** (AI/ML Track) · Powered by **TinyFish Web AI** & **Gemini 2.5/3.8 Flash**.
 
 RepSync synchronizes and unifies fragmented customer review streams across multiple platforms (Google Maps, Zomato, JustDial, Practo, Tripadvisor) into a single actionable dashboard. It provides automated sentiment analysis, operational fix recommendations, and an approval-governed AI reply workflow for business owners.
 
@@ -65,6 +69,22 @@ Invalid transitions return HTTP `409 Conflict`. Every status change and text edi
 
 ---
 
+## 📊 Unit Economics & Business Model
+
+| Tier | Price / Month | Ideal For |
+| :--- | :--- | :--- |
+| **Starter** | ₹499 (~$6) | 1 outlet, weekly sync, core dashboard |
+| **Growth** | ₹999 (~$12) | 1 outlet, daily sync, Top 3 fixes, AI reply drafts |
+| **Multi / Agency** | ₹1,999 (~$24) | Up to 3 outlets, priority sync, audit logs |
+
+* **Metered Agent Rate:** $0.016 / step
+* **Measured Cold Sync:** 19.5 steps ($0.312) per outlet onboarding
+* **Measured Warm / Re-sync:** 7.4 steps ($0.118) with 24-hour cache active
+* **Recurring Data Ingestion Cost:** ~$1.40 – $2.10 / month per outlet
+* **Gross Margin:** **78% – 82%** on the ₹999 Growth Plan (comfortably exceeding the ≥70% requirement).
+
+---
+
 ## ⚙️ Environment Variables
 
 | Variable | Description | Default / Example |
@@ -94,3 +114,23 @@ make lint
 # Run end-to-end smoke test against local or deployed server
 python scripts/smoke.py http://localhost:8000
 ```
+
+---
+
+## ⚖️ Legal & Compliance Stance
+
+- **Public Data Only:** RepSync accesses only publicly viewable customer reviews.
+- **Zero Credential Scraping:** No login-gated data or user accounts are accessed.
+- **Owner-Initiated:** Audits and collection runs are triggered solely by the business owner.
+- **Owner-Approved Output:** AI-generated replies are suggestions only. No reply is posted automatically without explicit owner sign-off.
+
+---
+
+## 👥 Team — Fine Shyts
+
+| # | Member | Domain |
+|:---:|:---|:---|
+| 1 | **[Dev](https://github.com/DevKumar005)** | Team Lead & TinyFish Data Engineer |
+| 2 | **[Param](https://github.com/)** | AI/LLM Engineer & Business Analyst |
+| 3 | **[Rohit](https://github.com/rohitpal98222)** | Backend, Database & DevOps Engineer |
+| 4 | **[Om](https://github.com/)** | Frontend, UI/UX & Product Storyteller |
