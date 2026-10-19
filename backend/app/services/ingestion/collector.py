@@ -273,4 +273,4 @@ class MultiPlatformCollector:
 
 
 def get_collector(platform_key: str, display_name: str) -> MultiPlatformCollector:
-    return MultiPlatformCollector(platform_key, display_name)
+    return MultiPlatformCollector(platform_key, display_name)

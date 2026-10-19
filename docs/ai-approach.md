@@ -77,10 +77,10 @@ English, Hindi (Devanagari) and Hinglish are detected per review. Replies match 
 | Sentiment accuracy | 85% or more | 97% (29/30) |
 | Topic match | n/a | 94% (15/16) |
 | Language accuracy | n/a | 100% (30/30) |
-| Reply checklist pass rate | 90% or more | [FILL IN: measure on about 20 drafts] |
-| Theme coherence (manual, 1 to 5) | 4 or more | [FILL IN] |
+| Reply checklist pass rate | 90% or more | Not measured. The automated check passed 17 of 17 drafts, but that is a rule check, not a quality score |
+| Theme coherence (manual, 1 to 5) | 4 or more | Not measured. The top theme was identical across three runs and two providers |
 
-[FILL IN after rerun: R04 and S21 labels corrected to match the stated rules, and the 3-run range for each metric.]
+The one sentiment miss in v2 is R04, a mixed review we labelled neutral. Under our own mixed-review rule the AI's answer (negative) is arguably correct. We left the label unchanged rather than tune the test after seeing results. Each version was run once, so a one-review difference (3.3%) is within noise. Full tables, the real-data test and limitations are in `docs/eval-results.md`.
 
 ## 8. Limitations (stated honestly)
 
