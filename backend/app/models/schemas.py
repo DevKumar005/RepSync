@@ -1,6 +1,7 @@
 from datetime import datetime
-from typing import Any, Dict, List, Literal, Optional
-from pydantic import BaseModel, Field
+from typing import Any, Dict, List, Literal, Optional, Union
+from pydantic import BaseModel, Field, field_validator, model_validator
+
 
 
 # --- Collector & TinyFish Contracts (SRS 2.3) ---
@@ -57,10 +58,23 @@ class OutletCandidate(BaseModel):
 
 
 class OutletCreate(BaseModel):
-    name: str = Field(..., min_length=2, max_length=100)
+    name: Optional[str] = None
     category: Literal["restaurant", "clinic", "salon"]
     city: str = Field(..., min_length=2, max_length=100)
     address: Optional[str] = None
+    candidate: Optional[Any] = None
+
+    @model_validator(mode="after")
+    def resolve_name(self):
+        if not self.name and self.candidate:
+            if isinstance(self.candidate, dict):
+                self.name = self.candidate.get("name") or self.candidate.get("title")
+            elif hasattr(self.candidate, "name"):
+                self.name = self.candidate.name
+        if not self.name:
+            self.name = "My Outlet"
+        return self
+
 
 
 class SourceRead(BaseModel):
@@ -68,11 +82,12 @@ class SourceRead(BaseModel):
     outlet_id: str
     platform: str
     url: Optional[str] = None
-    status: str
+    status: str = "pending"
     error: Optional[str] = None
-    review_count: int
-    agent_steps_used: int
+    review_count: int = 0
+    agent_steps_used: int = 0
     last_synced_at: Optional[datetime] = None
+
 
 
 class PlatformRead(BaseModel):
@@ -161,8 +176,18 @@ class FixSuggestionRead(BaseModel):
 
 class ToneProfileUpdate(BaseModel):
     style: Literal["warm", "professional", "witty", "empathetic"] = "warm"
-    sample_replies: List[str] = []
-    do_not_say: List[str] = []
+    sample_replies: Union[List[str], str] = []
+    do_not_say: Union[List[str], str] = []
+
+    @field_validator("sample_replies", "do_not_say", mode="before")
+    @classmethod
+    def parse_string_or_list(cls, v):
+        if isinstance(v, str):
+            if not v.strip():
+                return []
+            return [item.strip() for item in v.replace("\n", ",").split(",") if item.strip()]
+        return v or []
+
 
 
 class ToneProfileRead(BaseModel):

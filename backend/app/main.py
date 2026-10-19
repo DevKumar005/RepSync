@@ -76,10 +76,12 @@ if FRONTEND_ORIGIN and FRONTEND_ORIGIN not in origins:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 
 # Consistent error response shape: {error, detail, code} (M3-API-3)

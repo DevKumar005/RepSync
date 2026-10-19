@@ -207,10 +207,9 @@ def create_outlet(
                 status="pending",
             )
             session.add(src)
-            session.commit()
-            session.refresh(src)
-            sources.append(src)
+    session.commit()
 
+    all_sources = session.exec(select(Source).where(Source.outlet_id == outlet.id)).all()
     return OutletRead(
         id=outlet.id,
         name=outlet.name,
@@ -219,8 +218,9 @@ def create_outlet(
         address=outlet.address,
         is_demo=outlet.is_demo,
         created_at=outlet.created_at,
-        sources=[SourceRead(**s.model_dump()) for s in sources],
+        sources=[SourceRead(**s.model_dump()) for s in all_sources],
     )
+
 
 
 @router.post("/api/outlets/demo/{key}", response_model=OutletRead)
@@ -572,7 +572,29 @@ def update_draft(
 
 # --- Tone Profile (FR-5.3) ---
 
+@router.get("/api/tone", response_model=ToneProfileRead)
+def get_tone_profile(
+    current_user: AppUser = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Fetches user's current tone of voice settings (defaults to 'warm')."""
+    tone = session.exec(select(ToneProfile).where(ToneProfile.user_id == current_user.id)).first()
+    if not tone:
+        tone = ToneProfile(user_id=current_user.id, style="warm")
+        session.add(tone)
+        session.commit()
+        session.refresh(tone)
+
+    return ToneProfileRead(
+        id=tone.id,
+        style=tone.style,
+        sample_replies=tone.sample_replies or [],
+        do_not_say=tone.do_not_say or [],
+    )
+
+
 @router.put("/api/tone", response_model=ToneProfileRead)
+
 def update_tone_profile(
     req: ToneProfileUpdate,
     current_user: AppUser = Depends(get_current_user),

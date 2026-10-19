@@ -327,3 +327,47 @@ async def test_agent_step_budget_guard(session: Session, monkeypatch):
     sources = session.exec(select(Source).where(Source.outlet_id == outlet.id)).all()
     assert len(sources) > 0
 
+
+# =========================================================================
+# M3-FR-5.3: Tone Profile GET & PUT (Frontend Integration)
+# =========================================================================
+
+def test_tone_endpoints(client: TestClient):
+    # 1. GET /api/tone (defaults to warm)
+    res = client.get("/api/tone")
+    assert res.status_code == 200
+    data = res.json()
+    assert "style" in data
+    assert "sample_replies" in data
+
+    # 2. PUT /api/tone with string inputs (M4 format)
+    res_put = client.put(
+        "/api/tone",
+        json={
+            "style": "professional",
+            "sample_replies": "Thanks for visiting, See you soon",
+            "do_not_say": "refund, our fault",
+        },
+    )
+    assert res_put.status_code == 200
+    updated = res_put.json()
+    assert updated["style"] == "professional"
+    assert "refund" in updated["do_not_say"]
+
+
+def test_create_outlet_candidate_payload(client: TestClient):
+    # M4 sends { candidate: { name, ... }, city, category }
+    res = client.post(
+        "/api/outlets",
+        json={
+            "candidate": {"name": "Test Bukhara Bistro", "address": "Connaught Place"},
+            "city": "Delhi",
+            "category": "restaurant",
+        },
+    )
+    assert res.status_code == 200
+    created = res.json()
+    assert created["name"] == "Test Bukhara Bistro"
+    assert created["city"] == "Delhi"
+
+
