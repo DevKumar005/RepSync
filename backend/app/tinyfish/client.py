@@ -212,12 +212,12 @@ class TinyFishService:
         use_cache: bool = True,
         on_log: Optional[Callable[[TinyFishCallLog], None]] = None,
         on_step: Optional[Callable[[int, str], None]] = None,
-        max_duration_seconds: int = 180,
+        max_duration_seconds: int = 60,
     ) -> tuple[list[dict], TinyFishCallLog]:
         """
         Metered Web Agent endpoint (SSE stream).
         Escalated ONLY when Fetch is blocked or yields < 10 reviews.
-        Guarded by max_duration_seconds (default 180s) to prevent unhandled stream stalls.
+        Guarded by max_duration_seconds (default 60s) to prevent unhandled stream stalls.
         """
         cache_key = f"{platform}:{url}"
         if use_cache:
@@ -239,9 +239,27 @@ class TinyFishService:
                         on_log(log)
                     return reviews, log
 
+        platform_lower = platform.lower()
+        extra_guidance = ""
+        if "justdial" in platform_lower:
+            extra_guidance = (
+                " If an 'Enter Mobile Number', 'OTP', or 'Login' popup appears, click its '✕' close button, "
+                "click 'Maybe Later', or press Escape to close it. Scroll down past photos to the 'Ratings & Reviews' section."
+            )
+        elif "tripadvisor" in platform_lower:
+            extra_guidance = (
+                " Immediately accept cookies/consent if prompted (click 'Accept all' or 'I Agree'). "
+                "Scroll down to the 'Reviews' section. If review text is truncated with a 'Read more' link, click it."
+            )
+        elif "google" in platform_lower:
+            extra_guidance = (
+                " If a consent dialog appears, accept/agree. Look for the 'Reviews' tab or panel and scroll through customer reviews."
+            )
+
         goal_prompt = (
             f"Open this exact {platform} URL: {url}. "
-            f"Stay strictly on {platform}. If a cookie, consent, or login modal appears, dismiss/close it. "
+            f"Stay strictly on {platform}.{extra_guidance} "
+            f"If any other cookie, consent, or login modal appears, dismiss/close it. "
             f"Find the customer reviews or patient stories section on the page. "
             f"Extract up to {max_reviews} customer reviews with author, rating (1 to 5), posted_at, "
             f"full review text, and owner_reply_text if present. "

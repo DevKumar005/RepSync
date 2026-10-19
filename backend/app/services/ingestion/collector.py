@@ -130,6 +130,8 @@ class MultiPlatformCollector:
                 if _matches_domain(u, target_domain):
                     if self.platform == "zomato" and "/reviews" not in u:
                         u = u.rstrip("/") + "/reviews"
+                    elif self.platform == "tripadvisor" and "#REVIEWS" not in u:
+                        u = u.rstrip("/") + "#REVIEWS"
                     found_url = u
                     break
 
