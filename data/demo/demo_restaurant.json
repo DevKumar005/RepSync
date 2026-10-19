@@ -1,0 +1,257 @@
+{
+  "outlet_name": "Bukhara ITC Maurya",
+  "city": "Delhi",
+  "category": "restaurant",
+  "sources": [
+    {
+      "platform": "Zomato",
+      "listing_url": "https://www.zomato.com/ncr/bukhara-itc-maurya-chanakyapuri-new-delhi/reviews",
+      "status": "ok",
+      "reviews_collected": 10,
+      "error_reason": null
+    },
+    {
+      "platform": "EazyDiner",
+      "listing_url": "https://www.eazydiner.com/delhi-ncr/bukhara-itc-maurya-sardar-patel-marg-110025/reviews",
+      "status": "ok",
+      "reviews_collected": 5,
+      "error_reason": null
+    }
+  ],
+  "reviews": [
+    {
+      "platform": "Zomato",
+      "external_id": "8ae9cb63b26222d9",
+      "author": "Mohit Sharma",
+      "rating": 5.0,
+      "text": "Food is really good",
+      "posted_at": "yesterday",
+      "owner_reply_text": null,
+      "has_owner_reply": false,
+      "dedup_hash": "8ae9cb63b26222d9628522d9a4719cafe039d2f4fb31e28100b461d16ba7d3e3"
+    },
+    {
+      "platform": "Zomato",
+      "external_id": "5d34830e235d8ce8",
+      "author": "Shashwat Kapoor",
+      "rating": 5.0,
+      "text": "AMAZINGG!!",
+      "posted_at": "7 days ago",
+      "owner_reply_text": null,
+      "has_owner_reply": false,
+      "dedup_hash": "5d34830e235d8ce8a56a59a3e38a9d14c55a3861fc183ae7c99216a7b9fa24ce"
+    },
+    {
+      "platform": "Zomato",
+      "external_id": "1e800830a9e6cf1e",
+      "author": "IJ Singh",
+      "rating": 5.0,
+      "text": "Great",
+      "posted_at": "10 days ago",
+      "owner_reply_text": null,
+      "has_owner_reply": false,
+      "dedup_hash": "1e800830a9e6cf1ec2982a24eb21c66061172a9878e5f7be06ea01c27425b175"
+    },
+    {
+      "platform": "Zomato",
+      "external_id": "c6590cb13462020d",
+      "author": "Arun Khanna",
+      "rating": 3.0,
+      "text": "The food was a disappointment. I visited Bukhara after maybe 20 years not worth the visit this time",
+      "posted_at": "10 days ago",
+      "owner_reply_text": null,
+      "has_owner_reply": false,
+      "dedup_hash": "c6590cb13462020d1232ae84a4b35e600d10fda57f4db6ddd8106d86e46c1847"
+    },
+    {
+      "platform": "Zomato",
+      "external_id": "523e119d62e2cf56",
+      "author": "Shivangi Gupta",
+      "rating": 5.0,
+      "text": "great food, great vibe.. Naveen, Devender, Harish, Sanskar and Ali were very warm and helpful",
+      "posted_at": "15 days ago",
+      "owner_reply_text": null,
+      "has_owner_reply": false,
+      "dedup_hash": "523e119d62e2cf564b2d984e1fb72eac3b794d1c9ac459256b554e6d9bb590ff"
+    },
+    {
+      "platform": "Zomato",
+      "external_id": "7b5f410d3310ec16",
+      "author": "Dipayan Nag",
+      "rating": 5.0,
+      "text": "Bukhara totally lived up to the hype! I had three foreign nationals with me, and I had created quite a bit of hype beforehand—showing them videos, sharing stories, and even pointing out the who's who who have dined here. At one point, I honestly wondered, I hope I haven't overhyped this! But from the moment we entered Bukhara, the experience delivered. The service, the warm hospitality, the way they explain the history and legacy of the restaurant—and then, of course, the four-foot naan! My God, that's a showstopper. 😄 And the meats… absolutely exceptional. I've eaten Sikandari raan, chicken tikka and Indian grills all my life, but the quality Bukhara consistently maintains",
+      "posted_at": "15 days ago",
+      "owner_reply_text": "",
+      "has_owner_reply": false,
+      "dedup_hash": "7b5f410d3310ec167f06eb075e56707a4c76040cd34cd6ba1e9c18ae8abf7143"
+    },
+    {
+      "platform": "Zomato",
+      "external_id": "7275a6e9c24fea63",
+      "author": "Nakul Sinha",
+      "rating": 1.0,
+      "text": "Food was quite average. Not at all worth the hype. It was way too crowded as well. There was mismanagement even though i had pre booked the table.",
+      "posted_at": "24 days ago",
+      "owner_reply_text": "",
+      "has_owner_reply": false,
+      "dedup_hash": "7275a6e9c24fea63ede67e9a33375d0a3426da92eb8f2bf99e16d66d5121b543"
+    },
+    {
+      "platform": "Zomato",
+      "external_id": "97b73906341d44d9",
+      "author": "Abhishek Gupta",
+      "rating": 5.0,
+      "text": "Had a wonderful experience at Bukhara while celebrating my wife's birthday. The food was excellent, but what truly made the evening special was the exceptional service. A special mention to Vinod, Bharat, Amit, and Thang for their warm hospitality, attentiveness, and personal touch throughout the evening. They made sure everything was taken care of and went out of their way to make my wife's birthday celebration memorable. Thank you to the entire Bukhara team for a fantastic experience. We truly enjoyed the evening and will definitely look forward to coming back!",
+      "posted_at": "26 days ago",
+      "owner_reply_text": "",
+      "has_owner_reply": false,
+      "dedup_hash": "97b73906341d44d97ae446d7f8ad999a7ecc7013a1b0136ad9d0f5d0d222ae71"
+    },
+    {
+      "platform": "Zomato",
+      "external_id": "d41112effb292533",
+      "author": "Tanvi Jain",
+      "rating": 5.0,
+      "text": "Excellent",
+      "posted_at": "one month ago",
+      "owner_reply_text": "",
+      "has_owner_reply": false,
+      "dedup_hash": "d41112effb2925335c4e1383d7c18e7f6ab84268845523f6b09f73d0153da86e"
+    },
+    {
+      "platform": "Zomato",
+      "external_id": "db097771ceacc816",
+      "author": "Abhinov Asthana",
+      "rating": 5.0,
+      "text": "Awesome food, never ever had दाल like I had here…this was ammmmazing…",
+      "posted_at": "one month ago",
+      "owner_reply_text": "",
+      "has_owner_reply": false,
+      "dedup_hash": "db097771ceacc81655fd0d20d08169068987255d1926adef8c43df1ceb4ba081"
+    },
+    {
+      "platform": "EazyDiner",
+      "external_id": "a37baf9dbfac360f",
+      "author": "Wanderer",
+      "rating": 3.0,
+      "text": "Bukhara is renowned for iconic dishes like Dal Bukhara and Naan Bukhara. I had heard that the cuisine at Bukhara has a rustic charm of the North West Frontier's culinary heritage. The restaurant was...",
+      "posted_at": "Recently",
+      "owner_reply_text": null,
+      "has_owner_reply": false,
+      "dedup_hash": "a37baf9dbfac360f64a7ba1a0f5ab9ea7cd2968aa7e6150a2dc8e69b91142cb1"
+    },
+    {
+      "platform": "EazyDiner",
+      "external_id": "331f07d432b1bd17",
+      "author": "Parth Kotecha",
+      "rating": 3.0,
+      "text": "This place is worth the hype! If you're visiting Delhi or staying here, you must experience Bukhara at least once. The whole combination of dishes, service and traditions will leave you stunned. From ...",
+      "posted_at": "Recently",
+      "owner_reply_text": null,
+      "has_owner_reply": false,
+      "dedup_hash": "331f07d432b1bd173a867384b7ea67be7d4ae275f94abdba4f037b3c0694adef"
+    },
+    {
+      "platform": "EazyDiner",
+      "external_id": "9544b00f298f0c40",
+      "author": "Michelle McClure",
+      "rating": 3.0,
+      "text": "We ate here once when we stayed at the hotel and could not recommend it more highly. My husband had the tandoori chicken and the waiter very helpfully advised that he could have a half portion which w...",
+      "posted_at": "Recently",
+      "owner_reply_text": null,
+      "has_owner_reply": false,
+      "dedup_hash": "9544b00f298f0c407d53f57f4c027b1823e3643226b7a3239b06e41d74f46c1b"
+    },
+    {
+      "platform": "EazyDiner",
+      "external_id": "917c97b809aec20c",
+      "author": "Harpreet Singh (Happy)",
+      "rating": 3.0,
+      "text": "ITC Bukhara undoubtedly carries a legacy and immense hype for its culinary excellence, but my recent visit left me with mixed — leaning towards negative — impressions, especially when considering the ...",
+      "posted_at": "Recently",
+      "owner_reply_text": null,
+      "has_owner_reply": false,
+      "dedup_hash": "917c97b809aec20c6b95847bdefb4f10187d60194aaa5b371622075761bb3293"
+    },
+    {
+      "platform": "EazyDiner",
+      "external_id": "d3ab0597eb2366f4",
+      "author": "Amit Sinha",
+      "rating": 3.0,
+      "text": "Was great. Able to get in a quick bite. The restaurant was able to accommodate us in a short notice. Everything was excellent",
+      "posted_at": "Recently",
+      "owner_reply_text": null,
+      "has_owner_reply": false,
+      "dedup_hash": "d3ab0597eb2366f4cd17e9aa66a8da6a46e466baa73769c9f8851fca8f3b95e0"
+    }
+  ],
+  "tinyfish_calls": [
+    {
+      "endpoint": "search",
+      "input": "Bukhara ITC Maurya Delhi zomato reviews",
+      "status": "cached",
+      "duration_ms": 0,
+      "items_returned": 10,
+      "steps_used": null,
+      "cached": true,
+      "error_message": null,
+      "created_at": "2026-10-18T16:07:57.194888+00:00"
+    },
+    {
+      "endpoint": "search",
+      "input": "Bukhara ITC Maurya Delhi eazydiner reviews",
+      "status": "cached",
+      "duration_ms": 0,
+      "items_returned": 10,
+      "steps_used": null,
+      "cached": true,
+      "error_message": null,
+      "created_at": "2026-10-18T16:07:57.195983+00:00"
+    },
+    {
+      "endpoint": "fetch",
+      "input": "https://www.zomato.com/ncr/bukhara-itc-maurya-chanakyapuri-new-delhi/reviews",
+      "status": "cached",
+      "duration_ms": 0,
+      "items_returned": 1,
+      "steps_used": null,
+      "cached": true,
+      "error_message": null,
+      "created_at": "2026-10-18T16:07:57.196507+00:00"
+    },
+    {
+      "endpoint": "agent",
+      "input": "https://www.zomato.com/ncr/bukhara-itc-maurya-chanakyapuri-new-delhi/reviews",
+      "status": "ok",
+      "duration_ms": 161378,
+      "items_returned": 10,
+      "steps_used": 16,
+      "cached": false,
+      "error_message": null,
+      "created_at": "2026-10-18T16:10:45.053480+00:00"
+    },
+    {
+      "endpoint": "fetch",
+      "input": "https://www.eazydiner.com/delhi-ncr/bukhara-itc-maurya-sardar-patel-marg-110025/reviews",
+      "status": "ok",
+      "duration_ms": 2865,
+      "items_returned": 1,
+      "steps_used": null,
+      "cached": false,
+      "error_message": null,
+      "created_at": "2026-10-18T16:10:47.921145+00:00"
+    },
+    {
+      "endpoint": "agent",
+      "input": "https://www.eazydiner.com/delhi-ncr/bukhara-itc-maurya-sardar-patel-marg-110025/reviews",
+      "status": "failed",
+      "duration_ms": 98904,
+      "items_returned": 0,
+      "steps_used": 11,
+      "cached": false,
+      "error_message": null,
+      "created_at": "2026-10-18T16:12:39.636055+00:00"
+    }
+  ],
+  "total_steps_used": 27
+}
