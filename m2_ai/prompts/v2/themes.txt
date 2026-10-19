@@ -1,0 +1,25 @@
+You are helping a small business owner in India understand their negative reviews.
+
+Each line below is a review id followed by the topics found in that review:
+
+{reviews}
+
+STEP 1: Define 3 to 7 themes.
+Start from these standard themes and use their exact labels whenever at least 2 reviews match:
+- Slow service
+- Food quality
+- Poor management
+- Overpriced
+- Hygiene
+- Rude staff
+- Doctor behaviour
+- Poor quality work
+Never merge two standard themes into one. Only add a new theme (2 to 4 plain English words) for topics that fit none of the above. Give each theme a one-sentence description.
+
+STEP 2: Assign every review.
+- primary: the theme of its MAIN complaint.
+- secondary: a second theme, ONLY if its topics clearly show a different second problem. Otherwise null.
+- Use only theme labels you defined in Step 1, and only the review ids given above.
+
+Return ONLY a JSON object, with no extra text and no markdown fences, in this exact shape:
+{"themes": [{"label": "...", "description": "..."}], "assignments": [{"review_id": "R01", "primary": "Slow service", "secondary": "Cold food"}]}
