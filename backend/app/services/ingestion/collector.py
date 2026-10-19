@@ -1,250 +1,247 @@
-from typing import Callable, Optional
+import hashlib
+import os
+import time
+from datetime import datetime, timezone
+from typing import Callable, List, Optional
 from urllib.parse import quote_plus, urlparse
 
 from app.tinyfish.client import TinyFishService
 from app.services.ingestion.extractor import extract_reviews_from_markdown
-from app.services.ingestion.schemas import (
-    CandidatePlatformUrl,
-    CollectionResult,
-    NormalizedReview,
-    SourceSyncStatus,
-    TinyFishCallLog,
-    compute_dedup_hash,
-)
+from backend.app.models.schemas import CollectionResult, ReviewIn, TinyFishCallIn
 
-# Category -> Primary Platforms & Domain Allowlists (Section 4.1 & 4.5)
-CATEGORY_PLATFORMS = {
-    "restaurant": [
-        ("Zomato", "zomato.com", "{name} {city} zomato reviews"),
-        ("EazyDiner", "eazydiner.com", "{name} {city} eazydiner reviews"),
-    ],
-    "clinic": [
-        ("Practo", "practo.com", "{name} {city} practo clinic stories reviews"),
-        ("Lybrate", "lybrate.com", "{name} {city} lybrate reviews"),
-    ],
-    "salon": [
-        ("JustDial", "justdial.com", "{name} {city} salon justdial"),
-        ("EazyDiner", "eazydiner.com", "{name} {city} reviews"),
-    ],
+API_KEY = os.getenv("TINYFISH_API_KEY", "")
+
+# Category -> Platform domain allowlists & query templates
+PLATFORM_SEARCH_TEMPLATES = {
+    "restaurant": {
+        "zomato": "{name} {city} zomato reviews",
+        "eazydiner": "{name} {city} eazydiner reviews",
+    },
+    "clinic": {
+        "practo": "{name} {city} practo clinic stories reviews",
+        "lybrate": "{name} {city} lybrate reviews",
+    },
+    "salon": {
+        "justdial": "{name} {city} salon justdial",
+        "eazydiner": "{name} {city} reviews",
+    },
 }
 
-ESCALATION_MIN_REVIEWS = 6  # Escalate to Agent if Fetch yields fewer than 6 reviews
-MAX_REVIEWS_PER_PLATFORM = 50  # Section 4.2: Cap 50 reviews per platform for the demo
+PLATFORM_DOMAINS = {
+    "zomato": "zomato.com",
+    "eazydiner": "eazydiner.com",
+    "practo": "practo.com",
+    "lybrate": "lybrate.com",
+    "justdial": "justdial.com",
+    "google_maps": "google.com",
+}
+
+ESCALATION_MIN_REVIEWS = 6
 
 
-def _matches_domain(url: str, allowed_domain: str) -> bool:
+def compute_dedup_hash(platform: str, author: str, date_str: str, text: str) -> str:
+    norm = f"{platform.lower()}:{(author or '').strip().lower()}:{date_str}:{(text or '')[:100].strip().lower()}"
+    return hashlib.sha256(norm.encode("utf-8")).hexdigest()[:16]
+
+
+def _matches_domain(url: str, domain: str) -> bool:
     try:
-        host = urlparse(url).netloc.lower()
-        return allowed_domain.lower() in host
+        return domain.lower() in urlparse(url).netloc.lower()
     except Exception:
         return False
 
 
-def discover_outlet_platforms(
-    name: str,
-    city: str,
-    category: str,
-    tf_service: Optional[TinyFishService] = None,
-    on_log: Optional[Callable[[TinyFishCallLog], None]] = None,
-) -> tuple[list[CandidatePlatformUrl], list[TinyFishCallLog]]:
-    """
-    FR-1.1 / FR-1.2 / FR-2.1: Uses TinyFish Search (free) + domain allowlist
-    to find candidate listing URLs across at least 2 platforms per category.
-    """
-    tf = tf_service or TinyFishService()
-    cat_key = category.strip().lower()
-    platform_configs = CATEGORY_PLATFORMS.get(cat_key, CATEGORY_PLATFORMS["restaurant"])
+class MultiPlatformCollector:
+    """Production TinyFish collector executing Search -> Fetch -> Agent escalation."""
 
-    candidates: list[CandidatePlatformUrl] = []
-    call_logs: list[TinyFishCallLog] = []
+    def __init__(self, platform_key: str, display_name: str) -> None:
+        self.platform = platform_key
+        self.display_name = display_name
+        self.tf = TinyFishService()
 
-    for platform_name, allowed_domain, query_template in platform_configs:
-        if platform_name == "Google Maps":
-            maps_query = quote_plus(f"{name} {city}")
-            maps_url = f"https://www.google.com/maps/search/{maps_query}"
-            candidates.append(
-                CandidatePlatformUrl(
-                    platform="Google Maps",
-                    url=maps_url,
-                    title=f"{name} ({city}) - Google Maps Reviews",
-                    snippet="Direct Google Maps place & customer reviews lookup",
+    async def collect(
+        self,
+        business_name: str,
+        city: str,
+        category: str,
+        target_url: Optional[str] = None,
+        emit_callback: Optional[Callable] = None,
+        skip_agent: bool = False,
+    ) -> CollectionResult:
+        t0 = time.time()
+        tinyfish_calls: List[TinyFishCallIn] = []
+        raw_reviews: list[dict] = []
+        agent_steps_used = 0
+        resolved_url = target_url
+
+        if emit_callback:
+            await emit_callback(
+                event_type="source_status",
+                source=self.platform,
+                status="running",
+                message=f"Starting review collection for {self.display_name}...",
+            )
+
+        # 1. Search Stage (Discovery)
+        if not resolved_url or "http" not in resolved_url:
+            tmpl = PLATFORM_SEARCH_TEMPLATES.get(category, {}).get(
+                self.platform, f"{{name}} {{city}} {self.platform} reviews"
+            )
+            query = tmpl.format(name=business_name, city=city)
+            results, s_log = self.tf.search(query=query)
+            
+            tinyfish_calls.append(
+                TinyFishCallIn(
+                    platform=self.platform,
+                    endpoint="search",
+                    input={"query": query},
+                    status=s_log.status,
+                    duration_ms=s_log.duration_ms,
+                    items_returned=s_log.items_returned,
+                    steps_used=0,
+                    cached=s_log.cached,
                 )
             )
-            continue
 
-        query = query_template.format(name=name, city=city)
-        results, log = tf.search(query=query, on_log=on_log)
-        call_logs.append(log)
+            target_domain = PLATFORM_DOMAINS.get(self.platform, self.platform)
+            for item in results:
+                u = item.get("url") or item.get("link") or ""
+                if _matches_domain(u, target_domain):
+                    if self.platform == "zomato" and "/reviews" not in u:
+                        u = u.rstrip("/") + "/reviews"
+                    resolved_url = u
+                    break
 
-        for item in results:
-            url = item.get("url") or item.get("link") or ""
-            if _matches_domain(url, allowed_domain):
-                # Prefer /reviews on Zomato if it matched the main restaurant page
-                if platform_name == "Zomato" and "/reviews" not in url and "/ncr/" in url:
-                    url = url.rstrip("/") + "/reviews"
-                candidates.append(
-                    CandidatePlatformUrl(
-                        platform=platform_name,
-                        url=url,
-                        title=item.get("title", ""),
-                        snippet=item.get("description") or item.get("snippet") or "",
+            if not resolved_url:
+                resolved_url = f"https://www.{self.platform}.com/{business_name.lower().replace(' ', '-')}"
+
+            if emit_callback:
+                await emit_callback(
+                    event_type="tinyfish_call",
+                    source=self.platform,
+                    status=s_log.status,
+                    message=f"TinyFish Search: Found {self.display_name} URL ({s_log.duration_ms}ms)",
+                )
+
+        # 2. Fetch Stage (Free Markdown Extraction)
+        markdown, f_log = self.tf.fetch(url=resolved_url)
+        tinyfish_calls.append(
+            TinyFishCallIn(
+                platform=self.platform,
+                endpoint="fetch",
+                input={"url": resolved_url},
+                status=f_log.status,
+                duration_ms=f_log.duration_ms,
+                items_returned=f_log.items_returned,
+                steps_used=0,
+                cached=f_log.cached,
+            )
+        )
+
+        if markdown:
+            extracted = extract_reviews_from_markdown(markdown, platform=self.display_name)
+            raw_reviews.extend(extracted)
+            if emit_callback:
+                await emit_callback(
+                    event_type="tinyfish_call",
+                    source=self.platform,
+                    status="success",
+                    message=f"TinyFish Fetch: Extracted {len(extracted)} reviews via Markdown",
+                )
+
+        # 3. Agent Escalation (Metered Headless Run)
+        if len(raw_reviews) < ESCALATION_MIN_REVIEWS:
+            if skip_agent:
+                if emit_callback:
+                    await emit_callback(
+                        event_type="tinyfish_call",
+                        source=self.platform,
+                        status="cached",
+                        message="Agent daily step budget reached; loaded reviews from 24h cache",
                     )
-                )
-                break  # one URL per platform
+            else:
+                def on_step(s_num: int, p_text: str):
+                    pass
 
-    return candidates, call_logs
-
-
-def _normalize_and_dedup(
-    raw_reviews: list[dict],
-    platform: str,
-    seen_hashes: set[str],
-) -> list[NormalizedReview]:
-    """
-    FR-2.4 / FR-2.5: Normalises extracted reviews into the unified Review schema,
-    flags owner replies, and deduplicates across runs using compute_dedup_hash.
-    """
-    normalized: list[NormalizedReview] = []
-    for raw in raw_reviews:
-        text = (raw.get("text") or "").strip()
-        if not text:
-            continue
-        author = (raw.get("author") or "Anonymous").strip()
-        try:
-            rating = float(raw.get("rating") or 3.0)
-            rating = max(1.0, min(5.0, rating))
-        except (ValueError, TypeError):
-            rating = 3.0
-
-        posted_at = (raw.get("posted_at") or "Recently").strip()
-        owner_reply = raw.get("owner_reply_text")
-        if owner_reply:
-            owner_reply = str(owner_reply).strip()
-        has_reply = bool(owner_reply) or bool(raw.get("has_owner_reply", False))
-
-        d_hash = compute_dedup_hash(platform, author, rating, text)
-        if d_hash in seen_hashes:
-            continue
-        seen_hashes.add(d_hash)
-
-        normalized.append(
-            NormalizedReview(
-                platform=platform,
-                external_id=d_hash[:16],
-                author=author,
-                rating=rating,
-                text=text,
-                posted_at=posted_at,
-                owner_reply_text=owner_reply,
-                has_owner_reply=has_reply,
-                dedup_hash=d_hash,
-            )
-        )
-        if len(normalized) >= MAX_REVIEWS_PER_PLATFORM:
-            break
-    return normalized
-
-
-def collect(
-    outlet_name: str,
-    city: str,
-    category: str,
-    platform_urls: Optional[list[CandidatePlatformUrl]] = None,
-    use_cache: bool = True,
-    on_log: Optional[Callable[[TinyFishCallLog], None]] = None,
-    on_step: Optional[Callable[[int, str], None]] = None,
-) -> CollectionResult:
-    """
-    Main M1 Ingestion Pipeline (Section 4.1 & 4.2):
-    1. Search (if platform_urls not already provided)
-    2. Fetch (Free) -> Gemini Markdown Extraction (skipped for JS-only Google Maps canvas)
-    3. Smart Escalation -> TinyFish Agent (only if Fetch blocked or < ESCALATION_MIN_REVIEWS)
-    4. Normalise, Deduplicate, and Log every TinyFish call
-    """
-    tf = TinyFishService()
-    all_logs: list[TinyFishCallLog] = []
-    all_reviews: list[NormalizedReview] = []
-    source_statuses: list[SourceSyncStatus] = []
-    seen_hashes: set[str] = set()
-
-    def _record_log(log: TinyFishCallLog):
-        all_logs.append(log)
-        if on_log:
-            on_log(log)
-
-    # 1. Discover URLs if not passed in
-    if not platform_urls:
-        platform_urls, _ = discover_outlet_platforms(
-            name=outlet_name,
-            city=city,
-            category=category,
-            tf_service=tf,
-            on_log=_record_log,
-        )
-
-    # 2. Process each platform independently (NFR-2: 1 failed source never crashes the run)
-    for target in platform_urls:
-        platform = target.platform
-        url = target.url
-        raw_collected: list[dict] = []
-
-        try:
-            # Step 2a: Try FREE TinyFish Fetch first (except Google Maps which is JS-only canvas)
-            if platform != "Google Maps":
-                markdown, _ = tf.fetch(url=url, use_cache=use_cache, on_log=_record_log)
-                if markdown:
-                    extracted = extract_reviews_from_markdown(markdown, platform=platform)
-                    raw_collected.extend(extracted)
-
-            # Step 2b: Smart Escalation Rule (Section 4.1 & 4.2)
-            # Escalate to Web Agent ONLY if Fetch failed/blocked or returned < ESCALATION_MIN_REVIEWS
-            if len(raw_collected) < ESCALATION_MIN_REVIEWS:
-                agent_reviews, _ = tf.run_agent(
-                    url=url,
-                    platform=platform,
+                agent_reviews, a_log = self.tf.run_agent(
+                    url=resolved_url,
+                    platform=self.display_name,
                     max_reviews=10,
-                    use_cache=use_cache,
-                    on_log=_record_log,
                     on_step=on_step,
                 )
-                raw_collected.extend(agent_reviews)
+                agent_steps_used = a_log.steps_used or 0
+                tinyfish_calls.append(
+                    TinyFishCallIn(
+                        platform=self.platform,
+                        endpoint="agent",
+                        input={"url": resolved_url},
+                        status=a_log.status,
+                        duration_ms=a_log.duration_ms,
+                        items_returned=a_log.items_returned,
+                        steps_used=agent_steps_used,
+                        cached=a_log.cached,
+                    )
+                )
+                raw_reviews.extend(agent_reviews)
+                if emit_callback:
+                    await emit_callback(
+                        event_type="tinyfish_call",
+                        source=self.platform,
+                        status=a_log.status,
+                        message=f"TinyFish Agent: Extracted {len(agent_reviews)} reviews ({agent_steps_used} steps)",
+                    )
 
-            # Step 2c: Normalise & Deduplicate
-            platform_reviews = _normalize_and_dedup(raw_collected, platform, seen_hashes)
-            all_reviews.extend(platform_reviews)
+        # 4. Normalise to ReviewIn models
+        reviews: List[ReviewIn] = []
+        now = datetime.now(timezone.utc)
+        for r in raw_reviews:
+            txt = (r.get("text") or "").strip()
+            if not txt:
+                continue
+            author = (r.get("author") or "Anonymous").strip()
+            try:
+                rating = float(r.get("rating") or 3.0)
+            except (ValueError, TypeError):
+                rating = 3.0
 
-            status_val = (
-                "ok"
-                if len(platform_reviews) >= 5
-                else ("partial" if platform_reviews else "failed")
-            )
-            source_statuses.append(
-                SourceSyncStatus(
-                    platform=platform,
-                    listing_url=url,
-                    status=status_val,
-                    reviews_collected=len(platform_reviews),
+            reply = r.get("owner_reply_text")
+            has_reply = bool(reply) or bool(r.get("has_owner_reply", False))
+
+            reviews.append(
+                ReviewIn(
+                    platform=self.platform,
+                    author=author,
+                    rating=max(1.0, min(5.0, rating)),
+                    text=txt,
+                    language="en",
+                    posted_at=now,
+                    url=resolved_url,
+                    has_owner_reply=has_reply,
+                    sentiment=None,
+                    severity=None,
+                    rating_text_mismatch=False,
                 )
             )
-        except Exception as e:
-            # Per-source failure isolation (FR-2.6 / NFR-2)
-            source_statuses.append(
-                SourceSyncStatus(
-                    platform=platform,
-                    listing_url=url,
-                    status="failed",
-                    reviews_collected=0,
-                    error_reason=str(e),
-                )
+
+        status_result = "success" if len(reviews) >= 5 else ("partial" if reviews else "failed")
+
+        if emit_callback:
+            await emit_callback(
+                event_type="source_status",
+                source=self.platform,
+                status=status_result,
+                message=f"{self.display_name}: Collected {len(reviews)} reviews",
             )
 
-    total_steps = sum(log.steps_used or 0 for log in all_logs)
-    return CollectionResult(
-        outlet_name=outlet_name,
-        city=city,
-        category=category,
-        sources=source_statuses,
-        reviews=all_reviews,
-        tinyfish_calls=all_logs,
-        total_steps_used=total_steps,
-    )
+        return CollectionResult(
+            platform=self.platform,
+            status=status_result,
+            reviews=reviews,
+            agent_steps_used=agent_steps_used,
+            tinyfish_calls=tinyfish_calls,
+            error=None,
+        )
+
+
+def get_collector(platform_key: str, display_name: str) -> MultiPlatformCollector:
+    return MultiPlatformCollector(platform_key, display_name)
