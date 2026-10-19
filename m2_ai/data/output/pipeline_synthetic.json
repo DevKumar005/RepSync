@@ -1,0 +1,736 @@
+{
+  "summary": {
+    "total_reviews": 30,
+    "average_rating": 2.87,
+    "negative_count": 17,
+    "percent_negative": 57,
+    "unanswered_negatives": 17,
+    "analysis_failed": 0
+  },
+  "reviews": [
+    {
+      "id": "R01",
+      "platform": "google_maps",
+      "rating": 1,
+      "text": "Waited 50 minutes for a table even after booking. Food arrived cold and the manager just shrugged. Never coming back.",
+      "has_owner_reply": false,
+      "language": "english",
+      "sentiment": "negative",
+      "topics": [
+        "slow service",
+        "food quality",
+        "poor management"
+      ],
+      "severity": 3,
+      "analysis_failed": false
+    },
+    {
+      "id": "R02",
+      "platform": "google_maps",
+      "rating": 5,
+      "text": "Best butter chicken in the area! Staff was friendly and the place was spotless.",
+      "has_owner_reply": false,
+      "language": "english",
+      "sentiment": "positive",
+      "topics": [
+        "best butter chicken",
+        "friendly staff",
+        "spotless"
+      ],
+      "severity": 1,
+      "analysis_failed": false
+    },
+    {
+      "id": "R03",
+      "platform": "google_maps",
+      "rating": 5,
+      "text": "Wow, 5 stars for making us wait an hour for two rotis. Truly a unique experience 👏",
+      "has_owner_reply": false,
+      "language": "english",
+      "sentiment": "negative",
+      "topics": [
+        "slow service"
+      ],
+      "severity": 2,
+      "analysis_failed": false
+    },
+    {
+      "id": "R04",
+      "platform": "google_maps",
+      "rating": 3,
+      "text": "Food was great but the service was terrible. Paid 600 for a thali that took forever.",
+      "has_owner_reply": false,
+      "language": "english",
+      "sentiment": "negative",
+      "topics": [
+        "tasty food",
+        "slow service",
+        "overpriced"
+      ],
+      "severity": 2,
+      "analysis_failed": false
+    },
+    {
+      "id": "R05",
+      "platform": "google_maps",
+      "rating": 1,
+      "text": "Khana bilkul thanda tha aur waiter ne baat bhi nahi suni. Bill bhi zyada laga diya.",
+      "has_owner_reply": false,
+      "language": "hinglish",
+      "sentiment": "negative",
+      "topics": [
+        "food quality",
+        "rude staff",
+        "overpriced"
+      ],
+      "severity": 2,
+      "analysis_failed": false
+    },
+    {
+      "id": "R06",
+      "platform": "google_maps",
+      "rating": 5,
+      "text": "Bahut mast biryani thi yaar, family ke saath gaye the sabko pasand aaya. Must try!",
+      "has_owner_reply": false,
+      "language": "hinglish",
+      "sentiment": "positive",
+      "topics": [
+        "tasty biryani"
+      ],
+      "severity": 1,
+      "analysis_failed": false
+    },
+    {
+      "id": "R07",
+      "platform": "google_maps",
+      "rating": 2,
+      "text": "Rate ke hisaab se portion bahut kam hai. Paisa vasool nahi laga, overpriced hai.",
+      "has_owner_reply": false,
+      "language": "hinglish",
+      "sentiment": "negative",
+      "topics": [
+        "overpriced"
+      ],
+      "severity": 2,
+      "analysis_failed": false
+    },
+    {
+      "id": "R08",
+      "platform": "google_maps",
+      "rating": 1,
+      "text": "टेबल गंदी थी और बाथरूम में बहुत बदबू आ रही थी। खाना खाने का मन ही नहीं हुआ।",
+      "has_owner_reply": false,
+      "language": "hindi",
+      "sentiment": "negative",
+      "topics": [
+        "hygiene"
+      ],
+      "severity": 3,
+      "analysis_failed": false
+    },
+    {
+      "id": "R09",
+      "platform": "google_maps",
+      "rating": 5,
+      "text": "खाना बहुत स्वादिष्ट था और स्टाफ का व्यवहार भी बहुत अच्छा था। परिवार के साथ आने के लिए बढ़िया जगह।",
+      "has_owner_reply": false,
+      "language": "hindi",
+      "sentiment": "positive",
+      "topics": [
+        "tasty food",
+        "friendly staff"
+      ],
+      "severity": 1,
+      "analysis_failed": false
+    },
+    {
+      "id": "R10",
+      "platform": "google_maps",
+      "rating": 3,
+      "text": "Okay food. Nothing special.",
+      "has_owner_reply": false,
+      "language": "english",
+      "sentiment": "neutral",
+      "topics": [
+        "food quality"
+      ],
+      "severity": 1,
+      "analysis_failed": false
+    },
+    {
+      "id": "C11",
+      "platform": "google_maps",
+      "rating": 1,
+      "text": "Doctor spent barely two minutes with me and prescribed medicines without examining. Receptionist was rude about the fees.",
+      "has_owner_reply": false,
+      "language": "english",
+      "sentiment": "negative",
+      "topics": [
+        "doctor behaviour",
+        "rude staff"
+      ],
+      "severity": 3,
+      "analysis_failed": false
+    },
+    {
+      "id": "C12",
+      "platform": "google_maps",
+      "rating": 5,
+      "text": "Dr. Mehta explained everything patiently. My fever was gone in two days after the treatment. Clean clinic and short waiting time.",
+      "has_owner_reply": false,
+      "language": "english",
+      "sentiment": "positive",
+      "topics": [
+        "doctor behaviour",
+        "clean clinic",
+        "short waiting time"
+      ],
+      "severity": 1,
+      "analysis_failed": false
+    },
+    {
+      "id": "C13",
+      "platform": "google_maps",
+      "rating": 2,
+      "text": "Waited almost 2 hours past my appointment time. No apology, no update from the staff.",
+      "has_owner_reply": false,
+      "language": "english",
+      "sentiment": "negative",
+      "topics": [
+        "slow service",
+        "poor management",
+        "rude staff"
+      ],
+      "severity": 2,
+      "analysis_failed": false
+    },
+    {
+      "id": "C14",
+      "platform": "google_maps",
+      "rating": 1,
+      "text": "Excellent doctor, very caring and explained everything. Gave 1 star by mistake, sorry!",
+      "has_owner_reply": false,
+      "language": "english",
+      "sentiment": "positive",
+      "topics": [
+        "Excellent doctor"
+      ],
+      "severity": 1,
+      "analysis_failed": false
+    },
+    {
+      "id": "C15",
+      "platform": "google_maps",
+      "rating": 1,
+      "text": "Doctor sahab ne ghanta wait karaya aur fir bhi ache se check nahi kiya. Fees bahut zyada hai.",
+      "has_owner_reply": false,
+      "language": "hinglish",
+      "sentiment": "negative",
+      "topics": [
+        "slow service",
+        "doctor behaviour",
+        "overpriced"
+      ],
+      "severity": 3,
+      "analysis_failed": false
+    },
+    {
+      "id": "C16",
+      "platform": "google_maps",
+      "rating": 5,
+      "text": "Doctor bahut achhe hain, behavior bhi friendly. Dawai se 3 din mein aaram mil gaya.",
+      "has_owner_reply": false,
+      "language": "hinglish",
+      "sentiment": "positive",
+      "topics": [
+        "friendly doctor",
+        "effective treatment"
+      ],
+      "severity": 1,
+      "analysis_failed": false
+    },
+    {
+      "id": "C17",
+      "platform": "google_maps",
+      "rating": 3,
+      "text": "Clinic theek hai, par parking ki bahut problem hai. Doctor accha hai.",
+      "has_owner_reply": false,
+      "language": "hinglish",
+      "sentiment": "neutral",
+      "topics": [
+        "poor management",
+        "doctor accha hai"
+      ],
+      "severity": 1,
+      "analysis_failed": false
+    },
+    {
+      "id": "C18",
+      "platform": "google_maps",
+      "rating": 2,
+      "text": "रिसेप्शन पर बैठे स्टाफ का व्यवहार बहुत खराब था। पूछने पर ठीक से जवाब भी नहीं दिया।",
+      "has_owner_reply": false,
+      "language": "hindi",
+      "sentiment": "negative",
+      "topics": [
+        "rude staff"
+      ],
+      "severity": 3,
+      "analysis_failed": false
+    },
+    {
+      "id": "C19",
+      "platform": "google_maps",
+      "rating": 5,
+      "text": "डॉक्टर साहब बहुत अनुभवी हैं। इलाज के बाद मेरी पीठ का दर्द काफी कम हो गया। धन्यवाद!",
+      "has_owner_reply": false,
+      "language": "hindi",
+      "sentiment": "positive",
+      "topics": [
+        "experienced doctor",
+        "effective treatment"
+      ],
+      "severity": 1,
+      "analysis_failed": false
+    },
+    {
+      "id": "C20",
+      "platform": "google_maps",
+      "rating": 1,
+      "text": "समय की बर्बादी, इंतज़ार बहुत करना पड़ा।",
+      "has_owner_reply": false,
+      "language": "hindi",
+      "sentiment": "negative",
+      "topics": [
+        "slow service"
+      ],
+      "severity": 2,
+      "analysis_failed": false
+    },
+    {
+      "id": "S21",
+      "platform": "google_maps",
+      "rating": 1,
+      "text": "Worst.",
+      "has_owner_reply": false,
+      "language": "english",
+      "sentiment": "negative",
+      "topics": [],
+      "severity": 2,
+      "analysis_failed": false
+    },
+    {
+      "id": "S22",
+      "platform": "google_maps",
+      "rating": 1,
+      "text": "Haircut bilkul galat kar diya, maine jo bola uska ulta kiya. Paise bhi full le liye.",
+      "has_owner_reply": false,
+      "language": "hinglish",
+      "sentiment": "negative",
+      "topics": [
+        "poor quality work",
+        "overpriced"
+      ],
+      "severity": 2,
+      "analysis_failed": false
+    },
+    {
+      "id": "S23",
+      "platform": "google_maps",
+      "rating": 5,
+      "text": "Priya ne mera facial kiya, skin glow kar rahi hai. Staff bahut polite hai aur salon clean hai.",
+      "has_owner_reply": false,
+      "language": "hinglish",
+      "sentiment": "positive",
+      "topics": [
+        "facial",
+        "polite staff",
+        "clean salon"
+      ],
+      "severity": 1,
+      "analysis_failed": false
+    },
+    {
+      "id": "S24",
+      "platform": "google_maps",
+      "rating": 5,
+      "text": "Wah bhai wah, 2 ghante wait karaya sirf threading ke liye. Great service 👍",
+      "has_owner_reply": false,
+      "language": "hinglish",
+      "sentiment": "negative",
+      "topics": [
+        "slow service"
+      ],
+      "severity": 2,
+      "analysis_failed": false
+    },
+    {
+      "id": "S25",
+      "platform": "google_maps",
+      "rating": 2,
+      "text": "Products ke rate bahut zyada hain aur pehle bataya bhi nahi. Bill dekh ke shock lag gaya.",
+      "has_owner_reply": false,
+      "language": "hinglish",
+      "sentiment": "negative",
+      "topics": [
+        "overpriced"
+      ],
+      "severity": 2,
+      "analysis_failed": false
+    },
+    {
+      "id": "S26",
+      "platform": "google_maps",
+      "rating": 5,
+      "text": "बहुत अच्छा सैलून है। हेयर कलर बिल्कुल वैसा हुआ जैसा चाहिए था। सफाई भी बढ़िया।",
+      "has_owner_reply": false,
+      "language": "hindi",
+      "sentiment": "positive",
+      "topics": [
+        "hair color",
+        "hygiene"
+      ],
+      "severity": 1,
+      "analysis_failed": false
+    },
+    {
+      "id": "S27",
+      "platform": "google_maps",
+      "rating": 1,
+      "text": "औज़ार साफ़ नहीं थे और तौलिया गंदा था। हाइजीन का बिल्कुल ध्यान नहीं रखते।",
+      "has_owner_reply": false,
+      "language": "hindi",
+      "sentiment": "negative",
+      "topics": [
+        "hygiene"
+      ],
+      "severity": 3,
+      "analysis_failed": false
+    },
+    {
+      "id": "S28",
+      "platform": "google_maps",
+      "rating": 3,
+      "text": "ठीक-ठाक सैलून है, कुछ खास नहीं। दाम थोड़े ज्यादा हैं पर काम चल जाता है।",
+      "has_owner_reply": false,
+      "language": "hindi",
+      "sentiment": "neutral",
+      "topics": [
+        "overpriced"
+      ],
+      "severity": 1,
+      "analysis_failed": false
+    },
+    {
+      "id": "S29",
+      "platform": "google_maps",
+      "rating": 2,
+      "text": "अपॉइंटमेंट लिया था फिर भी 1 घंटा इंतज़ार कराया। स्टाफ ने कुछ बताया भी नहीं।",
+      "has_owner_reply": false,
+      "language": "hindi",
+      "sentiment": "negative",
+      "topics": [
+        "slow service",
+        "poor management"
+      ],
+      "severity": 2,
+      "analysis_failed": false
+    },
+    {
+      "id": "S30",
+      "platform": "google_maps",
+      "rating": 4,
+      "text": "मेकअप आर्टिस्ट बहुत अच्छी थी, लेकिन थोड़ा देर से शुरू किया। कुल मिलाकर ठीक रहा।",
+      "has_owner_reply": false,
+      "language": "hindi",
+      "sentiment": "positive",
+      "topics": [
+        "makeup artist",
+        "slow service"
+      ],
+      "severity": 1,
+      "analysis_failed": false
+    }
+  ],
+  "themes": {
+    "themes": [
+      {
+        "label": "Slow service",
+        "description": "Complaints regarding the time taken to receive orders or services.",
+        "main_ids": [
+          "R01",
+          "R03",
+          "R04",
+          "C13",
+          "C15",
+          "C20",
+          "S24",
+          "S29"
+        ],
+        "also_ids": [],
+        "quotes": [
+          "समय की बर्बादी, इंतज़ार बहुत करना पड़ा।",
+          "Wah bhai wah, 2 ghante wait karaya sirf threading ke liye. Great service 👍"
+        ]
+      },
+      {
+        "label": "Overpriced",
+        "description": "Mentions of services or products being too expensive for their value.",
+        "main_ids": [
+          "R07",
+          "S25"
+        ],
+        "also_ids": [
+          "R04",
+          "R05",
+          "C15",
+          "S22"
+        ],
+        "quotes": [
+          "Rate ke hisaab se portion bahut kam hai. Paisa vasool nahi laga, overpriced hai.",
+          "Khana bilkul thanda tha aur waiter ne baat bhi nahi suni. Bill bhi zyada laga diya."
+        ]
+      },
+      {
+        "label": "Rude staff",
+        "description": "Reports of unprofessional or discourteous behavior by employees.",
+        "main_ids": [
+          "C18",
+          "C11"
+        ],
+        "also_ids": [
+          "C13"
+        ],
+        "quotes": [
+          "रिसेप्शन पर बैठे स्टाफ का व्यवहार बहुत खराब था। पूछने पर ठीक से जवाब भी नहीं दिया।",
+          "Waited almost 2 hours past my appointment time. No apology, no update from the staff."
+        ]
+      },
+      {
+        "label": "Hygiene",
+        "description": "Concerns regarding the cleanliness and sanitation standards of the establishment.",
+        "main_ids": [
+          "R08",
+          "S27"
+        ],
+        "also_ids": [],
+        "quotes": [
+          "औज़ार साफ़ नहीं थे और तौलिया गंदा था। हाइजीन का बिल्कुल ध्यान नहीं रखते।",
+          "टेबल गंदी थी और बाथरूम में बहुत बदबू आ रही थी। खाना खाने का मन ही नहीं हुआ।"
+        ]
+      },
+      {
+        "label": "Doctor behaviour",
+        "description": "Feedback concerning the attitude or bedside manner of medical professionals.",
+        "main_ids": [
+          "C11"
+        ],
+        "also_ids": [
+          "C11"
+        ],
+        "quotes": [
+          "Doctor spent barely two minutes with me and prescribed medicines without examining. Receptionist was rude about the fees.",
+          "Doctor spent barely two minutes with me and prescribed medicines without examining. Receptionist was rude about the fees."
+        ]
+      },
+      {
+        "label": "Poor management",
+        "description": "Feedback related to disorganized operations or lack of professional oversight.",
+        "main_ids": [],
+        "also_ids": [
+          "R01",
+          "S29"
+        ],
+        "quotes": [
+          "अपॉइंटमेंट लिया था फिर भी 1 घंटा इंतज़ार कराया। स्टाफ ने कुछ बताया भी नहीं।",
+          "Waited 50 minutes for a table even after booking. Food arrived cold and the manager just shrugged. Never coming back."
+        ]
+      }
+    ],
+    "leftover": [
+      "R05",
+      "S22"
+    ],
+    "no_detail": [
+      "S21"
+    ],
+    "total": 16,
+    "provider": "gemini"
+  },
+  "fixes": [
+    {
+      "theme": "Slow service",
+      "title": "Set time estimates for every order",
+      "rationale": "Ask the kitchen head to estimate preparation times and have waiters share these with guests immediately when taking an order. This sets clear expectations so customers do not feel their time is being wasted while waiting for their food.",
+      "evidence_count": 8,
+      "total": 16,
+      "strength": "strong",
+      "rank": 1
+    },
+    {
+      "theme": "Overpriced",
+      "title": "Add portion sizes to the menu",
+      "rationale": "Print the weight or count of food items next to the prices on your menu. This shows customers exactly how much they are getting for their money, preventing the feeling that the portion is too small for the cost.",
+      "evidence_count": 2,
+      "total": 16,
+      "strength": "early signal",
+      "rank": 2
+    },
+    {
+      "theme": "Rude staff",
+      "title": "Train staff to provide hourly status updates",
+      "rationale": "Instruct the front-of-house staff to proactively speak to guests if their service is delayed, rather than waiting for them to ask. This prevents frustration and makes the customer feel heard and respected even during busy hours.",
+      "evidence_count": 2,
+      "total": 16,
+      "strength": "early signal",
+      "rank": 3
+    }
+  ],
+  "drafts": [
+    {
+      "review_id": "R01",
+      "text": "It is disappointing to hear that the temperature of your meal was not what you were hoping for during your visit. We care about providing a pleasant experience for every guest and feel sad that we did not meet your expectations this time. Please reach out to us by calling or messaging the number on our profile so we can talk about this further. We would truly appreciate the opportunity to connect with you directly. Team Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "gemini",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "R03",
+      "text": "It is disappointing to hear that the time taken to serve your simple bread order was not what you expected. We truly value every guest and aim to provide a smooth visit for everyone who walks through our doors. We would appreciate the chance to chat about your recent time with us. Please feel free to give us a call or send a message directly using the contact number on our business profile. \n\nTeam Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "gemini",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "R04",
+      "text": "We are glad you enjoyed your meal with us. It is disappointing to hear that the speed of our service did not meet your expectations during your visit. We would love to hear more about your recent experience and learn how we can improve. Please reach out to us directly by calling or messaging the number listed on our profile. We look forward to speaking with you soon. Best regards, Team Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "gemini",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "R05",
+      "text": "Humko ye jaan kar afsos hua ki aapka hamare yahan ka anubhav accha nahi raha. Aapne bataya ki aapko khane ka taapman sahi nahi laga, iske liye hum maafi chahte hain. Hum aapki baaton ko samajhna chahte hain aur aage behtar karna chahte hain. Aap humse seedhe baat kar sakte hain. Kripya humein hamare profile par diye gaye number par call ya message karein taaki hum aapse is vishay par vistaar mein baat kar sakein.\n\nTeam Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "gemini",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "R07",
+      "text": "Sun kar dukh hua ki aapko hamare khane ki matra hamari keemat ke hisaab se sahi nahi lagi. Hamare yahan aane par aapko jo anubhav hua, uske liye hum maafi chahte hain. Aapke vichar hamare liye bahut zaroori hain aur hum inhein samajhna chahte hain. Kripya aap humein hamari profile par diye gaye number par call ya message karke apni baat vistaar mein batayein. Hum aapse baat karne ke liye intezar karenge.\n\nTeam Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "gemini",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "R08",
+      "text": "नमस्ते, आप हमें बता रहे हैं कि आपको हमारे यहाँ बैठने की जगह और स्वच्छता के साथ अनुभव अच्छा नहीं लगा। हमें बहुत खेद है कि आप अपने अनुभव से खुश नहीं थे। हम चाहते हैं कि आप हमसे सीधे बात करें। आप हमारे प्रोफाइल पर दिए गए नंबर पर कॉल या मैसेज कर सकते हैं। आपसे बात करके हमें खुशी होगी। उम्मीद है कि आप हमसे संपर्क करेंगे। धन्यवाद।\n\nTeam Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "gemini",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "C11",
+      "text": "Sorry you left feeling the doctor’s visit was rushed and you didn’t get a proper check before the prescription. We always aim to give each patient enough time and attention. Please give us a call or message on the number shown on our profile so we can understand what happened and see how we can make things better for you. Team Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "groq",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "C13",
+      "text": "We’re truly sorry your visit didn’t go as expected, especially the long wait after your booking and the silence from our team. We understand how frustrating that can be. Please reach out to us by phone or message on the number in our profile so we can discuss what happened and make things right. We value your time and hope to serve you better next time. Team Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "groq",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "C15",
+      "text": "Namaste, aapko itna samay intezar karna pada aur aapki ummeed ke mutabik service na mil paayi, iske liye hume bahut afsos hai. Aapka feedback hume behtar karne mein madad karega. Kripya apne anubhav ko aur discuss karne ke liye humare profile par diye gaye number par call ya message karein. Hum aapki suvidha ke liye hamesha yahan hain aur aapka agla anubhav behtar hona chahenge. Team Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "groq",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "C18",
+      "text": "नमस्ते, हमें खेद है कि हमारे रिसेप्शन पर आपके साथ स्टाफ का व्यवहार आपकी उम्मीदों पर खरा नहीं उतर पाया और पूछताछ का संतोषजनक उत्तर नहीं मिल पाया। हम आपके अनुभव को बेहतर बनाना चाहते हैं, इसलिए कृपया हमारे प्रोफ़ाइल में दिया गया नंबर पर कॉल या मैसेज करके हमें बताएं। आपका सुझाव हमारे लिए महत्वपूर्ण है। Team Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "groq",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "C20",
+      "text": "हमें खेद है कि आपका हमारे यहाँ समय बर्बाद हुआ और बहुत इंतज़ार करना पड़ा। हम समझते हैं कि आपका समय कीमती है और यह अनुभव आपका मन नहीं भाया। कृपया अपने अनुभव को और बेहतर समझने के लिए सीधे हमारे प्रोफ़ाइल में दिए गए नंबर पर कॉल या मैसेज करें। आपकी बात सुनकर हम सुधार करने की कोशिश करेंगे। Team Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "groq",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "S21",
+      "text": "We’re truly sorry you left feeling that your visit was far from enjoyable. It sounds like something about your time with us did not meet what you hoped for, and we wish it had been better. Please reach out to us directly on the phone number in our profile so we can understand more about what happened and see how we can make things right. Team Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "groq",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "S22",
+      "text": "Namaste, aapka experience aisa nahi hona chahiye tha, iske liye hume bahut afsos hai. Aapke haircut ke result aur poora charge lena aapke liye nirashajanak laga. Hum aapse nivedan karte hain ki aap hume call ya message karke apni baat batayein, taki hum aapki samasya ko personally samajh saken. Hum aapki suvidha ke liye hamesha yahan hain. Team Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "groq",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "S24",
+      "text": "Namaste! Aapka feedback padh ke hume afsos hua ki aapko threading ke liye do ghante intezar karna pada. Aise lambi wait aapke liye theek nahi hai aur hum aapki baat ko seriously lete hain. Aap agar chahein to seedha humare number par call ya message karke apni situation share kar sakte hain, taki hum aapke liye behtar samadhan de sake. Team Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "groq",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "S25",
+      "text": "Namaste, aapko humare menu ke daam ke baare mein pehle se jaankari nahi mil paayi, isse aapko bill dekh kar asuvidha hui, iske liye hume afsos hai. Aapke experience ko behtar samajhne ke liye kripya hume apne contact number par ya profile mein diye number par message karein, taki hum personally baat kar saken aur aapki sujhav ko dhyan me rakhenge. Team Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "groq",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "S27",
+      "text": "हमारी सेवा में असंतोष के लिए खेद है, आपने बताया कि बर्तन और तौलिए ठीक से साफ नहीं थे। यह सुनकर हमें बहुत अफ़सोस हुआ। कृपया इस बात को हमारे साथ सीधे चर्चा करने के लिए प्रोफ़ाइल में दिया गया नंबर कॉल करें या मैसेज भेजें। आपकी प्रतिक्रिया को हम गंभीरता से लेंगे और सुधार पर काम करेंगे। Team Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "groq",
+      "prompt_version": "v1"
+    },
+    {
+      "review_id": "S29",
+      "text": "नमस्ते, आपका अपॉइंटमेंट लेकर भी देर से बैठाना और जानकारी न देना सुनकर हमें खेद है। हम समझते हैं कि आपका समय मूल्यवान है और ऐसी स्थिति में निराशा होना स्वाभाविक है। कृपया हमें सीधे कॉल या मैसेज करें, जैसा नंबर प्रोफ़ाइल में दिया है, ताकि हम आपकी बात सुन सकें और आगे बेहतर अनुभव दे सकें। धन्यवाद। Team Test Outlet",
+      "guardrail_flags": [],
+      "attempts": 1,
+      "provider": "groq",
+      "prompt_version": "v1"
+    }
+  ],
+  "usage": {
+    "calls": 49,
+    "tokens_in": 29104,
+    "tokens_out": 10510,
+    "by_provider": {
+      "gemini": 38,
+      "groq": 11
+    }
+  }
+}
