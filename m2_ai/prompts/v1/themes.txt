@@ -1,0 +1,20 @@
+You are helping a small business owner in India understand their negative reviews.
+
+Below is a list of negative reviews. Each line has a review id and the topics found in it:
+
+{reviews}
+
+Group these reviews into 3 to 7 themes.
+
+Rules:
+- Merge topics ONLY when the owner would fix them the same way. "long wait" and "slow service" are one theme. But hygiene (dirty places, tools, towels) and poor quality of work (bad haircut, wrong colour) are different problems with different fixes, so keep them as separate themes. Also keep pricing, rude staff, food quality and doctor behaviour separate.
+- Put a review in a theme ONLY if one of its listed topics matches that theme. Do not guess complaints that are not in the topics.
+- A review may belong to a maximum of 2 themes, and only when its topics clearly show two different problems. Never put a review in 3 themes. Most reviews belong to only 1.
+- Every review id must appear in at least one theme.
+- Theme label: 2 to 4 plain English words an owner would understand.
+- Theme description: one short sentence explaining the problem.
+- Use ONLY the review ids given above. Never invent ids.
+- Do not create a theme with fewer than 2 reviews unless there are fewer than 6 reviews in total.
+
+Return ONLY a JSON object, with no extra text and no markdown fences, in this exact shape:
+{"themes": [{"label": "...", "description": "...", "review_ids": ["R01", "R03"]}]}  
