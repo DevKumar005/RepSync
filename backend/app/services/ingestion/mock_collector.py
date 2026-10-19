@@ -7,7 +7,6 @@ import httpx
 from backend.app.models.schemas import CollectionResult, ReviewIn, TinyFishCallIn
 
 API_KEY = os.getenv("TINYFISH_API_KEY", "")
-MOCK_TINYFISH = os.getenv("MOCK_TINYFISH", "0") == "1" or not API_KEY or "your-key-here" in API_KEY
 
 
 def compute_dedup_hash(platform: str, author: str, date_str: str, text: str) -> str:
@@ -58,8 +57,8 @@ FALLBACK_REVIEWS = {
 }
 
 
-class MultiPlatformCollector:
-    """Orchestrates per-platform collection using TinyFish API or mocked data."""
+class MockMultiPlatformCollector:
+    """Mock TinyFish collector providing instant, zero-cost deterministic review data."""
 
     def __init__(self, platform_key: str, display_name: str) -> None:
         self.platform = platform_key
@@ -74,8 +73,6 @@ class MultiPlatformCollector:
         emit_callback: Optional[Callable] = None,
         skip_agent: bool = False,
     ) -> CollectionResult:
-
-        t0 = time.time()
         tinyfish_calls: List[TinyFishCallIn] = []
         reviews: List[ReviewIn] = []
         agent_steps_used = 0
@@ -86,10 +83,10 @@ class MultiPlatformCollector:
                 event_type="source_status",
                 source=self.platform,
                 status="running",
-                message=f"Starting review collection for {self.display_name}...",
+                message=f"[MOCK] Starting review collection for {self.display_name}...",
             )
 
-        # 1. Search Stage
+        # 1. Mock Search Stage
         query = f"{business_name} {city} {self.display_name} reviews"
         url = target_url or f"https://www.{self.platform}.com/{business_name.lower().replace(' ', '-')}"
 
@@ -98,7 +95,7 @@ class MultiPlatformCollector:
             endpoint="search",
             input={"query": query},
             status="success",
-            duration_ms=250,
+            duration_ms=150,
             items_returned=1,
             steps_used=0,
             cached=True,
@@ -110,39 +107,35 @@ class MultiPlatformCollector:
                 event_type="tinyfish_call",
                 source=self.platform,
                 status="success",
-                message=f"Search: Found {self.display_name} URL",
+                message=f"[MOCK] Search: Found {self.display_name} URL",
             )
 
-        # 2. Live TinyFish Call if enabled and not mocking
-        if not MOCK_TINYFISH and API_KEY:
-            try:
-                async with httpx.AsyncClient(timeout=30.0) as client:
-                    f_res = await client.post(
-                        "https://api.fetch.tinyfish.ai",
-                        headers={"X-API-Key": API_KEY, "Content-Type": "application/json"},
-                        json={"urls": [url], "format": "markdown"},
-                    )
-                    if f_res.status_code == 200:
-                        fetch_call = TinyFishCallIn(
-                            platform=self.platform,
-                            endpoint="fetch",
-                            input={"url": url},
-                            status="success",
-                            duration_ms=int((time.time() - t0) * 1000),
-                            items_returned=5,
-                            steps_used=0,
-                            cached=False,
-                        )
-                        tinyfish_calls.append(fetch_call)
-            except Exception as e:
-                # Log fetch error, proceed to fallback/mock
-                print(f"TinyFish Fetch live error on {self.platform}: {e}")
+        # 2. Mock Fetch Stage
+        fetch_call = TinyFishCallIn(
+            platform=self.platform,
+            endpoint="fetch",
+            input={"url": url},
+            status="success",
+            duration_ms=200,
+            items_returned=5,
+            steps_used=0,
+            cached=True,
+        )
+        tinyfish_calls.append(fetch_call)
 
-        # 3. Assemble normalized reviews
+        if emit_callback:
+            await emit_callback(
+                event_type="tinyfish_call",
+                source=self.platform,
+                status="success",
+                message=f"[MOCK] Fetch: Extracted reviews from {self.display_name}",
+            )
+
+        # 3. Assemble sample reviews
         cat_reviews = FALLBACK_REVIEWS.get(category, FALLBACK_REVIEWS["restaurant"])
         platform_samples = cat_reviews.get(self.platform, cat_reviews.get("google_maps", []))
 
-        # Add simulated or live agent call for Google Maps if applicable and within budget (M3-API-8)
+        # Mock agent call for Google Maps if applicable
         if self.platform == "google_maps":
             if skip_agent:
                 if emit_callback:
@@ -150,7 +143,7 @@ class MultiPlatformCollector:
                         event_type="tinyfish_call",
                         source=self.platform,
                         status="cached",
-                        message="Agent daily step budget reached; loaded reviews from 24h cache",
+                        message="[MOCK] Agent daily step budget reached; loaded reviews from 24h cache",
                     )
                 agent_steps_used = 0
             else:
@@ -160,7 +153,7 @@ class MultiPlatformCollector:
                     endpoint="agent",
                     input={"goal": f"Expand and extract all reviews for {business_name}"},
                     status="success",
-                    duration_ms=1200,
+                    duration_ms=800,
                     items_returned=len(platform_samples),
                     steps_used=2,
                     cached=True,
@@ -171,9 +164,8 @@ class MultiPlatformCollector:
                         event_type="tinyfish_call",
                         source=self.platform,
                         status="success",
-                        message=f"Agent: Extracted {len(platform_samples)} reviews with 2 steps",
+                        message=f"[MOCK] Agent: Extracted {len(platform_samples)} reviews with 2 steps",
                     )
-
 
         now = datetime.now(timezone.utc)
         for idx, (author, rating, text, sentiment, severity, has_reply) in enumerate(platform_samples):
@@ -201,7 +193,7 @@ class MultiPlatformCollector:
                 event_type="source_status",
                 source=self.platform,
                 status=status_result,
-                message=f"{self.display_name}: Collected {len(reviews)} reviews",
+                message=f"[MOCK] {self.display_name}: Collected {len(reviews)} reviews",
             )
 
         return CollectionResult(
@@ -214,5 +206,5 @@ class MultiPlatformCollector:
         )
 
 
-def get_collector(platform_key: str, display_name: str) -> MultiPlatformCollector:
-    return MultiPlatformCollector(platform_key, display_name)
+def get_mock_collector(platform_key: str, display_name: str) -> MockMultiPlatformCollector:
+    return MockMultiPlatformCollector(platform_key, display_name)

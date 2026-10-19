@@ -20,8 +20,34 @@ from backend.app.models.entities import (
 )
 from backend.app.services.analysis.analyzer import analyze_themes_and_fixes, classify_sentiment
 from backend.app.services.events import broadcaster
-from backend.app.services.ingestion.collector import get_collector
 from backend.app.services.replies.generator import generate_reply_draft
+
+
+def get_collector(platform_key: str, display_name: str):
+    """
+    Runtime Ingestion Bridge:
+    - If MOCK_TINYFISH=1 on Render/locally (or API key is missing):
+      Routes to mock_collector.py (since Dev's collector.py has no mock implementation).
+    - If MOCK_TINYFISH=0 and TINYFISH_API_KEY is provided:
+      Routes to Dev's live collector.py on main.
+    """
+    mock_env = os.getenv("MOCK_TINYFISH", "1").lower().strip()
+    api_key = os.getenv("TINYFISH_API_KEY", "")
+
+    # Live Mode
+    if mock_env in {"0", "false", "no"} and api_key and "your-key-here" not in api_key:
+        try:
+            from backend.app.services.ingestion.collector import get_collector as get_live_collector
+            return get_live_collector(platform_key, display_name)
+        except Exception as e:
+            print(f"Notice: Live collector unavailable ({e}), falling back to mock_collector.")
+            from backend.app.services.ingestion.mock_collector import get_mock_collector
+            return get_mock_collector(platform_key, display_name)
+
+    # Mock Mode (Render MOCK_TINYFISH=1 or local dev/testing)
+    from backend.app.services.ingestion.mock_collector import get_mock_collector
+    return get_mock_collector(platform_key, display_name)
+
 
 # Concurrency & Active Job Registry
 _active_jobs: Dict[str, str] = {}  # outlet_id -> job_id
@@ -133,24 +159,38 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
 
                     # Persist TinyFish calls
                     for tf in result.tinyfish_calls:
+                        input_dict = tf.input if isinstance(tf.input, dict) else {"raw": str(tf.input or "")}
                         call_row = TinyFishCall(
                             outlet_id=outlet_id,
-                            platform=tf.platform,
+                            platform=tf.platform or p.key,
                             endpoint=tf.endpoint,
-                            input=tf.input or {},
-                            status=tf.status,
-                            duration_ms=tf.duration_ms,
-                            items_returned=tf.items_returned,
-                            steps_used=tf.steps_used,
-                            cached=tf.cached,
+                            input=input_dict,
+                            status=tf.status or "success",
+                            duration_ms=tf.duration_ms or 0,
+                            items_returned=tf.items_returned or 0,
+                            steps_used=tf.steps_used or 0,
+                            cached=bool(tf.cached),
                         )
                         session.add(call_row)
 
                     # Persist Reviews with Deduplication (M3-MP-6)
                     new_reviews_count = 0
                     for rev_in in result.reviews:
-                        date_str = rev_in.posted_at.strftime("%Y-%m-%d") if rev_in.posted_at else "unknown"
-                        dedup_hash = compute_dedup_hash(p.key, rev_in.author or "", date_str, rev_in.text or "")
+                        # Normalize posted_at if string or datetime
+                        if isinstance(rev_in.posted_at, str):
+                            try:
+                                posted_dt = datetime.fromisoformat(rev_in.posted_at.replace("Z", "+00:00"))
+                            except Exception:
+                                posted_dt = datetime.now(timezone.utc)
+                        elif isinstance(rev_in.posted_at, datetime):
+                            posted_dt = rev_in.posted_at
+                        else:
+                            posted_dt = datetime.now(timezone.utc)
+
+                        date_str = posted_dt.strftime("%Y-%m-%d")
+                        author_str = (rev_in.author or "Anonymous").strip()
+                        text_str = (rev_in.text or "").strip()
+                        dedup_hash = compute_dedup_hash(p.key, author_str, date_str, text_str)
 
                         existing_rev = session.exec(
                             select(Review).where(
@@ -160,20 +200,25 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
                         ).first()
 
                         if not existing_rev:
-                            sentiment, severity, mismatch = classify_sentiment(
-                                rev_in.rating or 3.0, rev_in.text or ""
-                            )
+                            sentiment = rev_in.sentiment
+                            severity = rev_in.severity
+                            mismatch = rev_in.rating_text_mismatch
+                            if not sentiment:
+                                sentiment, severity, mismatch = classify_sentiment(
+                                    rev_in.rating or 3.0, text_str
+                                )
                             rev = Review(
                                 outlet_id=outlet_id,
                                 source_id=src.id,
                                 platform=p.key,
-                                author=rev_in.author,
-                                rating=rev_in.rating,
-                                text=rev_in.text,
-                                language=rev_in.language,
-                                posted_at=rev_in.posted_at or datetime.now(timezone.utc),
-                                url=rev_in.url,
-                                has_owner_reply=rev_in.has_owner_reply,
+                                author=author_str,
+                                rating=float(rev_in.rating or 3.0),
+                                text=text_str,
+                                language=rev_in.language or "en",
+                                posted_at=posted_dt,
+                                url=rev_in.url or src.url,
+                                has_owner_reply=bool(rev_in.has_owner_reply or rev_in.owner_reply_text),
+                                owner_reply_text=rev_in.owner_reply_text,
                                 sentiment=sentiment,
                                 severity=severity,
                                 rating_text_mismatch=mismatch,
@@ -181,6 +226,7 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
                             )
                             session.add(rev)
                             new_reviews_count += 1
+
 
                     src.status = result.status
                     src.review_count = src.review_count + new_reviews_count

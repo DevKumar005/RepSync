@@ -12,7 +12,12 @@ from backend.app.models.entities import (
     Source,
 )
 from backend.app.seed import seed_demo_outlets, seed_demo_user, seed_platforms
-from backend.app.services.ingestion.collector import compute_dedup_hash
+try:
+    from backend.app.services.ingestion.collector import compute_dedup_hash
+except ImportError:
+    from backend.app.services.ingestion.mock_collector import compute_dedup_hash
+
+
 from backend.app.services.pipeline import run_sync_pipeline
 
 # Isolated in-memory SQLite database with StaticPool so all connections share the memory DB
