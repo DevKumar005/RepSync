@@ -1,9 +1,7 @@
 import hashlib
 import os
-import time
 from datetime import datetime, timedelta, timezone
 from typing import Callable, List, Optional
-import httpx
 from backend.app.models.schemas import CollectionResult, ReviewIn, TinyFishCallIn
 
 API_KEY = os.getenv("TINYFISH_API_KEY", "")
