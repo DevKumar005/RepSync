@@ -126,10 +126,11 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
                 select(TinyFishCall).where(
                     TinyFishCall.endpoint == "agent",
                     TinyFishCall.created_at >= today_midnight,
+                    TinyFishCall.cached == False,  # only count real non-cached agent runs
                 )
             ).all()
             total_steps_today = sum(c.steps_used for c in calls_today)
-            daily_step_budget = int(os.getenv("AGENT_DAILY_STEP_BUDGET", "50"))
+            daily_step_budget = int(os.getenv("AGENT_DAILY_STEP_BUDGET", "500"))
             skip_agent_live = total_steps_today >= daily_step_budget
 
             async def collect_for_platform(p: Platform) -> None:

@@ -38,9 +38,10 @@ def _extract_with_groq(markdown_text: str, platform: str) -> list[dict]:
             f"Do NOT invent or hallucinate reviews. If no individual reviews are present, return {{\"reviews\": []}}.\n\n"
             f"--- PAGE MARKDOWN ---\n{markdown_text[:12000]}"
         )
+        model = os.getenv("GROQ_MODEL") or "openai/gpt-oss-120b"
         chat = client.chat.completions.create(
             messages=[{"role": "user", "content": prompt}],
-            model="llama-3.3-70b-versatile",
+            model=model,
             response_format={"type": "json_object"},
             temperature=0.0,
         )
@@ -73,8 +74,9 @@ def extract_reviews_from_markdown(markdown_text: str, platform: str) -> list[dic
                 f"return an empty list `[]`.\n\n"
                 f"--- PAGE MARKDOWN ---\n{markdown_text[:15000]}"
             )
+            gemini_model = os.getenv("GEMINI_MODEL") or "gemini-2.5-flash-lite"
             response = client.models.generate_content(
-                model="gemini-3.8-flash",
+                model=gemini_model,
                 contents=prompt,
                 config=types.GenerateContentConfig(
                     response_mime_type="application/json",

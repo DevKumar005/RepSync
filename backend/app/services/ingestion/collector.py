@@ -90,7 +90,15 @@ class MultiPlatformCollector:
             )
 
         # 1. Search Stage (Discovery)
-        if not resolved_url or "http" not in resolved_url:
+        is_placeholder = (
+            not resolved_url
+            or "http" not in resolved_url
+            or f"www.{self.platform}.com" in resolved_url
+            or (self.platform == "google_maps" and "/maps/search/" in resolved_url)
+            or (self.platform == "zomato" and "/ncr/" not in resolved_url and "/reviews" not in resolved_url)
+            or (self.platform == "tripadvisor" and "Restaurant_Review" not in resolved_url)
+        )
+        if is_placeholder:
             tmpl = PLATFORM_SEARCH_TEMPLATES.get(category, {}).get(
                 self.platform, f"{{name}} {{city}} {self.platform} reviews"
             )
