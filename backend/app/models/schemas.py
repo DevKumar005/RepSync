@@ -228,3 +228,10 @@ class TokenResponse(BaseModel):
     user_id: str
     email: str
     name: str
+
+
+# --- M1 Ingestion Contract Aliases ---
+NormalizedReview = ReviewIn
+TinyFishCallLog = TinyFishCallIn
+SourceSyncStatus = CollectionResult
+

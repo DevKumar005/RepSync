@@ -314,3 +314,8 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
         )
     finally:
         _active_jobs.pop(outlet_id, None)
+
+
+# Bridge alias for M1 ingestion contract
+stream_outlet_sync = run_sync_pipeline
+
