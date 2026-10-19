@@ -77,17 +77,17 @@ async def event_generator(outlet_id: str) -> AsyncGenerator[str, None]:
             "message": f"Connected to sync stream for outlet {outlet_id}",
             "ts": datetime.now(timezone.utc).isoformat(),
         }
-        yield f"data: {json.dumps(init_payload)}\n\n"
+        yield json.dumps(init_payload)
 
         while True:
             # Wait for event or ping keepalive every 15s
             try:
                 event = await asyncio.wait_for(queue.get(), timeout=15.0)
-                yield f"data: {json.dumps(event)}\n\n"
+                yield json.dumps(event)
                 # Stream remains open with heartbeats so browser never sees socket disconnect
             except asyncio.TimeoutError:
                 # Keep-alive heartbeat
                 ping = {"type": "ping", "ts": datetime.now(timezone.utc).isoformat()}
-                yield f"data: {json.dumps(ping)}\n\n"
+                yield json.dumps(ping)
     finally:
         broadcaster.unsubscribe(outlet_id, queue)
