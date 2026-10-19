@@ -359,7 +359,14 @@ async def sync_stream(id: str, session: Session = Depends(get_session)):
     if not outlet:
         raise HTTPException(status_code=404, detail="Outlet not found")
 
-    return EventSourceResponse(event_generator(id))
+    return EventSourceResponse(
+        event_generator(id),
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 # --- Reviews, Sources & Filters (FR-2.5, FR-6, M3-MP-7) ---

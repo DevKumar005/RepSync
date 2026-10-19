@@ -30,8 +30,19 @@ logger = logging.getLogger("repsync.api")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: ensure tables exist
+    # Startup: ensure tables exist and platforms are seeded (M3-DB-1, M3-DB-4)
     init_db()
+    try:
+        from sqlmodel import Session
+        from backend.app.db import engine
+        from backend.app.seed import seed_platforms, seed_demo_outlets, seed_demo_user
+        with Session(engine) as session:
+            seed_platforms(session)
+            user = seed_demo_user(session)
+            seed_demo_outlets(session, user)
+        logger.info("Database initialized and seeded successfully on startup.")
+    except Exception as e:
+        logger.warning(f"Auto-seed during startup notice: {e}")
     yield
 
 

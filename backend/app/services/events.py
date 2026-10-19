@@ -69,6 +69,7 @@ async def event_generator(outlet_id: str) -> AsyncGenerator[str, None]:
                 event = await asyncio.wait_for(queue.get(), timeout=15.0)
                 yield f"data: {json.dumps(event)}\n\n"
                 if event.get("type") == "done":
+                    await asyncio.sleep(0.5)
                     break
             except asyncio.TimeoutError:
                 # Keep-alive heartbeat
