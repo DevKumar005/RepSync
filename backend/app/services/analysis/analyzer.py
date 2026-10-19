@@ -36,13 +36,11 @@ def classify_sentiment(rating: float, text: str) -> Tuple[str, int, bool]:
     return sentiment, severity, mismatch
 
 
-def analyze_themes_and_fixes(
+def mock_analyze_themes_and_fixes(
     reviews: List[Review],
     category: str,
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    """
-    Groups reviews into actionable themes and top 3 operational fix recommendations.
-    """
+    """Mock rule-based theme clustering and fix generator for testing and offline demo."""
     negative_reviews = [r for r in reviews if r.sentiment == "negative"]
     positive_reviews = [r for r in reviews if r.sentiment == "positive"]
 
@@ -160,3 +158,57 @@ def analyze_themes_and_fixes(
         ]
 
     return themes, fixes
+
+
+def analyze_themes_and_fixes(
+    reviews: List[Review],
+    category: str,
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """
+    Dynamic Theme & Fix Recommendation Bridge:
+    - If MOCK_LLM=1 (or offline/testing): Uses deterministic mock themes and fixes.
+    - If MOCK_LLM=0 and API key is configured: Bridges to Param's m2_ai.analysis engine.
+    """
+    mock_flag = os.getenv("MOCK_LLM", "1").lower().strip()
+    api_key = os.getenv("GEMINI_API_KEY", "") or os.getenv("GROQ_API_KEY", "")
+
+    # Live Mode: Call Param's m2_ai module when available on main
+    if mock_flag in {"0", "false", "no"} and api_key and "your-" not in api_key:
+        try:
+            from m2_ai.llm_client import LLMClient
+            from m2_ai.analysis import build_themes, suggest_fixes
+
+            client = LLMClient()
+            negatives = [
+                {"id": r.id, "text": r.text or "", "topics": r.text or ""}
+                for r in reviews if r.sentiment == "negative"
+            ]
+            if len(negatives) >= 2:
+                theme_res = build_themes(client, negatives)
+                themes_out: List[Dict[str, Any]] = []
+                for t in theme_res.get("themes", []):
+                    themes_out.append({
+                        "label": t.get("label", "Service Feedback"),
+                        "sentiment": "negative",
+                        "description": t.get("description", ""),
+                        "review_ids": t.get("main_ids", []) + t.get("also_ids", []),
+                    })
+
+                fixes_res = suggest_fixes(client, theme_res, business_type=category)
+                fixes_out: List[Dict[str, Any]] = []
+                for f in fixes_res:
+                    fixes_out.append({
+                        "rank": f.get("rank", 1),
+                        "title": f.get("title", ""),
+                        "rationale": f.get("rationale", ""),
+                        "evidence_count": f.get("evidence_count", 1),
+                    })
+
+                if themes_out and fixes_out:
+                    return themes_out, fixes_out
+        except Exception as exc:
+            print(f"Notice: Live m2_ai analysis unavailable or failed ({exc}), falling back to mock themes.")
+
+    # Mock Mode fallback
+    return mock_analyze_themes_and_fixes(reviews, category)
+

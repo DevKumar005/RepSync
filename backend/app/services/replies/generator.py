@@ -1,3 +1,4 @@
+import os
 from typing import List, Optional, Tuple
 from backend.app.models.entities import Review, ToneProfile
 
@@ -23,14 +24,12 @@ def check_guardrails(reply_text: str, do_not_say: List[str]) -> List[str]:
     return flags
 
 
-def generate_reply_draft(
+def mock_generate_reply_draft(
     review: Review,
     tone: Optional[ToneProfile] = None,
     custom_instruction: Optional[str] = None,
 ) -> Tuple[str, List[str]]:
-    """
-    Generates a professional reply tailored to tone profile and validates against guardrails.
-    """
+    """Deterministic mock reply generator for test isolation and offline demo."""
     author = review.author or "valued customer"
     style = tone.style if tone else "warm"
     do_not_say = tone.do_not_say if tone else []
@@ -70,3 +69,56 @@ def generate_reply_draft(
     flags = check_guardrails(base_reply, do_not_say)
 
     return base_reply, flags
+
+
+def generate_reply_draft(
+    review: Review,
+    tone: Optional[ToneProfile] = None,
+    custom_instruction: Optional[str] = None,
+    previous: Optional[str] = None,
+) -> Tuple[str, List[str]]:
+    """
+    Dynamic Reply Drafting Bridge:
+    - If MOCK_LLM=1 (or offline/testing): Uses deterministic mock reply templates.
+    - If MOCK_LLM=0 and API key is set: Bridges to Param's m2_ai.replies engine with multi-lingual guardrails.
+    """
+    mock_flag = os.getenv("MOCK_LLM", "1").lower().strip()
+    api_key = os.getenv("GEMINI_API_KEY", "") or os.getenv("GROQ_API_KEY", "")
+
+    # Live Mode: Call Param's m2_ai module when available on main
+    if mock_flag in {"0", "false", "no"} and api_key and "your-" not in api_key:
+        try:
+            from m2_ai.llm_client import LLMClient
+            from m2_ai.replies import draft_reply
+
+            client = LLMClient()
+            review_dict = {
+                "text": review.text or "",
+                "rating": float(review.rating or 3.0),
+                "platform": review.platform or "Google Maps",
+                "language": review.language or "english",
+            }
+            outlet_dict = {
+                "name": "Local Business",
+                "category": "restaurant",
+            }
+            tone_dict = {
+                "style": tone.style if tone else "warm",
+                "do_not_say": tone.do_not_say if tone else [],
+                "samples": tone.samples if tone else [],
+            }
+            res = draft_reply(
+                client=client,
+                review=review_dict,
+                outlet=outlet_dict,
+                tone=tone_dict,
+                instruction=custom_instruction,
+                previous=previous,
+            )
+            return res.get("text", ""), res.get("guardrail_flags", [])
+        except Exception as exc:
+            print(f"Notice: Live m2_ai reply draft unavailable or failed ({exc}), falling back to mock reply.")
+
+    # Mock Mode fallback
+    return mock_generate_reply_draft(review, tone, custom_instruction)
+

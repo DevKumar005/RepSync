@@ -520,7 +520,8 @@ def regenerate_draft(
     tone = session.get(ToneProfile, outlet.tone_profile_id) if outlet and outlet.tone_profile_id else None
 
     draft = session.exec(select(ReplyDraft).where(ReplyDraft.review_id == id)).first()
-    new_text, guardrails = generate_reply_draft(review, tone, req.instruction)
+    new_text, guardrails = generate_reply_draft(review, tone, req.instruction, previous=draft.text if draft else None)
+
 
     if not draft:
         draft = ReplyDraft(
