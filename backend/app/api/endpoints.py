@@ -197,16 +197,18 @@ def create_outlet(
 
     # Automatically initialize source rows for enabled platforms matching category
     platforms = session.exec(select(Platform).where(Platform.enabled == True)).all()  # noqa: E712
-    sources = []
-    for p in platforms:
-        if outlet.category in p.categories:
-            src = Source(
-                outlet_id=outlet.id,
-                platform=p.key,
-                url=f"https://www.{p.key}.com/{outlet.name.lower().replace(' ', '-')}",
-                status="pending",
-            )
-            session.add(src)
+    target_plats = [p for p in platforms if outlet.category in (p.categories or [])]
+    if not target_plats:
+        target_plats = [p for p in platforms if p.key in {"google_maps", "justdial"}] or platforms
+
+    for p in target_plats:
+        src = Source(
+            outlet_id=outlet.id,
+            platform=p.key,
+            url=f"https://www.{p.key}.com/{outlet.name.lower().replace(' ', '-')}",
+            status="pending",
+        )
+        session.add(src)
     session.commit()
 
     all_sources = session.exec(select(Source).where(Source.outlet_id == outlet.id)).all()

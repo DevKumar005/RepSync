@@ -66,8 +66,13 @@ def seed_platforms(session: Session) -> None:
         existing = session.exec(select(Platform).where(Platform.key == p["key"])).first()
         if not existing:
             session.add(Platform(**p))
+        else:
+            existing.categories = p["categories"]
+            existing.display_name = p["display_name"]
+            existing.enabled = p["enabled"]
+            session.add(existing)
     session.commit()
-    print("Platforms seeded successfully.")
+    print("Platforms seeded and updated successfully.")
 
 
 def seed_demo_user(session: Session) -> AppUser:

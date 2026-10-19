@@ -88,7 +88,9 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
 
             # Discover enabled platforms for this outlet category
             all_platforms = session.exec(select(Platform).where(Platform.enabled == True)).all()  # noqa: E712
-            target_platforms = [p for p in all_platforms if outlet.category in p.categories]
+            target_platforms = [p for p in all_platforms if outlet.category in (p.categories or [])]
+            if not target_platforms:
+                target_platforms = [p for p in all_platforms if p.key in {"google_maps", "justdial"}] or all_platforms
 
             # Ensure Source rows exist
             sources_map: Dict[str, Source] = {}
