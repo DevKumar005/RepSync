@@ -84,10 +84,7 @@ async def event_generator(outlet_id: str) -> AsyncGenerator[str, None]:
             try:
                 event = await asyncio.wait_for(queue.get(), timeout=15.0)
                 yield f"data: {json.dumps(event)}\n\n"
-                if event.get("type") == "done":
-                    # Allow client 1.5s to receive the done event, call es.close(), and invalidate queries
-                    await asyncio.sleep(1.5)
-                    break
+                # Stream remains open with heartbeats so browser never sees socket disconnect
             except asyncio.TimeoutError:
                 # Keep-alive heartbeat
                 ping = {"type": "ping", "ts": datetime.now(timezone.utc).isoformat()}
