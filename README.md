@@ -131,6 +131,6 @@ python scripts/smoke.py http://localhost:8000
 | # | Member | Domain |
 |:---:|:---|:---|
 | 1 | **[Dev](https://github.com/DevKumar005)** | Team Lead & TinyFish Data Engineer |
-| 2 | **[Param](https://github.com/)** | AI/LLM Engineer & Business Analyst |
-| 3 | **[Rohit](https://github.com/rohitpal98222)** | Backend, Database & DevOps Engineer |
-| 4 | **[Om](https://github.com/)** | Frontend, UI/UX & Product Storyteller |
+| 2 | **[Param](https://github.com/paramsharma01)** | AI/LLM Engineer & Business Analyst |
+| 3 | **[Rohit](https://github.com/Rohit-pal01)** | Backend, Database & DevOps Engineer |
+| 4 | **[Om](https://github.com/ombhadri)** | Frontend, UI/UX & Product Storyteller |
