@@ -1,0 +1,37 @@
+name: RepSync CI
+
+on:
+  push:
+    branches: [ "main", "rohit", "dev", "param", "om" ]
+  pull_request:
+    branches: [ "main", "rohit" ]
+
+jobs:
+  backend-qa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Run Ruff Lint
+        run: |
+          ruff check backend
+
+      - name: Run Pytest (with Mocked External Services)
+        env:
+          DATABASE_URL: sqlite:///./test.db
+          MOCK_TINYFISH: "1"
+          MOCK_LLM: "1"
+          JWT_SECRET: "ci-secret-token"
+        run: |
+          pytest backend/tests -v

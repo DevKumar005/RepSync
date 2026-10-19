@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import AsyncGenerator, Optional
 
-from app.services.ingestion.collector import collect, discover_outlet_platforms
+from app.services.ingestion.collector import collect
 from app.services.ingestion.schemas import (
     CandidatePlatformUrl,
     CollectionResult,

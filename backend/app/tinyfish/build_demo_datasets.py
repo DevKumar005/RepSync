@@ -11,9 +11,9 @@ from app.tinyfish.spike import check_wallet
 
 
 async def build_one_demo(filename: str, name: str, city: str, category: str):
-    print(f"\n=======================================================")
+    print("\n=======================================================")
     print(f"Building Demo Dataset: {name} ({city}) [{category.upper()}]")
-    print(f"=======================================================")
+    print("=======================================================")
 
     final_payload = None
     async for sse_event in stream_outlet_sync(

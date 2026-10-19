@@ -1,25 +1,75 @@
-# RepSync
+# RepSync: Local Business Reputation Manager
 
 > **Turn messy multi-platform customer reviews into actionable operational fixes and tone-aware, owner-approved replies in minutes.**
 
+[![RepSync CI](https://github.com/DevKumar005/RepSync/actions/workflows/ci.yml/badge.svg)](https://github.com/DevKumar005/RepSync/actions)
+
 Built for **KRITICAL HACKS '26** (AI/ML Track) · Powered by **TinyFish Web AI** & **Gemini 2.5/3.8 Flash**.
 
----
-
-## The Problem
-Small local business owners (restaurants, clinics, salons) lose customers due to negative reviews scattered across Zomato, Practo, EazyDiner, and Lybrate. Owners lack the time to monitor fragmented websites, cannot afford enterprise tools ($100+/mo), and struggle to draft polite, contextual replies that protect their brand.
-
-## What RepSync Does
-* **Multi-Platform Ingestion:** Enter business name and city to aggregate reviews across public platforms without API keys.
-* **Smart Themes & Sentiment:** Clusters complaints into actionable operational buckets (e.g., *wait time, billing, hygiene, staff behavior*) with exact quotes and counts.
-* **Top 3 Fixes:** Recommends prioritized operational improvements backed by review evidence counts.
-* **Tone-Aware AI Reply Drafts:** Generates contextual replies matching the customer's language (English/Hindi/Hinglish) with strict safety guardrails (no liability, no medical advice).
-* **Owner-in-the-Loop:** Explicit approve, edit, or reject workflow before anything is posted.
-* **Live TinyFish Activity Log:** Real-time visibility into every web automation step via Server-Sent Events (SSE).
+RepSync synchronizes and unifies fragmented customer review streams across multiple platforms (Google Maps, Zomato, JustDial, Practo, Tripadvisor) into a single actionable dashboard. It provides automated sentiment analysis, operational fix recommendations, and an approval-governed AI reply workflow for business owners.
 
 ---
 
-## Unit Economics & Business Model
+## 🌐 Live Production Deployment
+
+* **Live API Base URL:** `https://repsync-backend.onrender.com`
+* **Interactive Swagger UI:** [https://repsync-backend.onrender.com/docs](https://repsync-backend.onrender.com/docs)
+* **Health Check Endpoint:** [https://repsync-backend.onrender.com/health](https://repsync-backend.onrender.com/health)
+* **Supabase Database:** Hosted on AWS Singapore (`aws-0-ap-southeast-1.pooler.supabase.com:6543`) with direct transaction pooling.
+
+---
+
+## ⚡ Quickstart in 5 Commands
+
+```bash
+# 1. Setup virtual environment & install dependencies
+make setup
+
+# 2. Configure environment keys
+cp .env.example .env
+
+# 3. Create database tables
+make migrate
+
+# 4. Seed platform registry, demo user, and demo datasets
+make seed
+
+# 5. Start development API server
+make dev
+```
+Open **[http://localhost:8000/docs](http://localhost:8000/docs)** to inspect the interactive OpenAPI documentation.
+
+---
+
+## 🛠️ Supported Platforms Registry
+
+| Platform Key | Display Name | Applicable Categories | Mode |
+|---|---|---|---|
+| `google_maps` | Google Maps | Restaurant, Clinic, Salon | Search, Fetch & Web Agent |
+| `zomato` | Zomato | Restaurant | Search & Fetch |
+| `justdial` | JustDial | Salon, Restaurant, Clinic | Search, Fetch & Agent |
+| `practo` | Practo | Clinic | Search & Fetch |
+| `tripadvisor` | Tripadvisor | Restaurant | Search & Fetch |
+
+---
+
+## 🔒 Approval State Machine (FR-5)
+
+All customer reply drafts follow a strict server-side state machine with audit logging:
+
+```
+[draft] ──(edit)──> [edited] ──(approve)──> [approved] ──(post)──> [posted]
+   │                   │                         │
+   └──(reject)───────> [rejected]                └──(edit)──> [edited] (re-approval needed)
+                         │
+                         └──(regenerate)──> [draft]
+```
+
+Invalid transitions return HTTP `409 Conflict`. Every status change and text edit is captured in the `audit_log` table.
+
+---
+
+## 📊 Unit Economics & Business Model
 
 | Tier | Price / Month | Ideal For |
 | :--- | :--- | :--- |
@@ -35,18 +85,39 @@ Small local business owners (restaurants, clinics, salons) lose customers due to
 
 ---
 
-## Tech Stack
+## ⚙️ Environment Variables
 
-* **Frontend:** React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, Recharts
-* **Backend:** Python 3.12, FastAPI, Uvicorn, SQLModel / SQLAlchemy, Pydantic v2
-* **Web Automation:** TinyFish SDK (`tinyfish`)
-* **LLM Engine:** Gemini API (`gemini-3.8-flash`) with Groq fallback (`llama-3.3-70b-versatile`)
-* **Streaming & Jobs:** Server-Sent Events (`sse-starlette`), `asyncio` background tasks
-* **Database:** SQLite (local development) / Neon PostgreSQL (production)
+| Variable | Description | Default / Example |
+|---|---|---|
+| `DATABASE_URL` | Supabase pooled Postgres or local SQLite URL | `sqlite:///./repsync.db` |
+| `SUPABASE_URL` | Supabase project API URL | `https://your-project.supabase.co` |
+| `SUPABASE_SERVICE_KEY` | Supabase service role key (backend only) | `your-service-key` |
+| `TINYFISH_API_KEY` | TinyFish API key for Search, Fetch & Agent | `sk-tinyfish-...` |
+| `GEMINI_API_KEY` | Google Gemini API key | `AIzaSy...` |
+| `GROQ_API_KEY` | Groq API key (fallback provider) | `gsk_...` |
+| `JWT_SECRET` | Secret key for JWT session tokens | `repsync-secret-dev-jwt` |
+| `FRONTEND_ORIGIN` | Allowed CORS frontend URL | `http://localhost:5173` |
+| `MOCK_TINYFISH` | Set `1` to run offline/mocked scraping | `0` |
+| `MOCK_LLM` | Set `1` to run offline/rule-based analysis | `0` |
 
 ---
 
-## Legal & Compliance Stance
+## 🧪 Testing & Quality Assurance
+
+```bash
+# Run complete test suite (state machine, dedup, partial failure, filters, cascade delete)
+make test
+
+# Run linter
+make lint
+
+# Run end-to-end smoke test against local or deployed server
+python scripts/smoke.py http://localhost:8000
+```
+
+---
+
+## ⚖️ Legal & Compliance Stance
 
 - **Public Data Only:** RepSync accesses only publicly viewable customer reviews.
 - **Zero Credential Scraping:** No login-gated data or user accounts are accessed.
@@ -57,11 +128,9 @@ Small local business owners (restaurants, clinics, salons) lose customers due to
 
 ## 👥 Team — Fine Shyts
 
-| # | Member | Domain | Contributions |
-|:---:|:---|:---|:---|
-| 1 | **[Dev](https://github.com/DevKumar005)** | Team Lead & TinyFish Data Engineer |  |
-| 2 | **[M2](https://github.com/)** | AI/LLM Engineer & Business Analyst |  |
-| 3 | **[M3](https://github.com/)** | Backend, Database & DevOps Engineer |  |
-| 4 | **[M4](https://github.com/)** | Frontend, UI/UX & Product Storyteller|  |
-
----
+| # | Member | Domain |
+|:---:|:---|:---|
+| 1 | **[Dev](https://github.com/DevKumar005)** | Team Lead & TinyFish Data Engineer |
+| 2 | **[Param](https://github.com/)** | AI/LLM Engineer & Business Analyst |
+| 3 | **[Rohit](https://github.com/rohitpal98222)** | Backend, Database & DevOps Engineer |
+| 4 | **[Om](https://github.com/)** | Frontend, UI/UX & Product Storyteller |

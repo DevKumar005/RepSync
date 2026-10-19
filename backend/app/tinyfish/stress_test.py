@@ -24,7 +24,7 @@ def run_stress_test():
 
     for name, city, category in targets:
         print(f"\n--- Testing: {name} ({city}) [{category.upper()}] ---")
-        
+
         result = collect(
             outlet_name=name,
             city=city,
@@ -35,10 +35,10 @@ def run_stress_test():
                 f"items={log.items_returned} | steps={log.steps_used or 0} | {log.duration_ms}ms"
             )
         )
-        
+
         steps = result.total_steps_used
         total_agent_steps += steps
-        
+
         print(f"  -> Result: {len(result.reviews)} reviews collected.")
         print(f"  -> Agent Steps Used: {steps}")
 
@@ -53,7 +53,7 @@ def run_stress_test():
     print(f"Average Steps per Outlet        : {avg_steps:.1f}")
     print(f"Average Cost per Outlet         : ${avg_cost:.3f}")
     print("===============================================")
-    
+
     check_wallet()
 
 if __name__ == "__main__":
