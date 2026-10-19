@@ -1,5 +1,7 @@
 import re
+from pathlib import Path
 
+PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
 PROMPT_VERSION = "v1"
 MIN_WORDS, MAX_WORDS = 50, 90      # hard check. The prompt itself asks for 60-80.
 
@@ -72,7 +74,10 @@ def draft_reply(client, review, outlet, tone=None, prompt_version=PROMPT_VERSION
     Returns: text, guardrail_flags, attempts, note, provider, prompt_version
     """
     tone = tone or {}
-    template = open(f"prompts/{prompt_version}/reply.txt", encoding="utf-8").read()
+    template_path = PROMPTS_DIR / prompt_version / "reply.txt"
+    if not template_path.exists():
+        template_path = Path(f"prompts/{prompt_version}/reply.txt")
+    template = open(template_path, encoding="utf-8").read()
     extra = tone.get("do_not_say", [])
     samples = tone.get("samples", [])
     samples_block = ""

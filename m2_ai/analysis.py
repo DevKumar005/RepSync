@@ -1,4 +1,18 @@
-from schemas import ThemeAssignmentResult, FixResult
+from pathlib import Path
+
+try:
+    from m2_ai.schemas import ThemeAssignmentResult, FixResult
+except ImportError:
+    from schemas import ThemeAssignmentResult, FixResult
+
+PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
+
+
+def _read_prompt(prompt_version: str, filename: str) -> str:
+    path = PROMPTS_DIR / prompt_version / filename
+    if not path.exists():
+        path = Path(f"prompts/{prompt_version}/{filename}")
+    return open(path, encoding="utf-8").read()
 
 
 def build_themes(client, negatives, prompt_version="v2", min_size=2):
@@ -8,7 +22,7 @@ def build_themes(client, negatives, prompt_version="v2", min_size=2):
     by_id = {r["id"]: r for r in with_topics}
     total = len(with_topics)
 
-    template = open(f"prompts/{prompt_version}/themes.txt", encoding="utf-8").read()
+    template = _read_prompt(prompt_version, "themes.txt")
     lines = [f'{r["id"]} | {r["topics"]}' for r in with_topics]
     out = client.generate_json(template.replace("{reviews}", "\n".join(lines)),
                                ThemeAssignmentResult)
@@ -66,7 +80,7 @@ def suggest_fixes(client, result, business_type, prompt_version="v2"):
         blocks.append(f'- {t["label"]}: affects {len(t["main_ids"])} of {total} '
                       f'negative reviews. Examples: {quotes}')
 
-    template = open(f"prompts/{prompt_version}/fixes.txt", encoding="utf-8").read()
+    template = _read_prompt(prompt_version, "fixes.txt")
     prompt = (template.replace("{business_type}", business_type)
                       .replace("{themes}", "\n".join(blocks)))
     out = client.generate_json(prompt, FixResult)

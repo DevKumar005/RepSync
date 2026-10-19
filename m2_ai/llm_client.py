@@ -14,10 +14,13 @@ load_dotenv()
 
 class LLMClient:
     def __init__(self):
-        self.gemini = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-        self.groq = Groq(api_key=os.getenv("GROQ_API_KEY"))
-        self.gemini_model = os.getenv("GEMINI_MODEL")
-        self.groq_model = os.getenv("GROQ_MODEL")
+        gemini_key = os.getenv("GEMINI_API_KEY")
+        groq_key = os.getenv("GROQ_API_KEY")
+
+        self.gemini = genai.Client(api_key=gemini_key) if gemini_key else None
+        self.groq = Groq(api_key=groq_key) if groq_key else None
+        self.gemini_model = os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
+        self.groq_model = os.getenv("GROQ_MODEL") or "llama-3.3-70b-versatile"
         self.gemini_down_until = 0
         self.usage = []          # one entry per successful call
 
@@ -61,7 +64,7 @@ class LLMClient:
         return min(seconds + 1.0, 60.0)      # small buffer, never more than a minute
 
     def generate(self, prompt):
-        if time.time() > self.gemini_down_until:
+        if self.gemini and time.time() > self.gemini_down_until:
             for attempt in range(2):
                 started = time.time()
                 try:
@@ -73,22 +76,25 @@ class LLMClient:
                     time.sleep(2)
             self.gemini_down_until = time.time() + 300   # skip Gemini for 5 minutes
 
-        last_error = None
-        for attempt in range(4):
-            started = time.time()
-            try:
-                text, t_in, t_out = self._call_groq(prompt)
-                self._record("groq", t_in, t_out, started)
-                return {"text": text, "provider": "groq"}
-            except Exception as e:
-                last_error = e
-                if "429" in str(e) or "rate_limit" in str(e).lower():
-                    wait = self._groq_wait_time(e)
-                    print(f"Groq rate limit, waiting {wait:.0f}s")
-                    time.sleep(wait)
-                else:
-                    break                      # a different error, so retrying won't help
-        raise RuntimeError(f"Both Gemini and Groq failed: {last_error}")
+        if self.groq:
+            last_error = None
+            for attempt in range(4):
+                started = time.time()
+                try:
+                    text, t_in, t_out = self._call_groq(prompt)
+                    self._record("groq", t_in, t_out, started)
+                    return {"text": text, "provider": "groq"}
+                except Exception as e:
+                    last_error = e
+                    if "429" in str(e) or "rate_limit" in str(e).lower():
+                        wait = self._groq_wait_time(e)
+                        print(f"Groq rate limit, waiting {wait:.0f}s")
+                        time.sleep(wait)
+                    else:
+                        break                      # a different error, so retrying won't help
+            raise RuntimeError(f"Groq failed: {last_error}")
+
+        raise RuntimeError("No working LLM provider available. Please set a valid GEMINI_API_KEY or GROQ_API_KEY.")
 
     def generate_json(self, prompt, schema):
         last_error = None

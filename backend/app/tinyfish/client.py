@@ -8,8 +8,12 @@ import httpx
 from tenacity import retry, stop_after_attempt, wait_exponential
 from tinyfish import TinyFish, CompleteEvent, ProgressEvent
 
-from app.tinyfish.cache import read_cache, write_cache
-from app.services.ingestion.schemas import TinyFishCallLog
+try:
+    from backend.app.tinyfish.cache import read_cache, write_cache
+    from backend.app.services.ingestion.schemas import TinyFishCallLog
+except ImportError:
+    from app.tinyfish.cache import read_cache, write_cache
+    from app.services.ingestion.schemas import TinyFishCallLog
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
 load_dotenv(ROOT_DIR / ".env")
