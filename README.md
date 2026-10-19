@@ -122,7 +122,7 @@ python scripts/smoke.py http://localhost:8000
 - **Public Data Only:** RepSync accesses only publicly viewable customer reviews.
 - **Zero Credential Scraping:** No login-gated data or user accounts are accessed.
 - **Owner-Initiated:** Audits and collection runs are triggered solely by the business owner.
-- **Owner-Approved Output:** AI-generated and replies are suggestions only. No reply is posted automatically without explicit owner sign-off.
+- **Owner-Approved Output:** AI-generated replies are suggestions only. No reply is posted automatically without explicit owner sign-off.
 
 ---
 
