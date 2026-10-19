@@ -23,20 +23,19 @@ PLATFORM_SEARCH_TEMPLATES = {
     "restaurant": {
         "zomato": "{name} {city} zomato reviews",
         "tripadvisor": "{name} {city} tripadvisor restaurant reviews",
-        "google_maps": "{name} {city} google maps",
+        "google_maps": "{name} restaurant {city} google maps reviews",
         "eazydiner": "{name} {city} eazydiner reviews",
-        "justdial": "{name} {city} justdial reviews",
+        "justdial": "{name} restaurant {city} justdial reviews",
     },
     "clinic": {
         "practo": "{name} {city} practo clinic stories reviews",
         "lybrate": "{name} {city} lybrate reviews",
-        "google_maps": "{name} {city} google maps",
-        "justdial": "{name} {city} justdial reviews",
+        "google_maps": "{name} clinic {city} google maps reviews",
+        "justdial": "{name} clinic {city} justdial reviews",
     },
     "salon": {
-        "justdial": "{name} {city} salon justdial",
-        "eazydiner": "{name} {city} reviews",
-        "google_maps": "{name} {city} google maps",
+        "google_maps": "{name} salon {city} google maps reviews",
+        "justdial": "{name} salon {city} justdial reviews",
     },
 }
 
@@ -106,7 +105,7 @@ class MultiPlatformCollector:
         )
         if is_placeholder:
             tmpl = PLATFORM_SEARCH_TEMPLATES.get(category, {}).get(
-                self.platform, f"{{name}} {{city}} {self.platform} reviews"
+                self.platform, f"{{name}} {category} {{city}} {self.platform} reviews"
             )
             query = tmpl.format(name=business_name, city=city)
             results, s_log = await asyncio.to_thread(self.tf.search, query)
