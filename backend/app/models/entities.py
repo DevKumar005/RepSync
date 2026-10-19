@@ -26,7 +26,7 @@ class ToneProfile(SQLModel, table=True):
 
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
     user_id: Optional[str] = Field(default=None, foreign_key="app_user.id")
-    style: str = Field(default="warm")  # warm, professional, witty, empathetic
+    style: str = Field(default="warm")  # warm, formal, apologetic, concise
     sample_replies: List[str] = Field(default=[], sa_column=Column(JSON))
     do_not_say: List[str] = Field(default=[], sa_column=Column(JSON))
 
