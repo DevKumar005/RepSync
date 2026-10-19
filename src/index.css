@@ -22,7 +22,7 @@
 @layer components {
   .panel { @apply bg-surface border border-line rounded-lg; }
   .btn { @apply inline-flex items-center justify-center gap-2 rounded-md px-3.5 py-2 text-sm font-semibold border border-line bg-surface hover:bg-paper disabled:opacity-50 disabled:cursor-not-allowed; }
-  .btn-primary { @apply bg-brand text-onbrand border-brand hover:opacity-90; }
+  .btn-primary { @apply bg-brand text-onbrand border-brand hover:bg-brand hover:opacity-90; }
   .btn-danger { @apply text-neg border-neg/40 hover:bg-negsoft; }
   .chip { @apply inline-block rounded px-1.5 py-0.5 text-xs font-semibold bg-paper text-ink/70; }
   .field { @apply w-full rounded-md border border-line bg-surface text-ink px-3 py-2 text-sm placeholder:text-ink/40; }

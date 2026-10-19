@@ -1,4 +1,4 @@
-import type { Api, Draft, Outlet, Review, ReviewFilters } from '../types'
+import type { Api,Candidate, Draft, Outlet, Review, ReviewFilters } from '../types'
 import { mockApi } from './mock'
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false'
@@ -72,10 +72,13 @@ const normCall = (c: any, i: number) => {
     steps_used: c.steps_used ?? undefined, created_at: String(c.created_at ?? ''),
   }
 }
-
+const normCandidate = (c: any, i: number): Candidate => ({
+  ...c, id: String(pick(c, 'id', 'place_id', 'candidate_id', 'url') ?? i), name: String(pick(c, 'name', 'title') ?? 'Unnamed business'),
+  address: String(pick(c, 'address', 'location', 'snippet') ?? ''), source: String(pick(c, 'source', 'platform', 'domain') ?? ''),
+})
 const realApi: Api = {
-  searchOutlets: (name, city, category) => send('POST', '/api/outlets/search', { name, city, category }),
-  createOutlet: async (c, city, category) => cacheOutlet(normOutlet(await send('POST', '/api/outlets', { candidate: c, city, category }))),
+ searchOutlets: async (name, city, category) => list(await send('POST', '/api/outlets/search', { name, city, category }), 'candidates').map(normCandidate),
+  createOutlet: async (c, city, category) => cacheOutlet(normOutlet(await send('POST', '/api/outlets', { ...c, name: c.name, address: c.address, city, category }))),
   demoOutlet: async (key) => cacheOutlet(normOutlet(await send('POST', `/api/outlets/demo/${key}`))),
   outlet: async (id) => {
     try { return normOutlet(await send('GET', `/api/outlets/${id}`)) } catch {
