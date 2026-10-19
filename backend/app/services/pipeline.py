@@ -68,6 +68,7 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
     Executes the full RepSync ingestion, analysis, and drafting pipeline.
     """
     _active_jobs[outlet_id] = job_id
+    broadcaster.clear_buffer(outlet_id)
     try:
         with Session(engine) as session:
             outlet = session.get(Outlet, outlet_id)

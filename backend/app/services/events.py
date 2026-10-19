@@ -5,16 +5,22 @@ from typing import AsyncGenerator, Dict, List, Optional
 
 
 class EventBroadcaster:
-    """Manages active SSE connections per outlet sync job."""
+    """Manages active SSE connections per outlet sync job with event replay buffering."""
 
     def __init__(self) -> None:
         self._listeners: Dict[str, List[asyncio.Queue]] = {}
+        self._event_buffer: Dict[str, List[dict]] = {}
 
     def subscribe(self, outlet_id: str) -> asyncio.Queue:
         queue: asyncio.Queue = asyncio.Queue()
         if outlet_id not in self._listeners:
             self._listeners[outlet_id] = []
         self._listeners[outlet_id].append(queue)
+
+        # Replay past events if client connected after pipeline started or completed
+        for past_event in self._event_buffer.get(outlet_id, []):
+            queue.put_nowait(past_event)
+
         return queue
 
     def unsubscribe(self, outlet_id: str, queue: asyncio.Queue) -> None:
@@ -23,6 +29,9 @@ class EventBroadcaster:
                 self._listeners[outlet_id].remove(queue)
             if not self._listeners[outlet_id]:
                 del self._listeners[outlet_id]
+
+    def clear_buffer(self, outlet_id: str) -> None:
+        self._event_buffer.pop(outlet_id, None)
 
     async def emit(
         self,
@@ -42,6 +51,13 @@ class EventBroadcaster:
         }
         if extra:
             payload.update(extra)
+
+        # Buffer recent events for this outlet so late subscribers receive them
+        if outlet_id not in self._event_buffer:
+            self._event_buffer[outlet_id] = []
+        self._event_buffer[outlet_id].append(payload)
+        if len(self._event_buffer[outlet_id]) > 30:
+            self._event_buffer[outlet_id].pop(0)
 
         if outlet_id in self._listeners:
             for q in list(self._listeners[outlet_id]):
@@ -69,7 +85,9 @@ async def event_generator(outlet_id: str) -> AsyncGenerator[str, None]:
                 event = await asyncio.wait_for(queue.get(), timeout=15.0)
                 yield f"data: {json.dumps(event)}\n\n"
                 if event.get("type") == "done":
-                    pass  # Stream remains open with heartbeats until client calls es.close()
+                    # Allow client 1.5s to receive the done event, call es.close(), and invalidate queries
+                    await asyncio.sleep(1.5)
+                    break
             except asyncio.TimeoutError:
                 # Keep-alive heartbeat
                 ping = {"type": "ping", "ts": datetime.now(timezone.utc).isoformat()}
