@@ -190,8 +190,23 @@ class MultiPlatformCollector:
                         message="Agent daily step budget reached; loaded reviews from 24h cache",
                     )
             else:
+                loop = asyncio.get_running_loop()
+
                 def on_step(s_num: int, p_text: str):
-                    pass
+                    if emit_callback:
+                        msg = f"{self.display_name} Agent Step {s_num}: {p_text}" if p_text else f"{self.display_name} Agent: Step {s_num} in progress..."
+                        try:
+                            asyncio.run_coroutine_threadsafe(
+                                emit_callback(
+                                    event_type="tinyfish_call",
+                                    source=self.platform,
+                                    status="running",
+                                    message=msg[:120],
+                                ),
+                                loop,
+                            )
+                        except Exception:
+                            pass
 
                 agent_reviews, a_log = await asyncio.to_thread(
                     self.tf.run_agent,

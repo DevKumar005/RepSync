@@ -364,6 +364,7 @@ async def sync_stream(id: str):
 
     return EventSourceResponse(
         event_generator(id),
+        ping=10,
         headers={
             "Cache-Control": "no-cache",
             "Connection": "keep-alive",

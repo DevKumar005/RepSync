@@ -19,8 +19,8 @@ class LLMClient:
 
         self.gemini = genai.Client(api_key=gemini_key) if gemini_key else None
         self.groq = Groq(api_key=groq_key) if groq_key else None
-        self.gemini_model = os.getenv("GEMINI_MODEL") or "gemini-2.5-flash"
-        self.groq_model = os.getenv("GROQ_MODEL") or "llama-3.3-70b-versatile"
+        self.gemini_model = os.getenv("GEMINI_MODEL") or "gemini-3.8-flash"
+        self.groq_model = os.getenv("GROQ_MODEL") or "openai/gpt-oss-20b"
         self.gemini_down_until = 0
         self.usage = []          # one entry per successful call
 

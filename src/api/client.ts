@@ -89,9 +89,40 @@ const realApi: Api = {
   startSync: (id) => send('POST', `/api/outlets/${id}/sync`),
   streamSync: (id, on, onError) => {
     const es = new EventSource(`${BASE}/api/outlets/${id}/sync/stream`)
-    es.onmessage = (m) => on(JSON.parse(m.data))
-    es.onerror = () => { es.close(); onError?.() }
-    return () => es.close()
+    let errorTimer: any = null
+    es.onmessage = (m) => {
+      try {
+        if (!m.data) return
+        const parsed = JSON.parse(m.data)
+        if (parsed.type === 'ping') return
+        if (errorTimer) {
+          clearTimeout(errorTimer)
+          errorTimer = null
+        }
+        on(parsed)
+      } catch (err) {
+        console.warn('Failed to parse SSE event:', err, m.data)
+      }
+    }
+    es.onerror = () => {
+      if (es.readyState === EventSource.CONNECTING) {
+        if (!errorTimer) {
+          errorTimer = setTimeout(() => {
+            if (es.readyState !== EventSource.OPEN) {
+              es.close()
+              onError?.()
+            }
+          }, 35000)
+        }
+      } else if (es.readyState === EventSource.CLOSED) {
+        if (errorTimer) clearTimeout(errorTimer)
+        onError?.()
+      }
+    }
+    return () => {
+      if (errorTimer) clearTimeout(errorTimer)
+      es.close()
+    }
   },
   reviews: async (id, f) => {
     const rs = list(await send<any>('GET', `/api/outlets/${id}/reviews${qs(f)}`), 'reviews')

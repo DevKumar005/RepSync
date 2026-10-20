@@ -62,7 +62,16 @@ def mock_generate_reply_draft(
         )
 
     if custom_instruction:
-        base_reply += f" [Note: {custom_instruction}]"
+        instr_lower = custom_instruction.lower()
+        if "short" in instr_lower or "concise" in instr_lower:
+            base_reply = (
+                f"Dear {author}, thank you for your feedback. "
+                f"We apologize for the inconvenience and our team is actively addressing your concerns."
+            )
+        elif "callback" in instr_lower or "call" in instr_lower:
+            base_reply += " Please share your contact details directly so our management can personally call you back to resolve this."
+        else:
+            base_reply += f" We will make sure your feedback regarding '{custom_instruction}' is addressed."
 
     # Evaluate guardrails
     flags = check_guardrails(base_reply, do_not_say)

@@ -133,11 +133,14 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
             daily_step_budget = int(os.getenv("AGENT_DAILY_STEP_BUDGET", "500"))
             skip_agent_live = total_steps_today >= daily_step_budget
 
+            db_lock = asyncio.Lock()
+
             async def collect_for_platform(p: Platform) -> None:
                 src = sources_map[p.key]
-                src.status = "running"
-                session.add(src)
-                session.commit()
+                async with db_lock:
+                    src.status = "running"
+                    session.add(src)
+                    session.commit()
 
                 async def platform_emit(event_type: str, source: str, status: str, message: str) -> None:
                     await broadcaster.emit(
@@ -160,91 +163,91 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
                             skip_agent=skip_agent_live,
                         )
 
-
-                    # Persist TinyFish calls
-                    for tf in result.tinyfish_calls:
-                        input_dict = tf.input if isinstance(tf.input, dict) else {"raw": str(tf.input or "")}
-                        call_row = TinyFishCall(
-                            outlet_id=outlet_id,
-                            platform=tf.platform or p.key,
-                            endpoint=tf.endpoint,
-                            input=input_dict,
-                            status=tf.status or "success",
-                            duration_ms=tf.duration_ms or 0,
-                            items_returned=tf.items_returned or 0,
-                            steps_used=tf.steps_used or 0,
-                            cached=bool(tf.cached),
-                        )
-                        session.add(call_row)
-
-                    # Persist Reviews with Deduplication (M3-MP-6)
-                    new_reviews_count = 0
-                    for rev_in in result.reviews:
-                        # Normalize posted_at if string or datetime
-                        if isinstance(rev_in.posted_at, str):
-                            try:
-                                posted_dt = datetime.fromisoformat(rev_in.posted_at.replace("Z", "+00:00"))
-                            except Exception:
-                                posted_dt = datetime.now(timezone.utc)
-                        elif isinstance(rev_in.posted_at, datetime):
-                            posted_dt = rev_in.posted_at
-                        else:
-                            posted_dt = datetime.now(timezone.utc)
-
-                        date_str = posted_dt.strftime("%Y-%m-%d")
-                        author_str = (rev_in.author or "Anonymous").strip()
-                        text_str = (rev_in.text or "").strip()
-                        dedup_hash = compute_dedup_hash(p.key, author_str, date_str, text_str)
-
-                        existing_rev = session.exec(
-                            select(Review).where(
-                                Review.outlet_id == outlet_id,
-                                Review.hash_for_dedup == dedup_hash,
-                            )
-                        ).first()
-
-                        if not existing_rev:
-                            sentiment = rev_in.sentiment
-                            severity = rev_in.severity
-                            mismatch = rev_in.rating_text_mismatch
-                            if not sentiment:
-                                sentiment, severity, mismatch = classify_sentiment(
-                                    rev_in.rating or 3.0, text_str
-                                )
-                            rev = Review(
+                    async with db_lock:
+                        # Persist TinyFish calls
+                        for tf in result.tinyfish_calls:
+                            input_dict = tf.input if isinstance(tf.input, dict) else {"raw": str(tf.input or "")}
+                            call_row = TinyFishCall(
                                 outlet_id=outlet_id,
-                                source_id=src.id,
-                                platform=p.key,
-                                author=author_str,
-                                rating=float(rev_in.rating or 3.0),
-                                text=text_str,
-                                language=rev_in.language or "en",
-                                posted_at=posted_dt,
-                                url=rev_in.url or src.url,
-                                has_owner_reply=bool(rev_in.has_owner_reply or rev_in.owner_reply_text),
-                                owner_reply_text=rev_in.owner_reply_text,
-                                sentiment=sentiment,
-                                severity=severity,
-                                rating_text_mismatch=mismatch,
-                                hash_for_dedup=dedup_hash,
+                                platform=tf.platform or p.key,
+                                endpoint=tf.endpoint,
+                                input=input_dict,
+                                status=tf.status or "success",
+                                duration_ms=tf.duration_ms or 0,
+                                items_returned=tf.items_returned or 0,
+                                steps_used=tf.steps_used or 0,
+                                cached=bool(tf.cached),
                             )
-                            session.add(rev)
-                            new_reviews_count += 1
+                            session.add(call_row)
 
+                        # Persist Reviews with Deduplication (M3-MP-6)
+                        new_reviews_count = 0
+                        for rev_in in result.reviews:
+                            # Normalize posted_at if string or datetime
+                            if isinstance(rev_in.posted_at, str):
+                                try:
+                                    posted_dt = datetime.fromisoformat(rev_in.posted_at.replace("Z", "+00:00"))
+                                except Exception:
+                                    posted_dt = datetime.now(timezone.utc)
+                            elif isinstance(rev_in.posted_at, datetime):
+                                posted_dt = rev_in.posted_at
+                            else:
+                                posted_dt = datetime.now(timezone.utc)
 
-                    src.status = result.status
-                    src.review_count = src.review_count + new_reviews_count
-                    src.agent_steps_used += result.agent_steps_used
-                    src.last_synced_at = datetime.now(timezone.utc)
-                    session.add(src)
-                    session.commit()
+                            date_str = posted_dt.strftime("%Y-%m-%d")
+                            author_str = (rev_in.author or "Anonymous").strip()
+                            text_str = (rev_in.text or "").strip()
+                            dedup_hash = compute_dedup_hash(p.key, author_str, date_str, text_str)
+
+                            existing_rev = session.exec(
+                                select(Review).where(
+                                    Review.outlet_id == outlet_id,
+                                    Review.hash_for_dedup == dedup_hash,
+                                )
+                            ).first()
+
+                            if not existing_rev:
+                                sentiment = rev_in.sentiment
+                                severity = rev_in.severity
+                                mismatch = rev_in.rating_text_mismatch
+                                if not sentiment:
+                                    sentiment, severity, mismatch = classify_sentiment(
+                                        rev_in.rating or 3.0, text_str
+                                    )
+                                rev = Review(
+                                    outlet_id=outlet_id,
+                                    source_id=src.id,
+                                    platform=p.key,
+                                    author=author_str,
+                                    rating=float(rev_in.rating or 3.0),
+                                    text=text_str,
+                                    language=rev_in.language or "en",
+                                    posted_at=posted_dt,
+                                    url=rev_in.url or src.url,
+                                    has_owner_reply=bool(rev_in.has_owner_reply or rev_in.owner_reply_text),
+                                    owner_reply_text=rev_in.owner_reply_text,
+                                    sentiment=sentiment,
+                                    severity=severity,
+                                    rating_text_mismatch=mismatch,
+                                    hash_for_dedup=dedup_hash,
+                                )
+                                session.add(rev)
+                                new_reviews_count += 1
+
+                        src.status = result.status
+                        src.review_count = src.review_count + new_reviews_count
+                        src.agent_steps_used += result.agent_steps_used
+                        src.last_synced_at = datetime.now(timezone.utc)
+                        session.add(src)
+                        session.commit()
 
                 except Exception as err:
                     print(f"Error collecting from {p.key}: {err}")
-                    src.status = "failed"
-                    src.error = str(err)
-                    session.add(src)
-                    session.commit()
+                    async with db_lock:
+                        src.status = "failed"
+                        src.error = str(err)
+                        session.add(src)
+                        session.commit()
                     await broadcaster.emit(
                         outlet_id=outlet_id,
                         event_type="source_status",
