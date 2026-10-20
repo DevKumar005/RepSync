@@ -301,6 +301,5 @@ Built for **KRITICAL HACKS '26** (AssetMerkle × IGDTUW), AI/ML Track.
 
 ## 📄 License
 
-Add a license (for example MIT) by creating a `LICENSE` file, then update this section.
 
 ---
