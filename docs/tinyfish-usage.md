@@ -10,9 +10,6 @@ To balance speed, reliability, and cost (Agent steps), RepSync implements a **Sm
 2. **TinyFish Fetch (Free):** We attempt to retrieve the static page using `api.fetch.tinyfish.ai`. If the platform serves server-side HTML (like EazyDiner or Lybrate), Fetch returns clean Markdown. We then pass this Markdown to Gemini (`gemini-3.8-flash`) to extract structured reviews for **$0.00**.
 3. **TinyFish Agent (Metered):** If Fetch is blocked (e.g., anti-bot walls) or returns fewer than 6 reviews (e.g., JS-heavy pagination on Zomato or Practo), we dynamically escalate to the TinyFish Web Agent (`agent.tinyfish.ai/v1/automation/run-sse`). The Agent navigates the page, bypasses modals, expands "Read more" buttons, and extracts up to 50 structured reviews as JSON.
 
-### Architecture Diagram
-![alt text](image-1.png)
-
 ## Per-Source Isolation (Kill-Switch)
 
 We implemented strict per-source isolation. If one platform's anti-bot measures successfully block the Agent (e.g., a hard sign-in wall), the pipeline gracefully catches the failure, logs a `FAILED` status for that specific source, and continues processing the remaining platforms. One failing source **never** crashes the sync job.
