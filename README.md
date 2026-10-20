@@ -304,10 +304,10 @@ Built for **KRITICAL HACKS '26** (AssetMerkle × IGDTUW), AI/ML Track.
 
 | # | Member | Domain | What they own |
 | --- | --- | --- | --- |
-| 1 | **Dev** ([@DevKumar005](https://github.com/DevKumar005)) | Team Lead & TinyFish Data Engineer | Built the TinyFish Search → Fetch → Agent pipeline, review extraction, dedup, caching and the Activity Log events. |
-| 2 | **Param** | AI/LLM Engineer & Business Analyst | Built sentiment, themes, Top 3 Fixes and guardrailed reply drafting, plus the eval set, market research and unit economics. |
-| 3 | **Rohit** | Backend, Database & DevOps Engineer | Built the FastAPI backend, database models, SSE streaming, approval workflow, auth, CI and deployment. |
-| 4 | **Om** | Frontend, UI/UX & Product Storyteller | Built the dashboard and design system, and made the demo video, deck, social post and owner interviews. |
+| 1 | [**Dev**](https://github.com/DevKumar005) | Team Lead & TinyFish Data Engineer | Built the TinyFish Search → Fetch → Agent pipeline, review extraction, dedup, caching and the Activity Log events. |
+| 2 | [**Param**](https://github.com/paramsharma01) | AI/LLM Engineer & Business Analyst | Built sentiment, themes, Top 3 Fixes and guardrailed reply drafting, plus the eval set, market research and unit economics. |
+| 3 | [**Rohit**](https://github.com/Rohit-pal01) | Backend, Database & DevOps Engineer | Built the FastAPI backend, database models, SSE streaming, approval workflow, auth, CI and deployment. |
+| 4 | [**Om**](https://github.com/ombhadri) | Frontend, UI/UX & Product Storyteller | Built the dashboard and design system, and made the demo video, deck, social post and owner interviews. |
 
 ## 📄 License
 
