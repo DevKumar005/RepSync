@@ -21,9 +21,7 @@
 
 ## 📸 Preview
 
-> Add a screenshot or GIF of the dashboard here, showing the TinyFish Activity Log panel.
->
-> `![RepSync dashboard](docs/screenshots/dashboard.png)`
+https://repsync-chi.vercel.app
 
 ---
 
@@ -169,14 +167,6 @@ Copy `.env.example` to `.env`. **Never commit real keys.**
 | `DEMO_MODE` | `true` to serve cached demo data with all external APIs disabled |
 
 > The variable names above are the intended ones. Match them to your `.env.example` if they differ.
-
-## 🎬 Demo Mode
-
-Live scraping can fail on stage, so RepSync ships with **cached demo outlets** (one restaurant, one clinic or salon) produced from **real TinyFish runs**, including the real Activity Log from those runs.
-
-- Click **"Try demo outlet"** to load a pre-cached dataset in under 3 seconds.
-- Works fully offline, with all external APIs disabled.
-- If a live platform fails mid-demo, the app falls back to cached data.
 
 ## 🔌 API Overview
 
