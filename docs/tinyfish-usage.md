@@ -11,7 +11,7 @@ To balance speed, reliability, and cost (Agent steps), RepSync implements a **Sm
 3. **TinyFish Agent (Metered):** If Fetch is blocked (e.g., anti-bot walls) or returns fewer than 6 reviews (e.g., JS-heavy pagination on Zomato or Practo), we dynamically escalate to the TinyFish Web Agent (`agent.tinyfish.ai/v1/automation/run-sse`). The Agent navigates the page, bypasses modals, expands "Read more" buttons, and extracts up to 50 structured reviews as JSON.
 
 ### Architecture Diagram
-*(Add your Excalidraw diagram here showing the flow: User Input -> Search -> Candidate URLs -> Fetch -> [Extract OR Escalate to Agent] -> Normalise & Dedup -> DB)*
+![alt text](image-1.png)
 
 ## Per-Source Isolation (Kill-Switch)
 
@@ -23,8 +23,7 @@ Every TinyFish call is logged in our database and streamed live to the frontend 
 
 Here is a sample of our live Activity Log during a multi-platform sync:
 
-*(Add a screenshot of your M4 UI Activity Log panel here, showing SEARCH, FETCH, and AGENT calls)*
-
+![alt text](image.png)
 ## Unit Economics & Caching
 
 To ensure RepSync is financially viable and scalable for small local outlets, we enforce a strict caching policy alongside a cost-prioritized ingestion pipeline:
