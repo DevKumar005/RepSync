@@ -90,6 +90,7 @@ const realApi: Api = {
   streamSync: (id, on, onError) => {
     const es = new EventSource(`${BASE}/api/outlets/${id}/sync/stream`)
     let errorTimer: any = null
+    let closedExplicitly = false
     es.onmessage = (m) => {
       try {
         if (!m.data) return
@@ -99,16 +100,21 @@ const realApi: Api = {
           clearTimeout(errorTimer)
           errorTimer = null
         }
+        if (parsed.type === 'done') {
+          closedExplicitly = true
+        }
         on(parsed)
       } catch (err) {
         console.warn('Failed to parse SSE event:', err, m.data)
       }
     }
     es.onerror = () => {
+      if (closedExplicitly) return
       if (es.readyState === EventSource.CONNECTING) {
         if (!errorTimer) {
           errorTimer = setTimeout(() => {
-            if (es.readyState !== EventSource.OPEN) {
+            if (es.readyState !== EventSource.OPEN && !closedExplicitly) {
+              closedExplicitly = true
               es.close()
               onError?.()
             }
@@ -116,10 +122,13 @@ const realApi: Api = {
         }
       } else if (es.readyState === EventSource.CLOSED) {
         if (errorTimer) clearTimeout(errorTimer)
-        onError?.()
+        if (!closedExplicitly) {
+          onError?.()
+        }
       }
     }
     return () => {
+      closedExplicitly = true
       if (errorTimer) clearTimeout(errorTimer)
       es.close()
     }

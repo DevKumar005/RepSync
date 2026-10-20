@@ -23,7 +23,7 @@ export default function Dashboard() {
       close.current = api.streamSync(id, (e) => {
         setLive((l) => [...l, e])
         if (e.type === 'stage' || e.type === 'tinyfish_call') qc.invalidateQueries({ queryKey: ['log', id] })
-        if (e.type === 'done') { setSyncing(false); close.current?.(); qc.invalidateQueries() }
+        if (e.type === 'done') { setErr(''); setSyncing(false); close.current?.(); qc.invalidateQueries() }
       }, () => { setSyncing(false); setErr('Lost connection to the sync. Showing the last saved results.') })
     } catch (e) { setSyncing(false); setErr((e as Error).message) }
   }, [id, qc])
