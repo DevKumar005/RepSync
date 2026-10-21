@@ -9,20 +9,50 @@ const PLANS = [
 export default function Pricing() {
   const [picked, setPicked] = useState('')
   return (
-    <div className="space-y-6 pt-4">
-      <div><h1 className="text-3xl font-bold">Priced for one outlet, not a chain</h1>
-        <p className="mt-1 text-ink/70">One lost table or appointment a month costs more than the plan. Start with a free reputation audit.</p></div>
+    <div className="space-y-10 pt-4 max-w-4xl mx-auto">
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight">Priced for one outlet, not a chain</h1>
+        <p className="text-ink/50 text-[15px]">One lost table or appointment a month costs more than the plan. Start with a free reputation audit.</p>
+      </div>
+
       <div className="grid gap-4 md:grid-cols-3">
         {PLANS.map((p) => (
-          <section key={p.name} className={`panel p-5 ${p.featured ? 'border-brand ring-2 ring-brand' : ''}`}>
-            <h2 className="text-xl font-bold">{p.name}</h2><p className="text-sm text-ink/60">{p.blurb}</p>
-            <p className="my-3"><span className="font-display text-4xl font-bold">₹{p.price}</span><span className="text-ink/60"> / outlet / month</span></p>
-            <ul className="mb-4 space-y-1 text-sm">{p.items.map((i) => <li key={i}>{i}</li>)}</ul>
-            <button className={`btn w-full ${p.featured ? 'btn-primary' : ''}`} onClick={() => setPicked(p.name)}>Choose {p.name}</button>
+          <section
+            key={p.name}
+            className={`panel p-6 flex flex-col gap-5 ${p.featured ? 'border-brand/60 shadow-sm shadow-brand/10' : ''}`}
+          >
+            <div className="space-y-0.5">
+              {p.featured && <span className="label-overline text-brand">Most popular</span>}
+              <h2 className="text-lg font-semibold">{p.name}</h2>
+              <p className="text-sm text-ink/50">{p.blurb}</p>
+            </div>
+            <p className="flex items-baseline gap-1">
+              <span className="text-3xl font-bold tracking-tight">₹{p.price}</span>
+              <span className="text-sm text-ink/40">/ outlet / mo</span>
+            </p>
+            <ul className="space-y-1.5 text-sm text-ink/70 flex-1">
+              {p.items.map((i) => (
+                <li key={i} className="flex items-start gap-2">
+                  <svg className="mt-0.5 shrink-0 text-pos" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  {i}
+                </li>
+              ))}
+            </ul>
+            <button
+              className={`btn w-full justify-center ${p.featured ? 'btn-primary' : ''}`}
+              onClick={() => setPicked(p.name)}
+            >
+              Choose {p.name}
+            </button>
           </section>
         ))}
       </div>
-      {picked && <p role="status" className="panel bg-brandsoft p-3 text-sm">Test mode: no payment was taken. You picked {picked}.</p>}
+
+      {picked && (
+        <p role="status" className="panel bg-brandsoft border-brand/30 px-4 py-3 text-sm text-ink/70">
+          Test mode — no payment taken. You picked <strong className="text-ink">{picked}</strong>.
+        </p>
+      )}
     </div>
   )
 }

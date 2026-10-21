@@ -1,7 +1,7 @@
 from pathlib import Path
 
 try:
-    from m2_ai.schemas import ThemeAssignmentResult, FixResult
+    from ai.schemas import ThemeAssignmentResult, FixResult
 except ImportError:
     from schemas import ThemeAssignmentResult, FixResult
 

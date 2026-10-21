@@ -167,16 +167,16 @@ def analyze_themes_and_fixes(
     """
     Dynamic Theme & Fix Recommendation Bridge:
     - If MOCK_LLM=1 (or offline/testing): Uses deterministic mock themes and fixes.
-    - If MOCK_LLM=0 and API key is configured: Bridges to Param's m2_ai.analysis engine.
+    - If MOCK_LLM=0 and API key is configured: Bridges to the ai.analysis engine.
     """
     mock_flag = os.getenv("MOCK_LLM", "1").lower().strip()
     api_key = os.getenv("GEMINI_API_KEY", "") or os.getenv("GROQ_API_KEY", "")
 
-    # Live Mode: Call Param's m2_ai module when available on main
+    # Live Mode: Call the ai module when available
     if mock_flag in {"0", "false", "no"} and api_key and "your-" not in api_key:
         try:
-            from m2_ai.llm_client import LLMClient
-            from m2_ai.analysis import build_themes, suggest_fixes
+            from ai.llm_client import LLMClient
+            from ai.analysis import build_themes, suggest_fixes
 
             client = LLMClient()
             negatives = [
@@ -207,7 +207,7 @@ def analyze_themes_and_fixes(
                 if themes_out and fixes_out:
                     return themes_out, fixes_out
         except Exception as exc:
-            print(f"Notice: Live m2_ai analysis unavailable or failed ({exc}), falling back to mock themes.")
+            print(f"Notice: Live ai analysis unavailable or failed ({exc}), falling back to mock themes.")
 
     # Mock Mode fallback
     return mock_analyze_themes_and_fixes(reviews, category)

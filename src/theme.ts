@@ -6,7 +6,7 @@ const get = (): Mode => (document.documentElement.classList.contains('dark') ? '
 
 export function setMode(m: Mode) {
   document.documentElement.classList.toggle('dark', m === 'dark')
-  try { localStorage.setItem('theme', m) } catch { /* storage blocked */ }
+  try { localStorage.setItem('theme', m) } catch { }
   listeners.forEach((l) => l())
 }
 export const toggleMode = () => setMode(get() === 'dark' ? 'light' : 'dark')

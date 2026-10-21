@@ -1,3 +1,4 @@
+// In-memory mock API — prototype data only, not connected to any backend.
 import type { Api, Draft, DraftStatus, Review, SyncEvent, Theme, TinyFishCall, Tone } from '../types'
 
 const wait = <T,>(v: T, ms = 250) => new Promise<T>((r) => setTimeout(() => r(v), ms))

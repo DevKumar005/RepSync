@@ -87,7 +87,7 @@ We did not measure these, and we do not report a figure:
 ## 8. Reproducing
 
 ```bash
-cd m2_ai
+cd ai
 cp .env.example .env     # add your Gemini and Groq keys and model names
 python run_eval.py       # set PROMPT_VERSION at the top: "v0", "v1" or "v2"
 ```

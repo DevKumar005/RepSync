@@ -88,16 +88,16 @@ def generate_reply_draft(
     """
     Dynamic Reply Drafting Bridge:
     - If MOCK_LLM=1 (or offline/testing): Uses deterministic mock reply templates.
-    - If MOCK_LLM=0 and API key is set: Bridges to Param's m2_ai.replies engine with multi-lingual guardrails.
+    - If MOCK_LLM=0 and API key is set: Bridges to the ai.replies engine with multi-lingual guardrails.
     """
     mock_flag = os.getenv("MOCK_LLM", "1").lower().strip()
     api_key = os.getenv("GEMINI_API_KEY", "") or os.getenv("GROQ_API_KEY", "")
 
-    # Live Mode: Call Param's m2_ai module when available on main
+    # Live Mode: Call the ai module when available
     if mock_flag in {"0", "false", "no"} and api_key and "your-" not in api_key:
         try:
-            from m2_ai.llm_client import LLMClient
-            from m2_ai.replies import draft_reply
+            from ai.llm_client import LLMClient
+            from ai.replies import draft_reply
 
             client = LLMClient()
             review_dict = {
@@ -125,7 +125,7 @@ def generate_reply_draft(
             )
             return res.get("text", ""), res.get("guardrail_flags", [])
         except Exception as exc:
-            print(f"Notice: Live m2_ai reply draft unavailable or failed ({exc}), falling back to mock reply.")
+            print(f"Notice: Live ai reply draft unavailable or failed ({exc}), falling back to mock reply.")
 
     # Mock Mode fallback
     return mock_generate_reply_draft(review, tone, custom_instruction)

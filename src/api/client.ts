@@ -1,6 +1,7 @@
-import type { Api,Candidate, Draft, Outlet, Review, ReviewFilters } from '../types'
+import type { Api, Candidate, Draft, Outlet, Review, ReviewFilters } from '../types'
 import { mockApi } from './mock'
 
+// Falls back to mock when VITE_USE_MOCK is not explicitly 'false'
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false'
 const BASE: string = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
 
@@ -24,7 +25,7 @@ const normOutlet = (o: any): Outlet => ({
   id: String(o.id ?? o.outlet_id), name: o.name ?? o.outlet_name ?? 'Your outlet',
   category: o.category ?? 'restaurant', city: o.city ?? '', address: o.address ?? '',
 })
-const cacheOutlet = (o: Outlet) => { try { sessionStorage.setItem('outlet:' + o.id, JSON.stringify(o)) } catch { /* ignore */ } return o }
+const cacheOutlet = (o: Outlet) => { try { sessionStorage.setItem('outlet:' + o.id, JSON.stringify(o)) } catch { } return o }
 const normDraft = (d: any): Draft => ({ id: String(d.id ?? d.draft_id), review_id: String(d.review_id), text: d.text ?? '', status: low(d.status || 'draft') as Draft['status'], guardrail_flags: d.guardrail_flags ?? [] })
 const nestedDraft = (r: any): Draft | undefined => {
   const hit = r.draft ?? r.drafts ?? r.reply_draft ?? r.draft_reply ?? Object.entries(r).find(([k, v]) => /draft/i.test(k) && v && typeof v === 'object')?.[1]
@@ -111,6 +112,9 @@ const realApi: Api = {
     es.onerror = () => {
       if (closedExplicitly) return
       if (es.readyState === EventSource.CONNECTING) {
+      // Give the browser 35s to reconnect before calling onError.
+      // EventSource reconnects automatically on transient drops;
+      // only fire onError if it stays disconnected.
         if (!errorTimer) {
           errorTimer = setTimeout(() => {
             if (es.readyState !== EventSource.OPEN && !closedExplicitly) {
@@ -146,12 +150,13 @@ const realApi: Api = {
   patchDraft: async (id, b) => normDraft(await send<any>('PATCH', `/api/drafts/${id}`, b)),
   getTone: async () => {
     try { return await send('GET', '/api/tone') } catch {
-      try { const t = localStorage.getItem('tone'); if (t) return JSON.parse(t) } catch { /* ignore */ }
+      // Fall back to locally persisted tone if the backend is unavailable
+      try { const t = localStorage.getItem('tone'); if (t) return JSON.parse(t) } catch { }
       return { style: 'warm', sample_replies: '', do_not_say: '' }
     }
   },
   putTone: async (t) => {
-    try { localStorage.setItem('tone', JSON.stringify(t)) } catch { /* ignore */ }
+    try { localStorage.setItem('tone', JSON.stringify(t)) } catch { }
     await send('PUT', '/api/tone', t)
     return t
   },
