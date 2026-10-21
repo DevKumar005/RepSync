@@ -62,7 +62,7 @@ export default function Home() {
       <section className="mx-auto max-w-3xl space-y-6 text-center">
         <div className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs font-medium text-ink/60">
           <span className="h-1.5 w-1.5 rounded-full bg-pos" />
-          Built for KRITICAL HACKS '26 · AI/ML Track
+          Built for KRITICAL HACKS &apos;26 · AI/ML Track
         </div>
         <h1 className="text-5xl font-bold leading-[1.1] tracking-tight">
           One unanswered 1-star review<br />can cost you dozens of customers.
