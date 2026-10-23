@@ -212,12 +212,12 @@ class TinyFishService:
         use_cache: bool = True,
         on_log: Optional[Callable[[TinyFishCallLog], None]] = None,
         on_step: Optional[Callable[[int, str], None]] = None,
-        max_duration_seconds: int = 60,
+        max_duration_seconds: int = 40,
     ) -> tuple[list[dict], TinyFishCallLog]:
         """
         Metered Web Agent endpoint (SSE stream).
         Escalated ONLY when Fetch is blocked or yields < 10 reviews.
-        Guarded by max_duration_seconds (default 60s) to prevent unhandled stream stalls.
+        Guarded by max_duration_seconds (default 40s) to prevent unhandled stream stalls.
         """
         cache_key = f"{platform}:{url}"
         if use_cache:
@@ -253,7 +253,10 @@ class TinyFishService:
             )
         elif "google" in platform_lower:
             extra_guidance = (
-                " If a consent dialog appears, accept/agree. Look for the 'Reviews' tab or panel and scroll through customer reviews."
+                " If a Google consent or cookie modal appears, click 'Accept all' or 'Agree'. "
+                "If multiple search results appear in the sidebar, click the top matching business result. "
+                "Once the place details card is open, click the 'Reviews' tab (or the rating / review count link) to open customer reviews. "
+                "Scroll down the customer reviews feed to view individual reviews and extract them."
             )
 
         goal_prompt = (

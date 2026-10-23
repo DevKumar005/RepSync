@@ -92,17 +92,21 @@ const realApi: Api = {
     const es = new EventSource(`${BASE}/api/outlets/${id}/sync/stream`)
     let errorTimer: any = null
     let closedExplicitly = false
-    let lastEventAt = Date.now()
+    es.onopen = () => {
+      if (errorTimer) {
+        clearTimeout(errorTimer)
+        errorTimer = null
+      }
+    }
     es.onmessage = (m) => {
       try {
         if (!m.data) return
-        const parsed = JSON.parse(m.data)
-        if (parsed.type === 'ping') { lastEventAt = Date.now(); return }
-        lastEventAt = Date.now()
         if (errorTimer) {
           clearTimeout(errorTimer)
           errorTimer = null
         }
+        const parsed = JSON.parse(m.data)
+        if (parsed.type === 'ping') return
         if (parsed.type === 'done') {
           closedExplicitly = true
         }

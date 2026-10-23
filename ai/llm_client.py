@@ -13,15 +13,16 @@ load_dotenv()
 
 
 class LLMClient:
+    _gemini_down_until: float = 0
+
     def __init__(self):
         gemini_key = os.getenv("GEMINI_API_KEY")
         groq_key = os.getenv("GROQ_API_KEY")
 
-        self.gemini = genai.Client(api_key=gemini_key) if gemini_key else None
+        self.gemini = genai.Client(api_key=gemini_key, http_options={"timeout": 10000}) if gemini_key else None
         self.groq = Groq(api_key=groq_key) if groq_key else None
         self.gemini_model = os.getenv("GEMINI_MODEL") or "gemini-3.8-flash"
         self.groq_model = os.getenv("GROQ_MODEL") or "openai/gpt-oss-20b"
-        self.gemini_down_until = 0
         self.usage = []          # one entry per successful call
 
     def _call_gemini(self, prompt):
@@ -64,17 +65,15 @@ class LLMClient:
         return min(seconds + 1.0, 60.0)      # small buffer, never more than a minute
 
     def generate(self, prompt):
-        if self.gemini and time.time() > self.gemini_down_until:
-            for attempt in range(2):
-                started = time.time()
-                try:
-                    text, t_in, t_out = self._call_gemini(prompt)
-                    self._record("gemini", t_in, t_out, started)
-                    return {"text": text, "provider": "gemini"}
-                except Exception as e:
-                    print(f"Gemini failed (attempt {attempt + 1}): {type(e).__name__} {str(e)[:150]}")
-                    time.sleep(2)
-            self.gemini_down_until = time.time() + 300   # skip Gemini for 5 minutes
+        if self.gemini and time.time() > LLMClient._gemini_down_until:
+            started = time.time()
+            try:
+                text, t_in, t_out = self._call_gemini(prompt)
+                self._record("gemini", t_in, t_out, started)
+                return {"text": text, "provider": "gemini"}
+            except Exception as e:
+                print(f"Gemini failed ({type(e).__name__}: {str(e)[:120]}) — switching to Groq fallback for 10m")
+                LLMClient._gemini_down_until = time.time() + 600   # skip Gemini for 10 minutes across all instances
 
         if self.groq:
             last_error = None

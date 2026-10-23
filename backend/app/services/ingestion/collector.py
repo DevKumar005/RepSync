@@ -50,6 +50,7 @@ PLATFORM_DOMAINS = {
 }
 
 ESCALATION_MIN_REVIEWS = 1
+_agent_escalation_semaphore = asyncio.Semaphore(2)
 
 
 def compute_dedup_hash(platform: str, author: str, date_str: str, text: str) -> str:
@@ -99,9 +100,9 @@ class MultiPlatformCollector:
             not resolved_url
             or "http" not in resolved_url
             or f"www.{self.platform}.com" in resolved_url
-            or (self.platform == "google_maps" and "/maps/search/" in resolved_url)
+            or (self.platform == "google_maps" and resolved_url.rstrip("/") in {"https://www.google.com/maps", "https://maps.google.com"})
             or (self.platform == "zomato" and "/ncr/" not in resolved_url and "/reviews" not in resolved_url)
-            or (self.platform == "tripadvisor" and "Restaurant_Review" not in resolved_url)
+            or (self.platform == "tripadvisor" and "Restaurant_Review" not in resolved_url and "/Search" not in resolved_url)
         )
         if is_placeholder:
             tmpl = PLATFORM_SEARCH_TEMPLATES.get(category, {}).get(
@@ -128,7 +129,13 @@ class MultiPlatformCollector:
             for item in results:
                 u = item.get("url") or item.get("link") or ""
                 if _matches_domain(u, target_domain):
-                    if self.platform == "zomato" and "/reviews" not in u:
+                    if self.platform == "google_maps":
+                        # Reject root/generic Google Maps homepages like https://www.google.com/maps
+                        parsed_u = urlparse(u)
+                        p_str = parsed_u.path.rstrip("/").lower()
+                        if p_str in {"", "/maps"} and not parsed_u.query:
+                            continue
+                    elif self.platform == "zomato" and "/reviews" not in u:
                         u = u.rstrip("/") + "/reviews"
                     elif self.platform == "tripadvisor" and "#REVIEWS" not in u:
                         u = u.rstrip("/") + "#REVIEWS"
@@ -137,7 +144,7 @@ class MultiPlatformCollector:
 
             if found_url:
                 resolved_url = found_url
-            elif not resolved_url or f"www.{self.platform}.com" in resolved_url:
+            elif not resolved_url or f"www.{self.platform}.com" in resolved_url or (self.platform == "google_maps" and resolved_url.rstrip("/") in {"https://www.google.com/maps", "https://maps.google.com"}):
                 if self.platform == "google_maps":
                     resolved_url = f"https://www.google.com/maps/search/{business_name.replace(' ', '+')}+{city.replace(' ', '+')}"
                 elif self.platform == "tripadvisor":
@@ -208,13 +215,14 @@ class MultiPlatformCollector:
                         except Exception:
                             pass
 
-                agent_reviews, a_log = await asyncio.to_thread(
-                    self.tf.run_agent,
-                    url=resolved_url,
-                    platform=self.display_name,
-                    max_reviews=10,
-                    on_step=on_step,
-                )
+                async with _agent_escalation_semaphore:
+                    agent_reviews, a_log = await asyncio.to_thread(
+                        self.tf.run_agent,
+                        url=resolved_url,
+                        platform=self.display_name,
+                        max_reviews=10,
+                        on_step=on_step,
+                    )
                 agent_steps_used = a_log.steps_used or 0
                 tinyfish_calls.append(
                     TinyFishCallIn(

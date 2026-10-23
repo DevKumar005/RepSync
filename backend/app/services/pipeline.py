@@ -153,15 +153,14 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
 
                 try:
                     collector = get_collector(p.key, p.display_name)
-                    async with _agent_semaphore:
-                        result = await collector.collect(
-                            business_name=outlet.name,
-                            city=outlet.city,
-                            category=outlet.category,
-                            target_url=src.url,
-                            emit_callback=platform_emit,
-                            skip_agent=skip_agent_live,
-                        )
+                    result = await collector.collect(
+                        business_name=outlet.name,
+                        city=outlet.city,
+                        category=outlet.category,
+                        target_url=src.url,
+                        emit_callback=platform_emit,
+                        skip_agent=skip_agent_live,
+                    )
 
                     async with db_lock:
                         # Persist TinyFish calls
