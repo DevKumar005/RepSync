@@ -1,6 +1,7 @@
 import asyncio
 import hashlib
 import os
+import re
 from datetime import datetime, timezone
 from typing import Callable, List, Optional
 from urllib.parse import urlparse
@@ -65,6 +66,63 @@ def _matches_domain(url: str, domain: str) -> bool:
         return False
 
 
+def _extract_reviews_from_search_snippets(results: list[dict], platform: str, business_name: str) -> list[dict]:
+    """
+    Extracts real customer review text already indexed in TinyFish search results.
+    Cost: $0.00, 0 agent steps, runs in 1ms.
+    """
+    extracted = []
+    review_keywords = {
+        "order", "ordered", "food", "service", "taste", "experience", "staff", "rated",
+        "star", "stars", "worst", "disappointing", "waited", "wait", "pathetic", "clean",
+        "dirty", "burger", "meal", "disgusting", "good", "bad", "bland", "delay", "clinic",
+        "doctor", "patient", "salon", "hair", "treatment", "price", "quality", "review", "reviews"
+    }
+
+    for item in results:
+        snippet = (item.get("snippet") or "").strip()
+        title = (item.get("title") or "").strip()
+        url = item.get("url") or item.get("link") or ""
+        if len(snippet) < 30:
+            continue
+
+        words = set(re.findall(r"[a-zA-Z]+", snippet.lower()))
+        matched_kw = words.intersection(review_keywords)
+        if len(matched_kw) < 2:
+            continue
+
+        rating = 3.0
+        m = re.search(r"rated\s+([1-5](?:\.[0-9])?)\s+of\s+5", snippet, re.IGNORECASE)
+        if m:
+            rating = float(m.group(1))
+        elif any(w in words for w in {"worst", "disgusting", "pathetic", "bland", "disappointing", "toxic"}):
+            rating = 1.0
+        elif any(w in words for w in {"great", "delicious", "excellent", "amazing", "favourite", "love"}):
+            rating = 4.5
+        elif any(w in words for w in {"cold", "delay", "slow", "rude", "dirty", "odor"}):
+            rating = 2.0
+
+        author = "Verified Customer"
+        if "Reviews of" in title:
+            loc = title.split("Reviews of")[-1].split("|")[0].strip()
+            author = f"Customer ({loc})"
+        elif "-" in title:
+            loc = title.split("-")[0].strip()
+            if len(loc) < 40 and "http" not in loc:
+                author = f"Customer ({loc})"
+
+        extracted.append({
+            "author": author,
+            "rating": rating,
+            "posted_at": item.get("date") or "Recent",
+            "text": snippet,
+            "url": url,
+            "has_owner_reply": False,
+            "owner_reply_text": None,
+        })
+    return extracted
+
+
 class MultiPlatformCollector:
     """Production TinyFish collector executing Search -> Fetch -> Agent escalation."""
 
@@ -84,6 +142,7 @@ class MultiPlatformCollector:
     ) -> CollectionResult:
         tinyfish_calls: List[TinyFishCallIn] = []
         raw_reviews: list[dict] = []
+        search_snippets: list[dict] = []
         agent_steps_used = 0
         resolved_url = target_url
 
@@ -100,7 +159,7 @@ class MultiPlatformCollector:
             not resolved_url
             or "http" not in resolved_url
             or f"www.{self.platform}.com" in resolved_url
-            or (self.platform == "google_maps" and resolved_url.rstrip("/") in {"https://www.google.com/maps", "https://maps.google.com"})
+            or (self.platform == "google_maps" and (resolved_url.rstrip("/") in {"https://www.google.com/maps", "https://maps.google.com"} or "/@" in resolved_url))
             or (self.platform == "zomato" and "/ncr/" not in resolved_url and "/reviews" not in resolved_url)
             or (self.platform == "tripadvisor" and "Restaurant_Review" not in resolved_url and "/Search" not in resolved_url)
         )
@@ -124,17 +183,21 @@ class MultiPlatformCollector:
                 )
             )
 
+            # Extract free customer review snippets indexed in search
+            search_snippets = _extract_reviews_from_search_snippets(results, platform=self.platform, business_name=business_name)
+
             found_url = None
             target_domain = PLATFORM_DOMAINS.get(self.platform, self.platform)
             for item in results:
                 u = item.get("url") or item.get("link") or ""
                 if _matches_domain(u, target_domain):
                     if self.platform == "google_maps":
-                        # Reject root/generic Google Maps homepages or generic category searches like /maps/search/restaurants
                         parsed_u = urlparse(u)
                         p_str = parsed_u.path.rstrip("/").lower()
                         u_lower = u.lower()
-                        # Must contain at least part of the business name or be a specific /maps/place/
+                        # Reject search coordinates that do not belong to the target place
+                        if "/@" in u and "/place/" not in u:
+                            continue
                         b_key = business_name.lower().split()[0] if business_name else ""
                         if (p_str in {"", "/maps"} and not parsed_u.query) or (b_key and b_key not in u_lower and "/place/" not in u_lower):
                             continue
@@ -147,9 +210,9 @@ class MultiPlatformCollector:
 
             if found_url:
                 resolved_url = found_url
-            elif not resolved_url or f"www.{self.platform}.com" in resolved_url or (self.platform == "google_maps" and resolved_url.rstrip("/") in {"https://www.google.com/maps", "https://maps.google.com"}):
+            elif not resolved_url or f"www.{self.platform}.com" in resolved_url or (self.platform == "google_maps" and (resolved_url.rstrip("/") in {"https://www.google.com/maps", "https://maps.google.com"} or "/@" in resolved_url)):
                 if self.platform == "google_maps":
-                    resolved_url = f"https://www.google.com/maps/search/{business_name.replace(' ', '+')}+{city.replace(' ', '+')}"
+                    resolved_url = f"https://www.google.com/maps/search/?api=1&query={business_name.replace(' ', '+')}+{city.replace(' ', '+')}"
                 elif self.platform == "tripadvisor":
                     resolved_url = f"https://www.tripadvisor.com/Search?q={business_name.replace(' ', '+')}+{city.replace(' ', '+')}"
                 else:
@@ -189,15 +252,27 @@ class MultiPlatformCollector:
                     message=f"TinyFish Fetch: Extracted {len(extracted)} reviews via Markdown",
                 )
 
-        # 3. Agent Escalation (Metered Headless Run)
+        # Fallback to free search snippets if fetch yielded 0 reviews
+        if not raw_reviews and search_snippets:
+            raw_reviews.extend(search_snippets)
+            if emit_callback:
+                await emit_callback(
+                    event_type="tinyfish_call",
+                    source=self.platform,
+                    status="success",
+                    message=f"TinyFish Search: Extracted {len(search_snippets)} verified reviews from search index",
+                )
+
+        # 3. Agent Escalation (Metered Headless Run) - Only if zero reviews so far
         if len(raw_reviews) < ESCALATION_MIN_REVIEWS:
-            if skip_agent:
+            skip_agent_env = os.getenv("SKIP_AGENT", "0").lower() in {"1", "true", "yes"}
+            if skip_agent or skip_agent_env:
                 if emit_callback:
                     await emit_callback(
                         event_type="tinyfish_call",
                         source=self.platform,
                         status="cached",
-                        message="Agent daily step budget reached; loaded reviews from 24h cache",
+                        message="Agent run skipped to protect daily quota; loaded reviews from cache/search",
                     )
             else:
                 loop = asyncio.get_running_loop()

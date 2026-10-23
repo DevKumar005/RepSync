@@ -212,12 +212,12 @@ class TinyFishService:
         use_cache: bool = True,
         on_log: Optional[Callable[[TinyFishCallLog], None]] = None,
         on_step: Optional[Callable[[int, str], None]] = None,
-        max_duration_seconds: int = 40,
+        max_duration_seconds: int = 65,
     ) -> tuple[list[dict], TinyFishCallLog]:
         """
         Metered Web Agent endpoint (SSE stream).
         Escalated ONLY when Fetch is blocked or yields < 10 reviews.
-        Guarded by max_duration_seconds (default 40s) to prevent unhandled stream stalls.
+        Guarded by max_duration_seconds (default 65s) to prevent unhandled stream stalls.
         """
         cache_key = f"{platform}:{url}"
         if use_cache:

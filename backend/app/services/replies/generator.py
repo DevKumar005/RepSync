@@ -113,7 +113,7 @@ def generate_reply_draft(
             tone_dict = {
                 "style": tone.style if tone else "warm",
                 "do_not_say": tone.do_not_say if tone else [],
-                "samples": tone.samples if tone else [],
+                "samples": getattr(tone, "sample_replies", None) or getattr(tone, "samples", []) or [],
             }
             res = draft_reply(
                 client=client,

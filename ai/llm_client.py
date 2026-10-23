@@ -19,7 +19,7 @@ class LLMClient:
         gemini_key = os.getenv("GEMINI_API_KEY")
         groq_key = os.getenv("GROQ_API_KEY")
 
-        self.gemini = genai.Client(api_key=gemini_key, http_options={"timeout": 10000}) if gemini_key else None
+        self.gemini = genai.Client(api_key=gemini_key, http_options={"timeout": 8.0}) if gemini_key else None
         self.groq = Groq(api_key=groq_key) if groq_key else None
         self.gemini_model = os.getenv("GEMINI_MODEL") or "gemini-3.8-flash"
         self.groq_model = os.getenv("GROQ_MODEL") or "openai/gpt-oss-20b"
@@ -72,8 +72,8 @@ class LLMClient:
                 self._record("gemini", t_in, t_out, started)
                 return {"text": text, "provider": "gemini"}
             except Exception as e:
-                print(f"Gemini failed ({type(e).__name__}: {str(e)[:120]}) — switching to Groq fallback for 10m")
-                LLMClient._gemini_down_until = time.time() + 600   # skip Gemini for 10 minutes across all instances
+                print(f"Gemini unavailable ({type(e).__name__}: {str(e)[:120]}) — switching to Groq fallback for 30m to protect Google quota")
+                LLMClient._gemini_down_until = time.time() + 1800   # skip Gemini for 30 minutes across all instances
 
         if self.groq:
             last_error = None
@@ -100,13 +100,15 @@ class LLMClient:
         for attempt in range(2):
             result = self.generate(prompt)
             raw = result["text"].strip()
-            if raw.startswith("```"):
-                raw = raw.strip("`")
-                if raw.lower().startswith("json"):
-                    raw = raw[4:]
-                raw = raw.strip()
+            # Robust JSON extraction from code fences or surrounding text
+            m = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", raw)
+            if m:
+                candidate = m.group(1).strip()
+            else:
+                m2 = re.search(r"(\{[\s\S]*\})", raw)
+                candidate = m2.group(1).strip() if m2 else raw
             try:
-                data = json.loads(raw)
+                data = json.loads(candidate)
                 return {"data": schema(**data), "provider": result["provider"]}
             except (json.JSONDecodeError, ValidationError, TypeError) as e:
                 last_error = e
