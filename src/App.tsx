@@ -9,27 +9,28 @@ import TonePage from './pages/Tone'
 
 // Active nav link styles — pill highlight for current route
 const link = ({ isActive }: { isActive: boolean }) =>
-  `px-2.5 py-1 text-sm font-medium rounded-md transition-colors duration-150 ${
+  `px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
     isActive
       ? 'text-brand bg-brandsoft'
-      : 'text-ink/60 hover:text-ink hover:bg-paper'
+      : 'text-ink/50 hover:text-ink hover:bg-paper'
   }`
 
 export default function App() {
   const mode = useMode()
   return (
     <>
-      <header className="border-b border-line bg-surface">
-        <nav className="mx-auto flex max-w-6xl items-center gap-1 px-4 py-3">
-          <NavLink to="/" className="mr-auto font-display text-[17px] font-bold tracking-tight text-ink">
+      <header className="sticky top-0 z-40 border-b border-line/80 bg-surface/90 backdrop-blur-lg">
+        <nav className="mx-auto flex max-w-6xl items-center gap-1.5 px-4 py-3">
+          <NavLink to="/" className="mr-auto font-display text-[17px] font-bold tracking-tight text-ink flex items-center gap-1.5">
+            <span className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-brand text-onbrand text-xs font-bold">R</span>
             Rep<span className="text-brand">Sync</span>
           </NavLink>
-          {isMock && <span className="chip hidden sm:inline mr-2">Demo</span>}
+          {isMock && <span className="chip hidden sm:inline mr-2 !text-[10px]">Demo</span>}
           <NavLink to="/search" className={link}>Find outlet</NavLink>
           <NavLink to="/tone" className={link}>Reply tone</NavLink>
           <NavLink to="/pricing" className={link}>Pricing</NavLink>
           <button
-            className="btn ml-2 !px-2 !py-1.5"
+            className="btn ml-2 !px-2 !py-1.5 !border-transparent"
             aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             aria-pressed={mode === 'dark'}
             onClick={toggleMode}
@@ -50,17 +51,22 @@ export default function App() {
           <Route path="/outlet/:id" element={<Dashboard />} />
           <Route path="/tone" element={<TonePage />} />
           <Route path="/pricing" element={<Pricing />} />
-          <Route path="*" element={<p className="text-ink/60 text-sm">Page not found. <NavLink className="text-brand underline underline-offset-4" to="/">Go home</NavLink></p>} />
+          <Route path="*" element={
+            <div className="text-center py-20 fade-in">
+              <p className="text-5xl mb-4">🔍</p>
+              <p className="text-ink/60 text-sm">Page not found. <NavLink className="text-brand underline underline-offset-4 hover:text-brand/70 transition-colors" to="/">Go home</NavLink></p>
+            </div>
+          } />
         </Routes>
       </main>
 
-      {/* Prototype disclaimer — always visible, non-blocking */}
+      {/* Prototype disclaimer — subtle, non-blocking */}
       <div
         role="note"
         aria-label="Prototype disclaimer"
-        className="fixed bottom-4 right-4 z-50 max-w-[280px] rounded-xl border border-warn/40 bg-warnsoft px-3.5 py-2.5 text-xs text-warn shadow-sm"
+        className="fixed bottom-3 right-3 z-50 max-w-[260px] rounded-xl border border-warn/20 bg-warnsoft/90 backdrop-blur-sm px-3 py-2 text-[11px] text-warn/90 shadow-sm"
       >
-        <span className="font-semibold">Prototype</span> — data may be simulated or inaccurate. Not for production use.
+        <span className="font-semibold">Prototype</span> — data may be simulated. Not for production use.
       </div>
     </>
   )

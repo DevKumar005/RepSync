@@ -92,11 +92,13 @@ const realApi: Api = {
     const es = new EventSource(`${BASE}/api/outlets/${id}/sync/stream`)
     let errorTimer: any = null
     let closedExplicitly = false
+    let lastEventAt = Date.now()
     es.onmessage = (m) => {
       try {
         if (!m.data) return
         const parsed = JSON.parse(m.data)
-        if (parsed.type === 'ping') return
+        if (parsed.type === 'ping') { lastEventAt = Date.now(); return }
+        lastEventAt = Date.now()
         if (errorTimer) {
           clearTimeout(errorTimer)
           errorTimer = null
@@ -112,9 +114,9 @@ const realApi: Api = {
     es.onerror = () => {
       if (closedExplicitly) return
       if (es.readyState === EventSource.CONNECTING) {
-      // Give the browser 35s to reconnect before calling onError.
-      // EventSource reconnects automatically on transient drops;
-      // only fire onError if it stays disconnected.
+        // Give the browser 20s to reconnect before calling onError.
+        // EventSource reconnects automatically on transient drops;
+        // only fire onError if it stays disconnected.
         if (!errorTimer) {
           errorTimer = setTimeout(() => {
             if (es.readyState !== EventSource.OPEN && !closedExplicitly) {
@@ -122,7 +124,7 @@ const realApi: Api = {
               es.close()
               onError?.()
             }
-          }, 35000)
+          }, 20000)
         }
       } else if (es.readyState === EventSource.CLOSED) {
         if (errorTimer) clearTimeout(errorTimer)

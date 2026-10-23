@@ -4,80 +4,204 @@
 
 @layer base {
   :root {
-    --ink: 17 24 39;
-    --paper: 248 250 252;
+    --ink: 30 32 34;
+    --ink-muted: 100 107 118;
+    --paper: 250 249 247;
     --surface: 255 255 255;
-    --line: 226 232 240;
-    --brand: 37 99 235;
-    --brandsoft: 239 246 255;
+    --line: 234 229 222;
+    --brand: 99 74 218;
+    --brandsoft: 243 240 255;
     --onbrand: 255 255 255;
-    --neg: 185 28 28;
-    --negsoft: 254 242 242;
-    --pos: 21 128 61;
-    --warn: 161 98 7;
-    --warnsoft: 254 249 195;
+    --neg: 197 48 48;
+    --negsoft: 255 245 245;
+    --pos: 34 131 72;
+    --possoft: 240 255 244;
+    --warn: 180 107 12;
+    --warnsoft: 255 251 235;
     --fetchbg: 238 242 255;
-    --fetchfg: 67 56 202;
+    --fetchfg: 79 70 189;
+    --glow: 99 74 218;
   }
   .dark {
     color-scheme: dark;
-    --ink: 226 232 240;
-    --paper: 10 15 23;
-    --surface: 15 23 36;
-    --line: 30 41 59;
-    --brand: 96 165 250;
-    --brandsoft: 23 37 84;
-    --onbrand: 10 15 23;
-    --neg: 248 113 113;
-    --negsoft: 67 20 20;
-    --pos: 74 222 128;
-    --warn: 250 204 21;
-    --warnsoft: 66 32 6;
-    --fetchbg: 30 27 75;
-    --fetchfg: 165 180 252;
+    --ink: 232 230 227;
+    --ink-muted: 148 142 136;
+    --paper: 18 17 15;
+    --surface: 28 27 24;
+    --line: 48 45 40;
+    --brand: 163 143 255;
+    --brandsoft: 33 26 60;
+    --onbrand: 18 17 15;
+    --neg: 252 129 129;
+    --negsoft: 60 20 20;
+    --pos: 104 211 145;
+    --possoft: 15 45 25;
+    --warn: 251 191 36;
+    --warnsoft: 55 30 8;
+    --fetchbg: 30 27 60;
+    --fetchfg: 172 182 255;
+    --glow: 163 143 255;
   }
 
   body {
     @apply bg-paper text-ink font-body antialiased text-[15px] leading-relaxed;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
   h1, h2, h3 {
     @apply font-display tracking-tight;
+    letter-spacing: -0.025em;
   }
   :focus-visible {
-    outline: 2px solid rgb(var(--brand));
+    outline: 2px solid rgb(var(--brand) / 0.5);
     outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Smooth scrolling */
+  html { scroll-behavior: smooth; }
+
+  /* Custom selection color */
+  ::selection {
+    background: rgb(var(--brand) / 0.15);
+    color: rgb(var(--ink));
   }
 }
 
 @layer components {
   .panel {
-    @apply bg-surface border border-line rounded-xl;
+    @apply bg-surface border border-line;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgb(var(--ink) / 0.04), 0 0 0 0.5px rgb(var(--line) / 0.6);
+    transition: box-shadow 0.25s ease, border-color 0.25s ease;
   }
+  .panel:hover {
+    box-shadow: 0 4px 16px rgb(var(--ink) / 0.06), 0 0 0 0.5px rgb(var(--line) / 0.8);
+  }
+
   .btn {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3.5 py-1.5 text-sm font-medium
+    @apply inline-flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-semibold
            border border-line bg-surface text-ink/80
-           hover:bg-paper hover:text-ink
-           transition-colors duration-150
+           transition-all duration-200 ease-out
            disabled:opacity-40 disabled:cursor-not-allowed;
+    border-radius: 10px;
+    letter-spacing: -0.01em;
   }
+  .btn:hover:not(:disabled) {
+    @apply bg-paper text-ink;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgb(var(--ink) / 0.06);
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: none;
+  }
+
   .btn-primary {
-    @apply bg-brand text-onbrand border-brand hover:opacity-90 hover:bg-brand hover:text-onbrand;
+    @apply bg-brand text-onbrand border-brand;
+    box-shadow: 0 2px 8px rgb(var(--brand) / 0.25);
+  }
+  .btn-primary:hover:not(:disabled) {
+    @apply bg-brand text-onbrand;
+    opacity: 0.92;
+    box-shadow: 0 4px 16px rgb(var(--brand) / 0.35);
   }
   .btn-danger {
-    @apply text-neg border-neg/30 hover:bg-negsoft;
+    @apply text-neg border-neg/30;
   }
+  .btn-danger:hover:not(:disabled) {
+    @apply bg-negsoft;
+  }
+
   .chip {
-    @apply inline-block rounded-md px-2 py-0.5 text-xs font-medium bg-paper text-ink/60 border border-line;
+    @apply inline-block rounded-full px-2.5 py-0.5 text-xs font-medium;
+    background: rgb(var(--paper));
+    color: rgb(var(--ink) / 0.6);
+    border: 1px solid rgb(var(--line));
   }
+
   .field {
-    @apply w-full rounded-lg border border-line bg-surface text-ink
-           px-3 py-2 text-sm placeholder:text-ink/30
-           focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20
-           transition-shadow duration-150;
+    @apply w-full bg-surface text-ink
+           px-3.5 py-2.5 text-sm placeholder:text-ink/30
+           focus:outline-none focus:ring-2 focus:ring-brand/25 focus:border-brand
+           transition-all duration-200;
+    border: 1.5px solid rgb(var(--line));
+    border-radius: 12px;
   }
+  .field:hover:not(:focus) {
+    border-color: rgb(var(--ink) / 0.2);
+  }
+
   /* Overline-style section label used in panels */
   .label-overline {
-    @apply text-xs font-semibold uppercase tracking-widest text-ink/40;
+    @apply text-xs font-semibold uppercase tracking-widest;
+    color: rgb(var(--ink) / 0.35);
+    letter-spacing: 0.1em;
+  }
+
+  /* --- Animated skeleton loader --- */
+  .skeleton {
+    @apply rounded-lg;
+    background: linear-gradient(
+      90deg,
+      rgb(var(--line) / 0.3) 25%,
+      rgb(var(--line) / 0.5) 50%,
+      rgb(var(--line) / 0.3) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* --- Live pulse indicator --- */
+  .pulse-live {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+  @keyframes pulse-glow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  /* --- Fade in animation --- */
+  .fade-in {
+    animation: fadeIn 0.4s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* --- Slide up animation --- */
+  .slide-up {
+    animation: slideUp 0.5s ease-out;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* --- Subtle gradient text (for hero) --- */
+  .text-gradient {
+    background: linear-gradient(135deg, rgb(var(--ink)), rgb(var(--brand)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* --- Status dot --- */
+  .status-dot {
+    @apply inline-block h-2 w-2 rounded-full;
+    animation: blink 2s ease-in-out infinite;
+  }
+  .status-dot-ok { background: rgb(var(--pos)); }
+  .status-dot-warn { background: rgb(var(--warn)); }
+  .status-dot-neg { background: rgb(var(--neg)); }
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
   }
 }
 

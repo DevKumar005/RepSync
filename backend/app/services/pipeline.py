@@ -283,42 +283,66 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
 
             # Persist Themes
             for td in themes_data:
-                existing_th = session.exec(
-                    select(Theme).where(Theme.outlet_id == outlet_id, Theme.label == td["label"])
-                ).first()
-                if not existing_th:
-                    th = Theme(
-                        outlet_id=outlet_id,
-                        label=td["label"],
-                        sentiment=td["sentiment"],
-                        description=td["description"],
-                    )
-                    session.add(th)
-                    session.commit()
-                    session.refresh(th)
+                try:
+                    existing_th = session.exec(
+                        select(Theme).where(Theme.outlet_id == outlet_id, Theme.label == td["label"])
+                    ).first()
+                    if not existing_th:
+                        th = Theme(
+                            outlet_id=outlet_id,
+                            label=td["label"],
+                            sentiment=td.get("sentiment"),
+                            description=td.get("description"),
+                        )
+                        session.add(th)
+                        session.commit()
+                        session.refresh(th)
+                    else:
+                        th = existing_th
+
                     for r_id in td.get("review_ids", []):
-                        rt = ReviewTheme(review_id=r_id, theme_id=th.id)
-                        session.add(rt)
-                    session.commit()
+                        if not r_id:
+                            continue
+                        r_id_str = str(r_id)
+                        rev_match = session.get(Review, r_id_str)
+                        if not rev_match:
+                            continue
+                        existing_rt = session.exec(
+                            select(ReviewTheme).where(
+                                ReviewTheme.review_id == r_id_str,
+                                ReviewTheme.theme_id == th.id,
+                            )
+                        ).first()
+                        if not existing_rt:
+                            rt = ReviewTheme(review_id=r_id_str, theme_id=th.id)
+                            session.add(rt)
+                            session.commit()
+                except Exception as theme_err:
+                    print(f"Notice: Could not persist theme '{td.get('label')}': {theme_err}")
+                    session.rollback()
 
             # Persist Top Fixes
             for fd in fixes_data:
-                existing_fix = session.exec(
-                    select(FixSuggestion).where(
-                        FixSuggestion.outlet_id == outlet_id,
-                        FixSuggestion.rank == fd["rank"],
-                    )
-                ).first()
-                if not existing_fix:
-                    fix = FixSuggestion(
-                        outlet_id=outlet_id,
-                        rank=fd["rank"],
-                        title=fd["title"],
-                        rationale=fd["rationale"],
-                        evidence_count=fd["evidence_count"],
-                    )
-                    session.add(fix)
-            session.commit()
+                try:
+                    existing_fix = session.exec(
+                        select(FixSuggestion).where(
+                            FixSuggestion.outlet_id == outlet_id,
+                            FixSuggestion.rank == fd["rank"],
+                        )
+                    ).first()
+                    if not existing_fix:
+                        fix = FixSuggestion(
+                            outlet_id=outlet_id,
+                            rank=fd["rank"],
+                            title=fd["title"],
+                            rationale=fd.get("rationale"),
+                            evidence_count=fd.get("evidence_count", 0),
+                        )
+                        session.add(fix)
+                        session.commit()
+                except Exception as fix_err:
+                    print(f"Notice: Could not persist fix suggestion: {fix_err}")
+                    session.rollback()
 
             # --- STAGE 5: Drafting ---
             await broadcaster.emit(
@@ -331,21 +355,25 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
 
             negative_reviews = [r for r in all_reviews if r.sentiment == "negative" and not r.has_owner_reply]
             for nr in negative_reviews:
-                existing_draft = session.exec(
-                    select(ReplyDraft).where(ReplyDraft.review_id == nr.id)
-                ).first()
-                if not existing_draft:
-                    reply_text, guardrails = generate_reply_draft(nr, tone)
-                    draft = ReplyDraft(
-                        review_id=nr.id,
-                        text=reply_text,
-                        status="draft",
-                        version=1,
-                        prompt_version="v2",
-                        guardrail_flags=guardrails,
-                    )
-                    session.add(draft)
-            session.commit()
+                try:
+                    existing_draft = session.exec(
+                        select(ReplyDraft).where(ReplyDraft.review_id == nr.id)
+                    ).first()
+                    if not existing_draft:
+                        reply_text, guardrails = generate_reply_draft(nr, tone)
+                        draft = ReplyDraft(
+                            review_id=nr.id,
+                            text=reply_text,
+                            status="draft",
+                            version=1,
+                            prompt_version="v2",
+                            guardrail_flags=guardrails,
+                        )
+                        session.add(draft)
+                        session.commit()
+                except Exception as draft_err:
+                    print(f"Notice: Could not generate draft for review {nr.id}: {draft_err}")
+                    session.rollback()
 
             # --- COMPLETE: Done ---
             await broadcaster.emit(
