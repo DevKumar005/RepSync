@@ -278,7 +278,7 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
             )
 
             all_reviews = session.exec(select(Review).where(Review.outlet_id == outlet_id)).all()
-            themes_data, fixes_data = analyze_themes_and_fixes(all_reviews, outlet.category)
+            themes_data, fixes_data = await asyncio.to_thread(analyze_themes_and_fixes, all_reviews, outlet.category)
 
             # Persist Themes
             for td in themes_data:
@@ -359,7 +359,7 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
                         select(ReplyDraft).where(ReplyDraft.review_id == nr.id)
                     ).first()
                     if not existing_draft:
-                        reply_text, guardrails = generate_reply_draft(nr, tone)
+                        reply_text, guardrails = await asyncio.to_thread(generate_reply_draft, nr, tone)
                         draft = ReplyDraft(
                             review_id=nr.id,
                             text=reply_text,
@@ -370,6 +370,7 @@ async def run_sync_pipeline(outlet_id: str, job_id: str) -> None:
                         )
                         session.add(draft)
                         session.commit()
+                        await asyncio.sleep(0.05)
                 except Exception as draft_err:
                     print(f"Notice: Could not generate draft for review {nr.id}: {draft_err}")
                     session.rollback()

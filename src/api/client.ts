@@ -128,7 +128,7 @@ const realApi: Api = {
               es.close()
               onError?.()
             }
-          }, 20000)
+          }, 45000)
         }
       } else if (es.readyState === EventSource.CLOSED) {
         if (errorTimer) clearTimeout(errorTimer)
