@@ -34,7 +34,7 @@ def _extract_with_heuristics(markdown_text: str, platform: str) -> list[dict]:
     if not markdown_text:
         return []
 
-    lines = [l.strip() for l in markdown_text.splitlines() if l.strip()]
+    lines = [line.strip() for line in markdown_text.splitlines() if line.strip()]
     reviews = []
 
     # 1. Zomato pattern: Author -> [followers] -> Rating -> DINING/DELIVERY -> Date -> Text -> [Helpful/Votes]
@@ -89,7 +89,7 @@ def _extract_with_heuristics(markdown_text: str, platform: str) -> list[dict]:
     # 2. General review cards with ratings e.g. "★" or "rated X of 5" or "5/5"
     review_blocks = re.split(r"\n(?=#{2,4}\s+|Reviewed\s+|Written\s+)", markdown_text)
     for block in review_blocks:
-        b_lines = [l.strip() for l in block.splitlines() if l.strip()]
+        b_lines = [line.strip() for line in block.splitlines() if line.strip()]
         if len(b_lines) < 2:
             continue
         text_full = " ".join(b_lines)
