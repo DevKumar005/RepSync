@@ -66,7 +66,12 @@ def extract_reviews_from_markdown(markdown_text: str, platform: str) -> list[dic
     gemini_key = os.getenv("GEMINI_API_KEY", "")
     if gemini_key and "your-gemini-key" not in gemini_key:
         try:
-            client = genai.Client(api_key=gemini_key)
+            from ai.llm_client import LLMClient
+            import time
+            if time.time() < LLMClient._gemini_down_until:
+                return _extract_with_groq(markdown_text, platform)
+
+            client = genai.Client(api_key=gemini_key, http_options={"timeout": 10000})
             prompt = (
                 f"You are extracting real customer reviews from a {platform} page converted to Markdown.\n"
                 f"Extract ONLY actual individual customer reviews or patient stories present in the text.\n"
@@ -90,6 +95,12 @@ def extract_reviews_from_markdown(markdown_text: str, platform: str) -> list[dic
                 return extracted
         except Exception as e:
             print(f"  [Extractor Warning] Gemini failed ({e}); attempting Groq fallback...")
+            try:
+                from ai.llm_client import LLMClient
+                import time
+                LLMClient._gemini_down_until = time.time() + 600
+            except Exception:
+                pass
 
     # Fallback to Groq if Gemini is unconfigured, throttled (429), or unavailable (503)
     return _extract_with_groq(markdown_text, platform)

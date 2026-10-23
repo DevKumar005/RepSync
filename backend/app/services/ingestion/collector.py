@@ -130,10 +130,13 @@ class MultiPlatformCollector:
                 u = item.get("url") or item.get("link") or ""
                 if _matches_domain(u, target_domain):
                     if self.platform == "google_maps":
-                        # Reject root/generic Google Maps homepages like https://www.google.com/maps
+                        # Reject root/generic Google Maps homepages or generic category searches like /maps/search/restaurants
                         parsed_u = urlparse(u)
                         p_str = parsed_u.path.rstrip("/").lower()
-                        if p_str in {"", "/maps"} and not parsed_u.query:
+                        u_lower = u.lower()
+                        # Must contain at least part of the business name or be a specific /maps/place/
+                        b_key = business_name.lower().split()[0] if business_name else ""
+                        if (p_str in {"", "/maps"} and not parsed_u.query) or (b_key and b_key not in u_lower and "/place/" not in u_lower):
                             continue
                     elif self.platform == "zomato" and "/reviews" not in u:
                         u = u.rstrip("/") + "/reviews"
