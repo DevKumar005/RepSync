@@ -1,0 +1,375 @@
+{
+ "source": "sample",
+ "note": "Simulated competitor reviews for the demo. Clinics and reviews are fictional.",
+ "category": "clinic",
+ "locality": "Bandra West, Mumbai",
+ "collected_at": null,
+ "competitors": [
+  {
+   "name": "Smile Care Dental (sample)",
+   "area": "Linking Road, Mumbai",
+   "reviews": [
+    {
+     "text": "Doctor was rushed and did not listen to my problem.",
+     "rating": 1.0,
+     "posted_at": "10 hours ago",
+     "topics": [
+      "doctor behaviour"
+     ]
+    },
+    {
+     "text": "Didn't listen to my concerns, the doctor rushed through the check-up.",
+     "rating": 1.0,
+     "posted_at": "3 days ago",
+     "topics": [
+      "doctor behaviour"
+     ]
+    },
+    {
+     "text": "Filling fell out within two weeks.",
+     "rating": 1.0,
+     "posted_at": "a week ago",
+     "topics": [
+      "poor quality work"
+     ]
+    },
+    {
+     "text": "Clean clinic and on-time appointment.",
+     "rating": 5.0,
+     "posted_at": "14 days ago",
+     "topics": []
+    },
+    {
+     "text": "डॉक्टर ने बहुत अच्छे से समझाया, इलाज बढ़िया था।",
+     "rating": 4.0,
+     "posted_at": "17 days ago",
+     "topics": []
+    },
+    {
+     "text": "Reception staff were helpful with insurance papers.",
+     "rating": 5.0,
+     "posted_at": "21 days ago",
+     "topics": []
+    },
+    {
+     "text": "Doctor sahab bahut acche hain, dard bilkul nahi hua.",
+     "rating": 5.0,
+     "posted_at": "28 days ago",
+     "topics": []
+    },
+    {
+     "text": "Got an appointment the same day, great service.",
+     "rating": 4.0,
+     "posted_at": "31 days ago",
+     "topics": []
+    },
+    {
+     "text": "Transparent pricing explained before treatment.",
+     "rating": 5.0,
+     "posted_at": "35 days ago",
+     "topics": []
+    },
+    {
+     "text": "Doctor barely examined me and wrote a prescription.",
+     "rating": 2.0,
+     "posted_at": "42 days ago",
+     "topics": [
+      "doctor behaviour"
+     ]
+    },
+    {
+     "text": "The doctor was rushing between patients.",
+     "rating": 2.0,
+     "posted_at": "45 days ago",
+     "topics": [
+      "doctor behaviour"
+     ]
+    },
+    {
+     "text": "Painless root canal, the doctor explained every step.",
+     "rating": 4.0,
+     "posted_at": "49 days ago",
+     "topics": []
+    },
+    {
+     "text": "Doctor was gentle with my kid, very patient.",
+     "rating": 5.0,
+     "posted_at": "56 days ago",
+     "topics": []
+    },
+    {
+     "text": "Scaling done quickly, no pain at all.",
+     "rating": 5.0,
+     "posted_at": "59 days ago",
+     "topics": []
+    },
+    {
+     "text": "Braces consultation was detailed and honest.",
+     "rating": 4.0,
+     "posted_at": "63 days ago",
+     "topics": []
+    },
+    {
+     "text": "Modern equipment and very hygienic setup.",
+     "rating": 5.0,
+     "posted_at": "70 days ago",
+     "topics": []
+    },
+    {
+     "text": "Filling done perfectly, no sensitivity after.",
+     "rating": 5.0,
+     "posted_at": "73 days ago",
+     "topics": []
+    },
+    {
+     "text": "Friendly team, clean waiting area.",
+     "rating": 4.0,
+     "posted_at": "77 days ago",
+     "topics": []
+    }
+   ]
+  },
+  {
+   "name": "PearlBright Clinic (sample)",
+   "area": "Hill Road, Mumbai",
+   "reviews": [
+    {
+     "text": "Charges were much higher than quoted on the phone.",
+     "rating": 1.0,
+     "posted_at": "a week ago",
+     "topics": [
+      "overpriced"
+     ]
+    },
+    {
+     "text": "Hidden charges for the X-ray added later.",
+     "rating": 1.0,
+     "posted_at": "14 days ago",
+     "topics": [
+      "overpriced"
+     ]
+    },
+    {
+     "text": "Overpriced treatment, got the same done elsewhere for half.",
+     "rating": 1.0,
+     "posted_at": "17 days ago",
+     "topics": [
+      "overpriced"
+     ]
+    },
+    {
+     "text": "Expensive, and they push unnecessary treatments.",
+     "rating": 1.0,
+     "posted_at": "21 days ago",
+     "topics": [
+      "overpriced"
+     ]
+    },
+    {
+     "text": "Washroom was dirty and had a bad smell.",
+     "rating": 2.0,
+     "posted_at": "24 days ago",
+     "topics": [
+      "hygiene"
+     ]
+    },
+    {
+     "text": "Scaling done quickly, no pain at all.",
+     "rating": 5.0,
+     "posted_at": "28 days ago",
+     "topics": []
+    },
+    {
+     "text": "Braces consultation was detailed and honest.",
+     "rating": 4.0,
+     "posted_at": "one month ago",
+     "topics": []
+    },
+    {
+     "text": "Modern equipment and very hygienic setup.",
+     "rating": 5.0,
+     "posted_at": "32 days ago",
+     "topics": []
+    },
+    {
+     "text": "Filling done perfectly, no sensitivity after.",
+     "rating": 5.0,
+     "posted_at": "35 days ago",
+     "topics": []
+    },
+    {
+     "text": "Very expensive for a simple cleaning.",
+     "rating": 2.0,
+     "posted_at": "38 days ago",
+     "topics": [
+      "overpriced"
+     ]
+    },
+    {
+     "text": "Bahut mehnga hai, normal filling ke liye bhi.",
+     "rating": 2.0,
+     "posted_at": "42 days ago",
+     "topics": [
+      "overpriced"
+     ]
+    },
+    {
+     "text": "Costly consultation fee and extra charges for everything.",
+     "rating": 2.0,
+     "posted_at": "45 days ago",
+     "topics": [
+      "overpriced"
+     ]
+    },
+    {
+     "text": "Instruments did not look clean, waiting room was dirty.",
+     "rating": 1.0,
+     "posted_at": "49 days ago",
+     "topics": [
+      "hygiene"
+     ]
+    },
+    {
+     "text": "Unhygienic chair, the staff did not change the cover.",
+     "rating": 1.0,
+     "posted_at": "52 days ago",
+     "topics": [
+      "hygiene"
+     ]
+    },
+    {
+     "text": "Reception staff were helpful with insurance papers.",
+     "rating": 5.0,
+     "posted_at": "56 days ago",
+     "topics": []
+    },
+    {
+     "text": "Doctor sahab bahut acche hain, dard bilkul nahi hua.",
+     "rating": 5.0,
+     "posted_at": "63 days ago",
+     "topics": []
+    },
+    {
+     "text": "Got an appointment the same day, great service.",
+     "rating": 4.0,
+     "posted_at": "70 days ago",
+     "topics": []
+    },
+    {
+     "text": "Transparent pricing explained before treatment.",
+     "rating": 5.0,
+     "posted_at": "77 days ago",
+     "topics": []
+    }
+   ]
+  },
+  {
+   "name": "CityCare Dental (sample)",
+   "area": "Khar West, Mumbai",
+   "reviews": [
+    {
+     "text": "Waited an hour past my appointment time.",
+     "rating": 1.0,
+     "posted_at": "10 hours ago",
+     "topics": [
+      "slow service"
+     ]
+    },
+    {
+     "text": "Filling fell out within two weeks.",
+     "rating": 2.0,
+     "posted_at": "2 days ago",
+     "topics": [
+      "poor quality work"
+     ]
+    },
+    {
+     "text": "Filling done perfectly, no sensitivity after.",
+     "rating": 5.0,
+     "posted_at": "4 days ago",
+     "topics": []
+    },
+    {
+     "text": "Friendly team, clean waiting area.",
+     "rating": 4.0,
+     "posted_at": "a week ago",
+     "topics": []
+    },
+    {
+     "text": "Very professional and punctual.",
+     "rating": 5.0,
+     "posted_at": "10 days ago",
+     "topics": []
+    },
+    {
+     "text": "Painless root canal, the doctor explained every step.",
+     "rating": 5.0,
+     "posted_at": "14 days ago",
+     "topics": []
+    },
+    {
+     "text": "Doctor was gentle with my kid, very patient.",
+     "rating": 4.0,
+     "posted_at": "17 days ago",
+     "topics": []
+    },
+    {
+     "text": "Scaling done quickly, no pain at all.",
+     "rating": 5.0,
+     "posted_at": "21 days ago",
+     "topics": []
+    },
+    {
+     "text": "Appointment was delayed by 40 minutes with no update.",
+     "rating": 2.0,
+     "posted_at": "24 days ago",
+     "topics": [
+      "slow service"
+     ]
+    },
+    {
+     "text": "Got an appointment the same day, great service.",
+     "rating": 4.0,
+     "posted_at": "28 days ago",
+     "topics": []
+    },
+    {
+     "text": "Transparent pricing explained before treatment.",
+     "rating": 5.0,
+     "posted_at": "35 days ago",
+     "topics": []
+    },
+    {
+     "text": "Wisdom tooth extraction went smoothly.",
+     "rating": 5.0,
+     "posted_at": "42 days ago",
+     "topics": []
+    },
+    {
+     "text": "Teeth whitening results are great.",
+     "rating": 4.0,
+     "posted_at": "49 days ago",
+     "topics": []
+    },
+    {
+     "text": "Clean clinic and on-time appointment.",
+     "rating": 5.0,
+     "posted_at": "56 days ago",
+     "topics": []
+    },
+    {
+     "text": "डॉक्टर ने बहुत अच्छे से समझाया, इलाज बढ़िया था।",
+     "rating": 5.0,
+     "posted_at": "63 days ago",
+     "topics": []
+    },
+    {
+     "text": "Reception staff were helpful with insurance papers.",
+     "rating": 4.0,
+     "posted_at": "70 days ago",
+     "topics": []
+    }
+   ]
+  }
+ ]
+}
