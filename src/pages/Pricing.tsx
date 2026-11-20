@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
 const PLANS = [
-  { name: 'Starter', price: '499', emoji: '🌱', blurb: 'For one outlet getting started', items: ['1 outlet, 2 platforms', 'Weekly sync', '30 AI replies a month'] },
-  { name: 'Growth', price: '999', emoji: '🚀', blurb: 'For owners who want to fix what customers complain about', items: ['1 outlet, all platforms', 'Daily sync and alerts', 'Unlimited replies', 'Competitor benchmark'], featured: true },
-  { name: 'Pro / Agency', price: '1,999', emoji: '🏢', blurb: 'For agencies running several outlets', items: ['Multi-user access', 'White-label PDF reports', 'Priority sync', 'Bulk approvals'] },
+  { name: 'Starter', price: '499', blurb: 'For one outlet getting started', items: ['1 outlet, 2 platforms', 'Weekly sync', '30 AI replies a month'] },
+  { name: 'Growth', price: '999', blurb: 'For owners who want to fix what customers complain about', items: ['1 outlet, all platforms', 'Daily sync and alerts', 'Unlimited replies', 'Competitor benchmark'], featured: true },
+  { name: 'Pro / Agency', price: '1,999', blurb: 'For agencies running several outlets', items: ['Multi-user access', 'White-label PDF reports', 'Priority sync', 'Bulk approvals'] },
 ]
 
 export default function Pricing() {
@@ -23,12 +23,11 @@ export default function Pricing() {
             className={`panel p-6 flex flex-col gap-5 transition-transform duration-300 hover:-translate-y-1 ${p.featured ? 'ring-2 ring-brand/40' : ''}`}
           >
             {p.featured && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-b from-[#bd4468] to-[#8c1320] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-b from-[#3a5cc0] to-[#1b2f6b] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
                 Most popular
               </span>
             )}
             <div className="space-y-1.5">
-              <span className="text-3xl block">{p.emoji}</span>
               <h2 className="text-lg font-semibold">{p.name}</h2>
               <p className="text-sm text-ink/45">{p.blurb}</p>
             </div>
@@ -56,7 +55,7 @@ export default function Pricing() {
 
       {picked && (
         <p role="status" className="panel px-4 py-3 text-sm text-ink/60 text-center fade-in">
-          Test mode — no payment taken. You picked <strong className="text-ink">{picked}</strong>. 🎉
+          Test mode: no payment taken. You picked <strong className="text-ink">{picked}</strong>.
         </p>
       )}
     </div>

@@ -3,11 +3,11 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { api } from '../api/client'
 import type { Tone } from '../types'
 
-const STYLES: { value: Tone['style']; emoji: string; label: string }[] = [
-  { value: 'warm', emoji: '🤝', label: 'Warm' },
-  { value: 'formal', emoji: '👔', label: 'Formal' },
-  { value: 'apologetic', emoji: '🙏', label: 'Apologetic' },
-  { value: 'concise', emoji: '⚡', label: 'Concise' },
+const STYLES: { value: Tone['style']; label: string; hint: string }[] = [
+  { value: 'warm', label: 'Warm', hint: 'Friendly and personal' },
+  { value: 'formal', label: 'Formal', hint: 'Polite and precise' },
+  { value: 'apologetic', label: 'Apologetic', hint: 'Owns the problem' },
+  { value: 'concise', label: 'Concise', hint: 'Short and direct' },
 ]
 
 export default function TonePage() {
@@ -37,9 +37,9 @@ export default function TonePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {STYLES.map((s) => (
               <button type="button" key={s.value} aria-pressed={t.style === s.value} onClick={() => setT({ ...t, style: s.value })}
-                className={`rounded-2xl p-3 text-center transition-all duration-200 cursor-pointer ${t.style === s.value ? 'tile tile-speed' : 'border border-white/80 bg-white/60 hover:bg-white'}`}>
-                <span className="text-2xl block mb-1">{s.emoji}</span>
-                <span className={`text-sm font-medium ${t.style === s.value ? 'text-white' : 'text-ink/65'}`}>{s.label}</span>
+                className={`rounded-2xl p-3 text-center transition-all duration-200 cursor-pointer ${t.style === s.value ? 'tile tile-speed' : 'border border-ink/[.08] bg-ink/[.03] hover:bg-ink/[.06]'}`}>
+                <span className={`block text-sm font-semibold ${t.style === s.value ? 'text-white' : 'text-ink/80'}`}>{s.label}</span>
+                <span className={`mt-0.5 block text-[11px] ${t.style === s.value ? 'text-white/75' : 'text-ink/45'}`}>{s.hint}</span>
               </button>
             ))}
           </div>

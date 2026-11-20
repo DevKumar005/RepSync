@@ -16,7 +16,7 @@ export function SampleBadge({ source, label = 'Sample data' }: { source?: DataSo
 const STATUS_STYLE: Record<GapStatus, string> = {
   threat: 'bg-negsoft text-neg border-neg/25',
   opportunity: 'bg-possoft text-pos border-pos/25',
-  parity: 'bg-white/60 text-ink/50 border-line',
+  parity: 'bg-ink/[.04] text-ink/50 border-line',
 }
 const STATUS_LABEL: Record<GapStatus, string> = { threat: 'Threat · fix it', opportunity: 'Opportunity · advertise', parity: 'Parity' }
 
