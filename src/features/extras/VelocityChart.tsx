@@ -8,8 +8,8 @@ import type { VelocityResponse } from './types'
 import { ErrorNote, Panel, SampleBadge } from './ui'
 
 const PALETTE = {
-  light: { you: '#25408f', others: ['#0f766e', '#b54708', '#64748b'], grid: 'rgba(15,23,42,.08)', text: '#475467' },
-  dark: { you: '#8aa8f0', others: ['#5eead4', '#fbbf24', '#94a3b8'], grid: 'rgba(255,255,255,.08)', text: '#a3abb9' },
+  light: { you: '#35627a', others: ['#b46258', '#7c80b0', '#8e9a98'], grid: 'rgba(30,43,51,.08)', text: '#5b6870' },
+  dark: { you: '#8cb4c9', others: ['#e5aea9', '#a6a9d0', '#b5bfbd'], grid: 'rgba(255,255,255,.08)', text: '#a3afb3' },
 }
 
 const shortDate = (iso: string) => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })

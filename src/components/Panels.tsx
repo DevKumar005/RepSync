@@ -110,9 +110,9 @@ export function ThemePanel({ id, selected, onSelect }: { id: string; selected?: 
   const { data } = useQuery({ queryKey: ['themes', id], queryFn: () => api.themes(id) })
   const sel: Theme | undefined = data?.find((t) => t.id === selected)
   const dark = useMode() === 'dark'
-  const hot = dark ? '#8aa8f0' : '#25408f'
-  const dim = dark ? '#2a3554' : '#c9d4ef'
-  const text = dark ? '#e5e7eb' : '#1f2937'
+  const hot = dark ? '#8cb4c9' : '#35627a'
+  const dim = dark ? '#2b3f4b' : '#cfd9df'
+  const text = dark ? '#e8ecee' : '#1e2b33'
   return (
     <section className="panel p-5">
       <h2 className="text-[13px] font-semibold uppercase tracking-wider text-ink/35 flex items-center gap-1.5">
@@ -130,7 +130,7 @@ export function ThemePanel({ id, selected, onSelect }: { id: string; selected?: 
             <BarChart data={data} layout="vertical" margin={{ left: 0, right: 24 }}>
               <XAxis type="number" hide /><YAxis type="category" dataKey="label" width={140} tick={{ fontSize: 13, fill: text }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v) => `${v} reviews`} cursor={{ fill: dark ? 'rgba(255,255,255,.04)' : 'rgba(15,23,42,.03)' }}
-                contentStyle={{ background: dark ? '#141a26' : '#fff', border: `1px solid ${dark ? 'rgba(255,255,255,.08)' : 'rgba(15,23,42,.08)'}`, borderRadius: 12 }} itemStyle={{ color: text }} />
+                contentStyle={{ background: dark ? '#16202a' : '#fff', border: `1px solid ${dark ? 'rgba(255,255,255,.08)' : 'rgba(15,23,42,.08)'}`, borderRadius: 12 }} itemStyle={{ color: text }} />
               <Bar dataKey="count" radius={[0, 6, 6, 0]} isAnimationActive={false} onClick={(d: any) => onSelect(d.id === selected ? undefined : d.id)}>
                 {data.map((t) => <Cell key={t.id} cursor="pointer" fill={!selected || t.id === selected ? hot : dim} />)}
               </Bar>

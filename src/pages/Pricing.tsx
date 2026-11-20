@@ -23,7 +23,7 @@ export default function Pricing() {
             className={`panel p-6 flex flex-col gap-5 transition-transform duration-300 hover:-translate-y-1 ${p.featured ? 'ring-2 ring-brand/40' : ''}`}
           >
             {p.featured && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-b from-[#3a5cc0] to-[#1b2f6b] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-b from-[#437591] to-[#2a4f63] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
                 Most popular
               </span>
             )}
