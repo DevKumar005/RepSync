@@ -46,6 +46,7 @@ from backend.app.models.schemas import (
 from backend.app.services.approval import validate_draft_transition
 from backend.app.services.events import event_generator
 from backend.app.services.pipeline import get_active_job, run_sync_pipeline
+from backend.app.services.places import search_places
 from backend.app.services.replies.generator import generate_reply_draft
 
 router = APIRouter()
@@ -153,14 +154,29 @@ def get_platforms(session: Session = Depends(get_session)):
 @limiter.limit("30/minute")
 def search_outlet_candidates(request: Request, req: OutletSearchRequest):
 
-    """M1 Search candidates for business across platforms."""
+    """M1 Search candidates via OpenStreetMap; falls back to a single unverified guess."""
+    places = search_places(req.name, req.city, req.category)
+    if places:
+        return [
+            OutletCandidate(
+                id=p["place_id"],
+                source="OpenStreetMap",
+                name=p["name"],
+                city=req.city,
+                category=req.category,
+                address=p["address"],
+                urls={"google_maps": p["maps_url"]},
+            )
+            for p in places
+        ]
+
     slug = req.name.lower().replace(" ", "-")
     return [
         OutletCandidate(
             name=req.name,
             city=req.city,
             category=req.category,
-            address=f"Central Market, {req.city}",
+            address=req.city,
             urls={
                 "google_maps": f"https://www.google.com/maps/search/{slug}+{req.city}",
                 "zomato": f"https://www.zomato.com/{req.city.lower()}/{slug}",
@@ -205,7 +221,7 @@ def create_outlet(
         src = Source(
             outlet_id=outlet.id,
             platform=p.key,
-            url=f"https://www.{p.key}.com/{outlet.name.lower().replace(' ', '-')}",
+            url=req.urls.get(p.key) or f"https://www.{p.key}.com/{outlet.name.lower().replace(' ', '-')}",
             status="pending",
         )
         session.add(src)

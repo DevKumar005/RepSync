@@ -50,6 +50,8 @@ class OutletSearchRequest(BaseModel):
 
 
 class OutletCandidate(BaseModel):
+    id: Optional[str] = None
+    source: Optional[str] = None
     name: str
     city: str
     category: str
@@ -62,6 +64,7 @@ class OutletCreate(BaseModel):
     category: Literal["restaurant", "clinic", "salon"]
     city: str = Field(..., min_length=2, max_length=100)
     address: Optional[str] = None
+    urls: Dict[str, str] = {}
     candidate: Optional[Any] = None
 
     @model_validator(mode="after")
