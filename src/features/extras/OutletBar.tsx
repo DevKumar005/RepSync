@@ -16,6 +16,7 @@ export default function OutletBar() {
       <NavLink end to={base} className={tab}>Dashboard</NavLink>
       <NavLink to={`${base}/competitors`} className={tab}>Competitors</NavLink>
       <NavLink to={`${base}/posters`} className={tab}>Posters</NavLink>
+      <NavLink to={`${base}/map`} className={tab}>City map</NavLink>
       <AskDrawer id={m[1]} />
     </nav>
   )
