@@ -9,20 +9,21 @@ const PLANS = [
 export default function Pricing() {
   const [picked, setPicked] = useState('')
   return (
-    <div className="space-y-10 pt-4 max-w-4xl mx-auto fade-in">
+    <div className="space-y-10 px-4 pt-12 pb-20 max-w-5xl mx-auto fade-in">
       <div className="space-y-2 text-center md:text-left">
-        <h1 className="text-3xl font-bold tracking-tight">Priced for one outlet, not a chain</h1>
-        <p className="text-ink/45 text-[15px] leading-relaxed">One lost table or appointment a month costs more than the plan. Start with a free reputation audit.</p>
+        <p className="label-overline">Pricing</p>
+        <h1 className="rs-title text-[clamp(28px,3.4vw,42px)]">Priced for one outlet, not a chain</h1>
+        <p className="rs-copy text-[15px]">One lost table or appointment a month costs more than the plan. Start with a free reputation audit.</p>
       </div>
 
       <div className="grid gap-5 md:grid-cols-3">
         {PLANS.map((p) => (
           <section
             key={p.name}
-            className={`panel p-6 flex flex-col gap-5 transition-all duration-300 hover:shadow-lg ${p.featured ? 'border-brand/50 shadow-md shadow-brand/10 relative' : 'hover:border-brand/20'}`}
+            className={`panel p-6 flex flex-col gap-5 transition-transform duration-300 hover:-translate-y-1 ${p.featured ? 'ring-2 ring-brand/40' : ''}`}
           >
             {p.featured && (
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-brand text-onbrand text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+              <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-b from-[#bd4468] to-[#8c1320] text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
                 Most popular
               </span>
             )}
@@ -54,7 +55,7 @@ export default function Pricing() {
       </div>
 
       {picked && (
-        <p role="status" className="panel bg-brandsoft border-brand/20 px-4 py-3 text-sm text-ink/60 text-center fade-in">
+        <p role="status" className="panel px-4 py-3 text-sm text-ink/60 text-center fade-in">
           Test mode — no payment taken. You picked <strong className="text-ink">{picked}</strong>. 🎉
         </p>
       )}

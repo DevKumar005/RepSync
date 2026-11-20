@@ -1,19 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { useMode } from '../../theme'
+import { SectionHead } from '../../components/Page'
+import { useOutlet } from '../../pages/outlet/OutletLayout'
 import { extrasApi } from './api'
 import type { VelocityResponse } from './types'
 import { ErrorNote, Panel, SampleBadge } from './ui'
 
-const PALETTE = {
-  light: { you: '#7C3AED', others: ['#0E7490', '#B45309', '#4D7C0F'], grid: '#E7E5E4', text: '#57534E' },
-  dark: { you: '#C4B5FD', others: ['#67E8F9', '#FCD34D', '#BEF264'], grid: '#3A3733', text: '#A8A29E' },
-}
+const PALETTE = { you: '#ad314d', others: ['#7d5bb0', '#e0703d', '#3f7d6e'], grid: 'rgba(58,25,39,.1)', text: '#5a5a5a' }
 
 const shortDate = (iso: string) => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
 
 export function VelocityView({ data, height = 260 }: { data: VelocityResponse; height?: number }) {
-  const p = PALETTE[useMode() === 'dark' ? 'dark' : 'light']
+  const p = PALETTE
   const rows = data.weeks.map((w, i) => ({
     week: `w/c ${shortDate(w)}`,
     ...Object.fromEntries(data.series.map((s) => [s.key, s.counts[i] ?? 0])),
@@ -54,7 +52,7 @@ export function VelocityBadges({ data }: { data: VelocityResponse }) {
           )
         }
         return (
-          <li key={s.key} className="rounded-full border border-line bg-paper px-2.5 py-1 text-[11px] text-ink/55" title={s.dates_note}>
+          <li key={s.key} className="rounded-full border border-line bg-white/50 px-2.5 py-1 text-[11px] text-ink/55" title={s.dates_note}>
             {label}: {t.status !== 'ok' ? 'not enough data for a trend' : (t.change_pct ?? 0) >= 15 ? `rising (+${t.change_pct}%)` : `steady (${(t.change_pct ?? 0) > 0 ? '+' : ''}${t.change_pct}%)`} · n={s.sample_size}
           </li>
         )
@@ -63,7 +61,17 @@ export function VelocityBadges({ data }: { data: VelocityResponse }) {
   )
 }
 
-export default function VelocitySection({ id }: { id: string }) {
+export default function VelocityPage() {
+  const { id } = useOutlet()
+  return (
+    <div className="space-y-5">
+      <SectionHead title="Review velocity" sub="Reviews per week over the last 12 weeks, for you and every scanned competitor. A drop of 30% or more is flagged." />
+      <VelocitySection id={id} />
+    </div>
+  )
+}
+
+export function VelocitySection({ id }: { id: string }) {
   const q = useQuery({ queryKey: ['extras', 'velocity', id], queryFn: () => extrasApi.velocity(id) })
   return (
     <Panel title="Review velocity · last 12 weeks" action={<SampleBadge source={q.data?.source} />}>

@@ -1,81 +1,90 @@
+import { lazy, Suspense } from 'react'
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { isMock } from './api/client'
-import { toggleMode, useMode } from './theme'
-import Dashboard from './pages/Dashboard'
-import Home from './pages/Home'
-import Pricing from './pages/Pricing'
-import Search from './pages/Search'
-import TonePage from './pages/Tone'
+import DotText from './components/DotText'
 import { extrasEnabled } from './features/extras/flags'
-import OutletBar from './features/extras/OutletBar'
-import CompetitorsPage from './features/extras/CompetitorsPage'
-import PostersPage from './features/extras/PostersPage'
-import CityMapPage from './features/extras/CityMapPage'
+import Home from './pages/Home'
 
-// Active nav link styles — pill highlight for current route
+// Route-level code splitting keeps the first load small (charts and image export load on demand)
+const Search = lazy(() => import('./pages/Search'))
+const TonePage = lazy(() => import('./pages/Tone'))
+const Pricing = lazy(() => import('./pages/Pricing'))
+const OutletLayout = lazy(() => import('./pages/outlet/OutletLayout'))
+const Overview = lazy(() => import('./pages/outlet/Overview'))
+const ReviewsPage = lazy(() => import('./pages/outlet/ReviewsPage'))
+const RepliesPage = lazy(() => import('./pages/outlet/RepliesPage'))
+const InsightsPage = lazy(() => import('./pages/outlet/InsightsPage'))
+const ActivityPage = lazy(() => import('./pages/outlet/ActivityPage'))
+const CompetitorsPage = lazy(() => import('./features/extras/CompetitorsPage'))
+const VelocityPage = lazy(() => import('./features/extras/VelocityChart'))
+const PostersPage = lazy(() => import('./features/extras/PostersPage'))
+const AskPage = lazy(() => import('./features/extras/AskPage'))
+const CityMapPage = lazy(() => import('./features/extras/CityMapPage'))
+
 const link = ({ isActive }: { isActive: boolean }) =>
-  `px-3 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-    isActive
-      ? 'text-brand bg-brandsoft'
-      : 'text-ink/50 hover:text-ink hover:bg-paper'
+  `whitespace-nowrap rounded-full px-2.5 py-1.5 text-[12.5px] sm:px-3.5 sm:text-[13.5px] transition-colors duration-200 ${
+    isActive ? 'bg-white text-ink shadow-[0_1px_3px_rgba(58,25,39,.12)]' : 'text-ink/60 hover:text-ink hover:bg-white/60'
   }`
 
+const PageFallback = () => (
+  <div className="rs-container space-y-4 py-10">
+    <div className="skeleton h-9 w-72" />
+    <div className="skeleton h-40 w-full" />
+  </div>
+)
+
+const NotFound = () => (
+  <div className="mx-auto max-w-xl px-4 py-24 text-center">
+    <span className="inline-block text-brand"><DotText text="404" radius={1.9} height="40px" /></span>
+    <p className="rs-copy mt-4">This page does not exist. <NavLink className="text-brand underline underline-offset-4" to="/">Go home</NavLink></p>
+  </div>
+)
+
 export default function App() {
-  const mode = useMode()
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-line/80 bg-surface/90 backdrop-blur-lg">
-        <nav className="mx-auto flex max-w-6xl items-center gap-1.5 px-4 py-3">
-          <NavLink to="/" className="mr-auto font-display text-[17px] font-bold tracking-tight text-ink flex items-center gap-1.5">
-            <span className="inline-flex items-center justify-center h-7 w-7 rounded-lg bg-brand text-onbrand text-xs font-bold">R</span>
-            Rep<span className="text-brand">Sync</span>
+      <header className="sticky top-0 z-40 h-[var(--header-h)] border-b border-white/60 bg-[rgba(236,236,235,.72)] backdrop-blur-xl">
+        <nav className="rs-container flex h-full items-center gap-0.5 sm:gap-1">
+          <NavLink to="/" className="mr-auto flex items-center gap-2 text-[17px] font-semibold tracking-tight text-ink" aria-label="RepSync home">
+            Rep<span className="text-brand"><DotText text="Sync" pitchX={4} radius={1.8} height="15px" /></span>
           </NavLink>
-          {isMock && <span className="chip hidden sm:inline mr-2 !text-[10px]">Demo</span>}
+          {isMock && <span className="chip mr-2 hidden !text-[10px] sm:inline">Demo data</span>}
           <NavLink to="/search" className={link}>Find outlet</NavLink>
           <NavLink to="/tone" className={link}>Reply tone</NavLink>
           <NavLink to="/pricing" className={link}>Pricing</NavLink>
-          <button
-            className="btn ml-2 !px-2 !py-1.5 !border-transparent"
-            aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            aria-pressed={mode === 'dark'}
-            onClick={toggleMode}
-          >
-            {mode === 'dark' ? (
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
-            )}
-          </button>
         </nav>
       </header>
 
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        {extrasEnabled && <OutletBar />}
+      <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
-          <Route path="/outlet/:id" element={<Dashboard />} />
           <Route path="/tone" element={<TonePage />} />
           <Route path="/pricing" element={<Pricing />} />
-          {extrasEnabled && <Route path="/outlet/:id/competitors" element={<CompetitorsPage />} />}
-          {extrasEnabled && <Route path="/outlet/:id/posters" element={<PostersPage />} />}
-          {extrasEnabled && <Route path="/outlet/:id/map" element={<CityMapPage />} />}
-          <Route path="*" element={
-            <div className="text-center py-20 fade-in">
-              <p className="text-5xl mb-4">🔍</p>
-              <p className="text-ink/60 text-sm">Page not found. <NavLink className="text-brand underline underline-offset-4 hover:text-brand/70 transition-colors" to="/">Go home</NavLink></p>
-            </div>
-          } />
+          <Route path="/outlet/:id" element={<OutletLayout />}>
+            <Route index element={<Overview />} />
+            <Route path="reviews" element={<ReviewsPage />} />
+            <Route path="replies" element={<RepliesPage />} />
+            <Route path="insights" element={<InsightsPage />} />
+            <Route path="activity" element={<ActivityPage />} />
+            {extrasEnabled && <>
+              <Route path="competitors" element={<CompetitorsPage />} />
+              <Route path="velocity" element={<VelocityPage />} />
+              <Route path="posters" element={<PostersPage />} />
+              <Route path="ask" element={<AskPage />} />
+              <Route path="map" element={<CityMapPage />} />
+            </>}
+          </Route>
+          <Route path="*" element={<NotFound />} />
         </Routes>
-      </main>
+      </Suspense>
 
-      {/* Prototype disclaimer — subtle, non-blocking */}
       <div
         role="note"
         aria-label="Prototype disclaimer"
-        className="fixed bottom-3 right-3 z-50 max-w-[260px] rounded-xl border border-warn/20 bg-warnsoft/90 backdrop-blur-sm px-3 py-2 text-[11px] text-warn/90 shadow-sm"
+        className="fixed bottom-3 right-3 z-30 max-w-[240px] rounded-2xl border border-white/70 bg-white/70 px-3 py-2 text-[11px] text-ink/60 shadow-sm backdrop-blur-md"
       >
-        <span className="font-semibold">Prototype</span> — data may be simulated. Not for production use.
+        <span className="font-semibold text-ink/80">Prototype</span> · data may be simulated. Not for production use.
       </div>
     </>
   )

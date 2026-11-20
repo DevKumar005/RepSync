@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { toPng } from 'html-to-image'
 import { api } from '../../api/client'
 import type { Review } from '../../types'
+import { SectionHead } from '../../components/Page'
 import { ErrorNote, FONT_STACK, Panel } from './ui'
 
 const SIZES = {
@@ -174,7 +175,7 @@ function PosterEditor({ review, outletName, onClose }: { review: Review; outletN
           </button>
           {error && <p role="alert" className="text-sm text-neg">{error}</p>}
         </div>
-        <div className="overflow-auto rounded-2xl border border-line bg-paper p-4">
+        <div className="overflow-auto rounded-2xl border border-line bg-white/50 p-4">
           <div style={{ width: w * scale, height: h * scale }} className="mx-auto shadow-lg">
             <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: w, height: h }}>
               <div ref={node}>
@@ -199,16 +200,13 @@ export default function PostersPage() {
   )
 
   return (
-    <div className="space-y-6 fade-in">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Review posters</h1>
-        <p className="text-sm text-ink/50 mt-1">Turn a 5-star review into a shareable image for Instagram or WhatsApp status.</p>
-      </div>
+    <div className="space-y-5">
+      <SectionHead title="Review posters" sub="Turn a 5-star review into a shareable image for an Instagram post or WhatsApp status. The logo you add never leaves your device." />
       {selected && <PosterEditor review={selected} outletName={outlet.data?.name ?? 'Your business'} onClose={() => setSelected(null)} />}
       <Panel title={`5-star reviews (${fiveStar.length})`}>
         {reviews.isLoading && <p className="px-5 pb-5 text-sm text-ink/45">Loading reviews…</p>}
         {reviews.isError && <ErrorNote>Could not load reviews: {(reviews.error as Error).message}</ErrorNote>}
-        {reviews.data && !fiveStar.length && <p className="px-5 pb-5 text-sm text-ink/45">No 5-star reviews yet. Sync reviews from the dashboard first.</p>}
+        {reviews.data && !fiveStar.length && <p className="px-5 pb-5 text-sm text-ink/45">No 5-star reviews yet. Press Sync reviews above first.</p>}
         <ul className="divide-y divide-line">
           {fiveStar.map((r) => (
             <li key={r.id} className="flex items-start gap-4 px-5 py-4">

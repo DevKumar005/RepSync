@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { api } from '../api/client'
-import { useMode } from '../theme'
+import DotText from './DotText'
 import type { DraftStatus, Review, ReviewFilters, SyncEvent, Theme, TinyFishCall } from '../types'
 
 const Stars = ({ n: raw }: { n: number }) => {
@@ -40,46 +40,34 @@ const SectionHeader = ({ children, action }: { children: React.ReactNode; action
 
 export function SummaryBar({ id }: { id: string }) {
   const { data } = useQuery({ queryKey: ['summary', id], queryFn: () => api.summary(id) })
-  const items = data ? [
-    { label: 'Average rating', value: data.avg_rating.toFixed(1), icon: '⭐', cls: '' },
-    { label: 'Total reviews', value: String(data.total_reviews), icon: '💬', cls: '' },
-    { label: 'Negative', value: `${data.pct_negative}%`, icon: '📉', cls: data.pct_negative > 30 ? 'text-neg' : '' },
-    { label: 'Unanswered negatives', value: String(data.unanswered_negatives), icon: '⚠️', cls: data.unanswered_negatives > 0 ? 'text-neg' : '' },
-  ] : []
-
   if (!data) {
     return (
-      <div className="panel grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 divide-x-0 md:divide-x divide-line">
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="px-5 py-5">
-            <div className="skeleton h-7 w-16 rounded mb-2" />
-            <div className="skeleton h-3 w-24 rounded" />
-          </div>
-        ))}
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => <div key={i} className="skeleton h-[118px]" />)}
       </div>
     )
   }
-
-  const allZero = data.total_reviews === 0
-
+  const items = [
+    { label: 'Average rating', value: data.avg_rating.toFixed(1), unit: '/ 5', tile: 'tile-speed' },
+    { label: 'Collected reviews', value: String(data.total_reviews), unit: '', tile: 'tile-context' },
+    { label: 'Negative', value: String(data.pct_negative), unit: '%', tile: 'tile-connections' },
+    { label: 'Unanswered negatives', value: String(data.unanswered_negatives), unit: '', tile: 'tile-ink' },
+  ]
   return (
-    <div className="panel grid grid-cols-2 md:grid-cols-4 divide-y md:divide-y-0 divide-x-0 md:divide-x divide-line fade-in">
-      {items.map(({ label, value, icon, cls }) => (
-        <div key={label} className="px-5 py-4 group">
-          <div className="flex items-center gap-2">
-            <span className="text-base opacity-70 group-hover:opacity-100 transition-opacity">{icon}</span>
-            <span className={`text-2xl font-bold tracking-tight tabular-nums ${cls} ${allZero ? 'text-ink/25' : ''}`}>{value}</span>
+    <div className="space-y-3 fade-in">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+        {items.map(({ label, value, unit, tile }) => (
+          <div key={label} className={`tile ${tile} px-5 py-4`}>
+            <div className="text-[11px] font-semibold uppercase tracking-[.12em] text-white/80">{label}</div>
+            <div className="mt-3 flex items-end gap-1.5">
+              <DotText text={value} radius={2.05} height="30px" />
+              {unit && <span className="pb-0.5 text-lg text-white/85">{unit}</span>}
+            </div>
           </div>
-          <div className="text-[11px] text-ink/35 mt-1 uppercase tracking-wider font-medium">{label}</div>
-        </div>
-      ))}
-      {allZero && (
-        <div className="col-span-full px-5 py-3 bg-warnsoft/50 border-t border-warn/20">
-          <p className="text-xs text-warn flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v.01"/><path d="M12 8v4"/></svg>
-            No review data yet — hit <strong>Sync reviews</strong> to pull in your latest reviews.
-          </p>
-        </div>
+        ))}
+      </div>
+      {data.total_reviews === 0 && (
+        <p className="panel px-4 py-3 text-sm text-warn">No review data yet. Press <strong>Sync reviews</strong> to collect your latest reviews.</p>
       )}
     </div>
   )
@@ -102,7 +90,7 @@ export function FixesPanel({ id }: { id: string }) {
       ) : (
         <ol className="divide-y divide-line">
           {data.map((f) => (
-            <li key={f.rank} className="flex gap-4 px-5 py-4 hover:bg-paper/50 transition-colors duration-150 group">
+            <li key={f.rank} className="flex gap-4 px-5 py-4 hover:bg-white/50 transition-colors duration-150 group">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brandsoft text-sm font-bold text-brand shrink-0 group-hover:scale-105 transition-transform">{f.rank}</span>
               <div className="min-w-0">
                 <div className="font-semibold text-sm text-ink/90">{f.title}</div>
@@ -120,10 +108,9 @@ export function FixesPanel({ id }: { id: string }) {
 export function ThemePanel({ id, selected, onSelect }: { id: string; selected?: string; onSelect: (t?: string) => void }) {
   const { data } = useQuery({ queryKey: ['themes', id], queryFn: () => api.themes(id) })
   const sel: Theme | undefined = data?.find((t) => t.id === selected)
-  const dark = useMode() === 'dark'
-  const hot = dark ? '#C4B5FD' : '#7C3AED'
-  const dim = dark ? '#3B3060' : '#DDD6FE'
-  const text = dark ? '#E8E6E3' : '#1E2022'
+  const hot = '#ad314d'
+  const dim = '#e8c3cd'
+  const text = '#2a2a2a'
   return (
     <section className="panel p-5">
       <h2 className="text-[13px] font-semibold uppercase tracking-wider text-ink/35 flex items-center gap-1.5">
@@ -140,9 +127,9 @@ export function ThemePanel({ id, selected, onSelect }: { id: string; selected?: 
           <ResponsiveContainer width="100%" height={data.length * 44 + 16}>
             <BarChart data={data} layout="vertical" margin={{ left: 0, right: 24 }}>
               <XAxis type="number" hide /><YAxis type="category" dataKey="label" width={140} tick={{ fontSize: 13, fill: text }} axisLine={false} tickLine={false} />
-              <Tooltip formatter={(v) => `${v} reviews`} cursor={{ fill: dark ? '#0F161B' : '#F2F5F6' }}
-                contentStyle={{ background: dark ? '#1C1B18' : '#fff', border: `1px solid ${dark ? '#302D28' : '#EAE5DE'}`, borderRadius: 12 }} itemStyle={{ color: text }} />
-              <Bar dataKey="count" radius={[0, 6, 6, 0]} onClick={(d: any) => onSelect(d.id === selected ? undefined : d.id)}>
+              <Tooltip formatter={(v) => `${v} reviews`} cursor={{ fill: 'rgba(255,255,255,.5)' }}
+                contentStyle={{ background: '#fff', border: '1px solid rgba(58,25,39,.1)', borderRadius: 12 }} itemStyle={{ color: text }} />
+              <Bar dataKey="count" radius={[0, 6, 6, 0]} isAnimationActive={false} onClick={(d: any) => onSelect(d.id === selected ? undefined : d.id)}>
                 {data.map((t) => <Cell key={t.id} cursor="pointer" fill={!selected || t.id === selected ? hot : dim} />)}
               </Bar>
             </BarChart>
@@ -184,7 +171,7 @@ export function ReviewFeed({ id, theme }: { id: string; theme?: string }) {
       ) : (
         <ul className="divide-y divide-line">
           {data.map((r) => (
-            <li key={r.id} className="p-4 hover:bg-paper/50 transition-colors duration-150">
+            <li key={r.id} className="p-4 hover:bg-white/50 transition-colors duration-150">
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="chip text-[11px]">{r.platform.replace(/_/g, ' ')}</span>
                 <Stars n={r.rating} />
@@ -221,7 +208,7 @@ function DraftCard({ review, outletId }: { review: Review; outletId: string }) {
   const locked = d.status === 'approved' || d.status === 'posted'
   const busy = patch.isPending || regen.isPending
   return (
-    <li className="p-4 hover:bg-paper/30 transition-colors duration-150">
+    <li className="p-4 hover:bg-white/40 transition-colors duration-150">
       <div className="flex items-center gap-2 text-sm">
         <Stars n={review.rating} />
         <span className="font-semibold text-ink/90">{review.author}</span>
@@ -314,7 +301,7 @@ export function ActivityLog({ id, live, syncing }: { id: string; live: SyncEvent
       ) : (
         <ul className="divide-y divide-line border-t border-line text-xs">
           {data.map((c) => (
-            <li key={c.id} className="flex items-start gap-2.5 px-5 py-3 hover:bg-paper/50 transition-colors duration-150">
+            <li key={c.id} className="flex items-start gap-2.5 px-5 py-3 hover:bg-white/50 transition-colors duration-150">
               <span className={`chip shrink-0 w-14 text-center !text-[10px] !font-semibold !rounded-md ${tag[c.endpoint]}`}>{c.endpoint}</span>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-ink/65 leading-relaxed">{c.input}</div>

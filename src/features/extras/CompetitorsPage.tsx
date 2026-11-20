@@ -5,7 +5,7 @@ import type { SyncEvent } from '../../types'
 import { extrasApi } from './api'
 import type { CompetitorCandidate, CompetitorResult, GapRow } from './types'
 import { ErrorNote, Panel, SampleBadge, StatusChip } from './ui'
-import VelocitySection from './VelocityChart'
+import { SectionHead } from '../../components/Page'
 
 const pct = (r: number | null) => (r === null ? '–' : `${r % 1 === 0 ? r : r.toFixed(1)}%`)
 
@@ -81,7 +81,7 @@ function CandidatePicker({ id, onScan, busy }: { id: string; onScan: (p: Competi
           <ul className="grid gap-2 sm:grid-cols-2">
             {list.map((c) => (
               <li key={c.name}>
-                <label className="flex cursor-pointer items-start gap-2 rounded-xl border border-line px-3 py-2 hover:bg-paper">
+                <label className="flex cursor-pointer items-start gap-2 rounded-xl border border-line px-3 py-2 hover:bg-white/60">
                   <input type="checkbox" className="accent-brand mt-1" checked={picked.includes(c.name)} onChange={() => toggle(c.name)} />
                   <span className="min-w-0">
                     <span className="block text-sm font-medium">{c.name}</span>
@@ -189,7 +189,7 @@ export function CompetitorsSection({ id }: { id: string }) {
         <Panel title="What to do about it">
           <ul className="grid gap-3 px-5 pb-5 md:grid-cols-3">
             {data.advice!.map((a) => (
-              <li key={a.theme} className="rounded-2xl border border-line bg-paper p-4 space-y-2">
+              <li key={a.theme} className="rounded-2xl border border-line bg-white/50 p-4 space-y-2">
                 <StatusChip status={a.status} />
                 <p className="text-sm leading-relaxed">{a.text}</p>
                 {(data.quotes?.[a.theme] ?? []).map((q, i) => (
@@ -209,15 +209,12 @@ export function CompetitorsSection({ id }: { id: string }) {
 export default function CompetitorsPage() {
   const { id = '' } = useParams()
   return (
-    <div className="space-y-6 fade-in">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Competitor Gap Matrix</h1>
-        <p className="text-sm text-ink/50 mt-1">
-          How often customers complain about each theme at your outlet compared with up to 3 nearby competitors, from public reviews.
-        </p>
-      </div>
+    <div className="space-y-5">
+      <SectionHead
+        title="Competitor gap matrix"
+        sub="How often customers complain about each theme at your outlet compared with up to 3 nearby competitors, from public reviews."
+      />
       <CompetitorsSection id={id} />
-      <VelocitySection id={id} />
     </div>
   )
 }
