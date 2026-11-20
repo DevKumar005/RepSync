@@ -1,10 +1,10 @@
 <div align="center">
 
-# 🔄 RepSync
+# RepSync
 
-### One inbox for every review. One tap to reply. One list of what to fix.
+### Every review in one place. The fixes that matter. Replies you approve.
 
-**A local business reputation manager that pulls public reviews from across platforms, finds the recurring complaints, and drafts replies the owner approves.**
+**A reputation manager for local businesses in India. RepSync collects public reviews from every platform, finds the complaints that keep coming back, compares you with nearby competitors, and drafts replies the owner approves.**
 
 [![CI](https://github.com/DevKumar005/RepSync/actions/workflows/ci.yml/badge.svg)](https://github.com/DevKumar005/RepSync/actions)
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
@@ -13,220 +13,290 @@
 ![TinyFish](https://img.shields.io/badge/Powered%20by-TinyFish-0A7AFF)
 ![Hackathon](https://img.shields.io/badge/KRITICAL%20HACKS'26-AI%2FML%20Track-8A2BE2)
 
-[Demo Mode](#-demo-mode) · [How TinyFish Is Used](#-how-tinyfish-is-used) · [Quick Start](#-quick-start) · [Future Scope](#-future-scope)
+**[Live app](https://repsync-2026.vercel.app)** · **[API docs](https://repsync-backend.onrender.com/docs)** · [Quick start](#quick-start) · [Data modes](#live-data-vs-sample-data) · [Deployment](#deployment)
 
 </div>
 
 ---
 
-## 📸 Preview
+## Live
 
-https://repsync-2026.vercel.app
-
----
-
-## 🚨 The Problem
-
-Small businesses (restaurants, clinics, salons) lose customers to bad reviews they never see or never answer. Reviews are scattered across **Google Maps, Zomato, Practo, JustDial** and more. Owners have no time to check four dashboards, and an unanswered negative review tells the next customer that nobody cares.
-
-## ✨ What RepSync Does
-
-An owner types their **business name and city**, confirms the outlet, and RepSync does the rest.
-
-| Capability | Description |
+| | URL |
 | --- | --- |
-| 🔎 **Unified review collection** | Finds the outlet's review pages on at least 2 platforms and extracts reviews into one normalised feed (author, rating, date, text, URL, owner reply). |
-| 🧠 **Sentiment and themes** | Classifies every review and clusters negative ones into labelled themes (for example "slow service") with counts, percentages and representative quotes. |
-| 🛠️ **Top 3 Fixes** | Turns themes into the three most valuable things to fix, with evidence counts. The point is fixing the business, not only replying. |
-| ✍️ **Tone-aware reply drafts** | Drafts a reply for each negative review that references specifics from that review, in the owner's tone (warm, formal, apologetic, concise). |
-| 🛡️ **Guardrails** | No liability admissions, no medical claims, no refund promises, no blaming the reviewer. Banned phrases trigger an automatic regeneration. |
-| ✅ **Approval workflow** | Draft → Edited → Approved → Rejected → Posted. Nothing is ready to post without explicit owner approval, enforced in the API and not just the UI. |
-| 📊 **Dashboard** | Summary cards, theme chart, filterable review feed, reply queue, Top 3 Fixes, and the TinyFish Activity Log. |
-| 🇮🇳 **Built for India** | Understands English, Hindi and Hinglish reviews, and replies in the language of the review. |
+| Frontend (Vercel) | https://repsync-2026.vercel.app |
+| Backend API (Render) | https://repsync-backend.onrender.com |
+| Interactive API docs | https://repsync-backend.onrender.com/docs |
 
-## 💡 Why Not Just Use Google's Free Replies?
+The backend runs on Render's free plan, which sleeps when idle. The first request after a quiet period can take 30–60 seconds while it wakes up.
 
-Tools like Birdeye, Podium and ReviewTrackers exist, and owners can already reply for free inside Google. RepSync is different in five ways:
+## The problem
 
-1. **No API access needed.** TinyFish reads public pages on platforms that offer no review API, so one owner gets one unified inbox.
-2. **Insight, not just replies.** Complaints become themes with counts and a "Top 3 Fixes" list.
-3. **Built for India.** English, Hindi and Hinglish are understood, and replies match the owner's language and tone.
-4. **The owner stays in control.** Every reply needs explicit approval, with guardrails on what the AI may say.
-5. **Priced for small outlets.** ₹499 to ₹1,999 per month, instead of enterprise pricing built for chains.
+Restaurants, clinics and salons are reviewed on four or five platforms at once: Google Maps, Zomato, Practo, Justdial, Tripadvisor. Owners have no time to read them all, recurring complaints go unfixed because nobody spots the pattern, and an unanswered 1-star review tells the next customer that nobody is listening.
 
-## 🐟 How TinyFish Is Used
+## What RepSync does
 
-TinyFish is the data backbone of RepSync. Every call is recorded and shown live in the UI.
+An owner searches for their business by name and city, picks the right branch, and RepSync handles the rest. Each tool has its own tab inside the outlet.
 
-| Endpoint | Role in RepSync | Cost |
+| Tool | What it does |
+| --- | --- |
+| **Overview** | Rating, review count, share of negative reviews and unanswered complaints, plus snapshots of every other tool. |
+| **Reviews** | Every collected review from every platform in one feed, filterable by platform, sentiment and complaint theme. |
+| **Replies** | A drafted reply for every unanswered negative review, in the owner's tone. Edit, shorten, offer a callback, approve or reject. |
+| **Insights** | Negative reviews grouped into labelled complaint themes with real quotes, and the top 3 fixes ranked by evidence. |
+| **Competitors** | Compares complaint rates with up to 3 nearby competitors, theme by theme. Each gap is labelled a threat (fix it) or an opportunity (advertise it). |
+| **Velocity** | Reviews per week over 12 weeks for you and each competitor, with a warning when momentum drops by 30% or more. |
+| **Posters** | Turns a 5-star review into an Instagram post (1080×1080) or WhatsApp status (1080×1920) image in the owner's brand colour. Hindi is supported. The logo never leaves the browser. |
+| **City map** | Who is rising and who is slipping in the locality, on an offline map with the owner's outlet highlighted. |
+| **Activity** | Every TinyFish Search, Fetch and Agent call, with timing, items found and cache hits. |
+| **Ask RepSync** | A floating chatbot on every outlet page. Ask in English, Hindi or Hinglish; answers use only the outlet's own data. |
+
+**Principles built into every tool**
+
+- **The owner approves everything.** Replies move Draft → Edited → Approved → Posted only on the owner's say-so. The API enforces this, not just the UI.
+- **Guardrails on every draft.** No liability admissions, medical claims, refund promises or blaming the reviewer. Banned phrases trigger a rewrite.
+- **Numbers are computed, not generated.** Counts, percentages, rankings and gap labels are calculated in code. The AI only writes words, and every number in an Ask RepSync answer is checked against the data before it is shown.
+- **Simulated data is always labelled.** Anything that is sample data carries a visible "Sample data" badge.
+- **Built for India.** English, Hindi and Hinglish reviews are understood, and replies match the language of the review.
+
+## Why not just use Google's free replies?
+
+1. **No API access needed.** TinyFish reads public pages on platforms with no review API, so one owner gets one inbox.
+2. **Insight, not just replies.** Complaints become themes, a top 3 fixes list and a competitor gap matrix.
+3. **Built for India.** English, Hindi and Hinglish, on the platforms Indian customers use.
+4. **The owner stays in control.** Every reply needs approval, with guardrails on what the AI may say.
+5. **Priced for one outlet.** ₹499 to ₹1,999 per month, not enterprise pricing built for chains.
+
+## How it works
+
+| Step | Service | Notes |
 | --- | --- | --- |
-| **Search** | Outlet lookup from name and city, and finding each platform's review page URL through query templates such as `{name} {city} reviews`, `{name} {city} zomato`, `{name} {city} practo`. | Free |
-| **Fetch** | Converts review pages into clean markdown, which an LLM turns into structured reviews. **First choice for every page.** | Free |
-| **Agent** | Handles pages that need scrolling, "load more" or "read more" expansion, or sort-by-newest. Returns reviews as JSON. | Metered |
+| **Find the outlet** | OpenStreetMap (Nominatim) | Free, no API key. Returns up to 10 matching branches with real addresses. Throttled to 1 request per second per the Nominatim usage policy. |
+| **Collect reviews** | TinyFish Search → Fetch → Agent | Search finds each platform's review page, Fetch turns it into markdown, the Agent is used only when Fetch finds no reviews. |
+| **Analyse** | Gemini, with Groq as fallback | Sentiment, complaint topics, themes and top 3 fixes, through one `LLMClient`. |
+| **Draft replies** | Gemini / Groq | One reply per unanswered negative review, in the owner's tone, checked by the guardrails. |
+| **Compare** | TinyFish + code | Competitor reviews are collected the same way; complaint rates and gap labels are computed in Python. |
 
-**Collection strategy**
+### TinyFish usage
 
-```
-Search → Fetch → count parsed reviews
-        └─ fewer than 10 reviews, truncated text, or JS-only page?
-              └─ escalate to Agent → normalise → dedup → store
-```
+| Endpoint | Role | Cost |
+| --- | --- | --- |
+| **Search** | Finds each platform's review page from templates such as `{name} {city} zomato reviews`. Also used to discover nearby competitors. | Free |
+| **Fetch** | Converts review pages into markdown, which is parsed into structured reviews. First choice for every page. | Free |
+| **Agent** | Handles pages that need scrolling or "read more" expansion. Returns reviews as JSON. | Metered |
 
-- Capped at **50 reviews per platform** in demo runs, with platforms running in parallel.
-- Agent runs are **capped** (a small number of runs per platform per sync, limited steps and time), **cached for 24 hours**, and used sparingly, since the Agent is metered.
-- Re-syncs are **incremental**: Fetch first, and Agent only for new reviews.
-- **TinyFish Activity Log:** a live panel in the UI showing every Search, Fetch and Agent call, for example:
-  `Search: found 6 candidate pages · Fetch: Zomato OK, 38 reviews · Agent: Google Maps scrolling, 50 reviews`
+- At most **50 reviews per platform** per sync.
+- At most **2 Agent runs in parallel**, a daily step budget (`AGENT_DAILY_STEP_BUDGET`, default 500), and a **24-hour cache** on every call.
+- Competitor scans escalate to the Agent only when Fetch returns fewer than 10 reviews, with at most one Agent run per competitor.
+- Every call is logged and shown live on the Activity tab, for example `Search: Zomato URL found · Fetch: 38 reviews · Agent: Google Maps, 50 reviews`.
 
-## 🏗️ Architecture
+## Live data vs sample data
+
+RepSync can run fully live or fully offline. This is controlled by two backend variables, and **both default to mock mode when unset**.
+
+| Part | `MOCK_TINYFISH=0` + key, `MOCK_LLM=0` + key | Mock mode (default) |
+| --- | --- | --- |
+| Outlet search | Live (OpenStreetMap) | Live (OpenStreetMap) |
+| Review collection | Live TinyFish | Generated sample reviews |
+| Themes, fixes, replies | Gemini / Groq | Rule-based templates |
+| Ask RepSync | Gemini / Groq, numbers verified | Rule-based answers from the outlet's data |
+| Competitors | Live scan for outlets you add | Fictional sample competitors, labelled |
+| Demo outlets | Always sample (seeded in `backend/app/seed.py`) | Always sample |
+| City map | Always sample (`data/demo/city_map.json`) | Always sample |
+
+The frontend has its own offline mode as well: unless `VITE_USE_MOCK=false` is set at build time, it runs entirely on built-in sample data and never calls the backend.
+
+## Design
+
+- **Stage homepage:** full-screen looping background video, LED-dot lettering and three glass metric cards that scale with the screen.
+- **One design language across every page:** Inter type, glass panels, pill buttons, gradient tiles and LED-dot numerals.
+- **Palette "Sapphire ash morning":** sapphire `#35627A` (primary), terracotta `#B46258` and rose `#E5AEA9` (accents), lavender `#A6A9D0` (secondary), ash `#8E9A98` (neutral), paper `#F5F5F5` (background).
+- **Light and dark mode:** toggle in the navbar, remembered per browser, follows the system setting on first visit.
+- **Responsive:** desktop to 390px phones, with no horizontal scrolling.
+- **Fast first load:** every page is code-split and loaded on demand.
+
+## Architecture
 
 ```mermaid
 flowchart TD
-    A[Owner Browser] --> B["Frontend<br/>React + Vite + Tailwind + shadcn/ui + Recharts"]
-    B -- "REST/JSON + SSE" --> C[FastAPI Backend]
+    A[Owner browser] --> B["Frontend (Vercel)<br/>React · Vite · Tailwind · Recharts"]
+    B -- "REST/JSON + SSE" --> C["FastAPI backend (Render)"]
 
-    subgraph Backend Services
-      C --> D[Ingestion Service]
-      C --> E[Analysis Service]
-      C --> F[Reply Service]
-      C --> G[Approval Workflow + Audit Log]
-      C --> H[TinyFish Activity Log]
+    subgraph Backend services
+      C --> D[Ingestion]
+      C --> E[Analysis]
+      C --> F[Replies + guardrails]
+      C --> G[Approval workflow]
+      C --> X["Extras: competitors, velocity,<br/>Ask RepSync, city map"]
     end
 
+    C --> O[OpenStreetMap Nominatim]
     D --> T1[TinyFish Search]
     D --> T2[TinyFish Fetch]
     D --> T3["TinyFish Agent<br/>(escalation only)"]
-    D --> N[Normalise · Dedup · Cache]
-
+    X --> T1
     E --> L[(LLM: Gemini / Groq)]
     F --> L
-    F --> R[Guardrail Checker]
-
-    C --> DB[(PostgreSQL — Neon / Supabase)]
+    X --> L
+    C --> DB[(PostgreSQL / SQLite)]
 ```
 
-## 🧰 Tech Stack
+## Tech stack
 
 | Layer | Choice |
 | --- | --- |
-| **Frontend** | React 18, Vite, TypeScript, Tailwind CSS, shadcn/ui, Recharts, TanStack Query, React Router |
-| **Backend** | Python 3.12, FastAPI, Uvicorn, Pydantic v2, SQLModel, httpx, tenacity, sse-starlette |
-| **Data collection** | TinyFish Search, Fetch and Agent |
-| **LLM** | Primary: Gemini (free tier, strong Hindi/Hinglish). Fallback: Groq (Llama). Both sit behind one `LLMClient` interface. |
-| **Database** | PostgreSQL (Neon or Supabase free tier) in deployment, SQLite for local dev |
-| **Jobs** | `asyncio` tasks and FastAPI `BackgroundTasks`, with progress streamed over SSE. No Celery or Redis. |
-| **Cache** | DB table keyed by hash of (endpoint, input), plus JSON files in `data/cache` |
-| **Auth** | Seeded demo user for the prototype, then email + bcrypt + JWT |
-| **Tooling** | uv, Node 20 LTS, ruff, prettier, pytest, GitHub Actions |
-| **Hosting** | Vercel (frontend), Render free web service with keep-alive ping (backend) |
+| **Frontend** | React 18, Vite, TypeScript, Tailwind CSS, Recharts, TanStack Query, React Router, html-to-image |
+| **Backend** | Python 3.12, FastAPI, Uvicorn, Pydantic v2, SQLModel, httpx, tenacity, sse-starlette, slowapi |
+| **Data collection** | TinyFish Search, Fetch and Agent; OpenStreetMap Nominatim for outlet search |
+| **LLM** | Gemini (primary, strong on Hindi and Hinglish), Groq (fallback), behind one `LLMClient` |
+| **Database** | PostgreSQL (Supabase) in deployment, SQLite locally |
+| **Jobs** | FastAPI background tasks with progress streamed over Server-Sent Events. No Celery or Redis. |
+| **Cache** | JSON files in `data/cache` (24-hour TTL for TinyFish calls) |
+| **Tooling** | pytest, ruff, GitHub Actions (CI and a keep-alive ping) |
+| **Hosting** | Vercel (frontend), Render (backend) |
 
-> Everything runs on free tiers. No Web3 is used anywhere in the project.
+Everything runs on free tiers.
 
-## 🚀 Quick Start
+## Quick start
 
-**Prerequisites:** Python 3.12, [uv](https://docs.astral.sh/uv/), Node.js 20 LTS, `make`, and API keys for TinyFish and Gemini (Groq optional).
+**Prerequisites:** Python 3.12 and Node.js 20. API keys are optional; without them the app runs in mock mode.
 
 ```bash
 # 1. Clone
 git clone https://github.com/DevKumar005/RepSync.git
 cd RepSync
 
-# 2. Configure environment
-cp .env.example .env        # then fill in your keys (see below)
+# 2. Configure (optional: add TinyFish / Gemini keys for live data)
+cp .env.example .env
 
-# 3. Install backend + frontend dependencies
-make setup
+# 3. Backend
+python3.12 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn backend.app.main:app --reload --port 8000
 
-# 4. Run backend and frontend together
-make dev
-
-# 5. Open the app
-# Frontend → http://localhost:5173
-# API docs → http://localhost:8000/docs
+# 4. Frontend (in a second terminal)
+npm install
+VITE_USE_MOCK=false VITE_API_URL=http://localhost:8000 npm run dev
 ```
 
-Run the tests:
+Open http://localhost:5173 and press **Try the demo**, or search for a real business on **Find outlet**. API docs are at http://localhost:8000/docs.
+
+To run the frontend alone on built-in sample data, skip the backend and run `npm run dev`.
+
+**Tests and lint**
 
 ```bash
-cd backend && uv run pytest
+pytest backend/tests        # 45 tests
+ruff check backend
+npm run build               # type-check + production build
 ```
 
-> If a `make` target differs in your checkout, check the `Makefile` for the exact commands.
+## Environment variables
 
-## 🔐 Environment Variables
+Copy `.env.example` to `.env`. Never commit real keys.
 
-Copy `.env.example` to `.env`. **Never commit real keys.**
+**Backend**
 
-| Variable | Purpose |
-| --- | --- |
-| `TINYFISH_API_KEY` | TinyFish Search / Fetch / Agent (sent as the `X-API-Key` header) |
-| `GEMINI_API_KEY` | Primary LLM (Google AI Studio free tier) |
-| `GROQ_API_KEY` | Fallback LLM (optional) |
-| `DATABASE_URL` | Postgres URL in deployment. Defaults to local SQLite in dev. |
-| `JWT_SECRET` | Signing key for auth tokens |
-| `DEMO_MODE` | `true` to serve cached demo data with all external APIs disabled |
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `DATABASE_URL` | `sqlite:///./repsync.db` | Postgres URL in deployment |
+| `TINYFISH_API_KEY` | — | TinyFish Search, Fetch and Agent |
+| `GEMINI_API_KEY` | — | Primary LLM |
+| `GROQ_API_KEY` | — | Fallback LLM |
+| `MOCK_TINYFISH` | `1` | `0` for live review collection (needs `TINYFISH_API_KEY`) |
+| `MOCK_LLM` | `1` | `0` for live AI analysis (needs a Gemini or Groq key) |
+| `ENABLE_EXTRAS` | `1` | `0` hides competitors, velocity, Ask RepSync and city map |
+| `JWT_SECRET` | dev value | Signing key for auth tokens |
+| `FRONTEND_ORIGIN` | `http://localhost:5173` | Allowed CORS origin (any `*.vercel.app` is also allowed) |
+| `AGENT_DAILY_STEP_BUDGET` | `500` | Daily cap on metered TinyFish Agent steps |
+| `SKIP_AGENT` | `0` | `1` disables Agent escalation entirely |
+| `GEMINI_MODEL`, `GROQ_MODEL` | built-in | Override the model names |
 
-> The variable names above are the intended ones. Match them to your `.env.example` if they differ.
+**Frontend (read at build time)**
 
-## 🔌 API Overview
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `VITE_USE_MOCK` | mock on | Set to `false` to use the real backend |
+| `VITE_API_URL` | `http://localhost:8000` | Backend URL |
+| `VITE_ENABLE_EXTRAS` | on | Set to `false` to hide the extra tools |
+
+## API overview
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
-| `POST` | `/api/outlets/search` | Candidate outlets from name + city (TinyFish Search) |
-| `POST` | `/api/outlets` | Confirm and create an outlet |
-| `POST` | `/api/outlets/demo/{key}` | Load a cached demo outlet |
-| `POST` | `/api/outlets/{id}/sync` | Start collection + analysis + drafting job |
-| `GET` | `/api/outlets/{id}/sync/stream` | **SSE**: progress, per-source status, TinyFish call events |
-| `GET` | `/api/outlets/{id}/reviews` | Reviews with filters (platform, rating, sentiment, theme) |
-| `GET` | `/api/outlets/{id}/themes` | Themes with counts and quotes |
+| `POST` | `/api/outlets/search` | Matching branches from name + city (OpenStreetMap) |
+| `POST` | `/api/outlets` | Create an outlet from the chosen branch |
+| `POST` | `/api/outlets/demo/{key}` | Load a demo outlet (`restaurant` or `clinic`) |
+| `GET` | `/api/outlets/{id}` | Outlet details |
+| `DELETE` | `/api/outlets/{id}` | Delete an outlet and all its data |
+| `POST` | `/api/outlets/{id}/sync` | Start collection, analysis and drafting |
+| `GET` | `/api/outlets/{id}/sync/stream` | SSE: stages, per-source status, TinyFish calls |
+| `GET` | `/api/outlets/{id}/reviews` | Reviews with filters |
+| `GET` | `/api/outlets/{id}/themes` | Complaint themes with counts |
 | `GET` | `/api/outlets/{id}/fixes` | Top 3 fixes |
 | `GET` | `/api/outlets/{id}/summary` | Dashboard metrics |
-| `GET` | `/api/outlets/{id}/tinyfish-log` | Activity Log entries |
-| `POST` | `/api/reviews/{id}/draft` | Generate or regenerate a reply (optional instruction) |
-| `PATCH` | `/api/drafts/{id}` | Edit text or change status (server rejects invalid transitions) |
-| `PUT` | `/api/tone` | Save tone profile |
+| `GET` | `/api/outlets/{id}/tinyfish-log` | Activity log |
+| `POST` | `/api/reviews/{id}/draft` | Generate or regenerate a reply |
+| `PATCH` | `/api/drafts/{id}` | Edit or change status (invalid transitions are rejected) |
+| `GET`, `PUT` | `/api/tone` | Read or save the reply tone |
 | `POST` | `/api/auth/signup`, `/api/auth/login` | Authentication |
-| `DELETE` | `/api/outlets/{id}` | Delete outlet and all its data |
+| `GET` | `/api/outlets/{id}/competitors/candidates` | Nearby competitor suggestions |
+| `POST` | `/api/outlets/{id}/competitors/scan` | Start a competitor scan |
+| `GET` | `/api/outlets/{id}/competitors` | Latest gap matrix, advice and quotes |
+| `GET` | `/api/outlets/{id}/velocity` | Reviews per week for 12 weeks, with trend flags |
+| `POST` | `/api/outlets/{id}/ask` | Ask RepSync (read-only, cached for 10 minutes) |
+| `GET` | `/api/outlets/{id}/city-map` | Sample locality map |
 
-**SSE event shape**
+Full interactive docs: `/docs`.
 
-```json
-{ "type": "source_status | tinyfish_call | stage | done", "source": "zomato", "status": "ok", "message": "…", "ts": "…" }
-```
+## AI approach and guardrails
 
-Full interactive docs are available at `/docs` (OpenAPI).
-
-## 🤖 AI Approach and Guardrails
-
-**Pipeline**
-
-1. Clean text, detect language (English / Hindi / Hinglish), dedup.
-2. **Extract:** LLM converts Fetch markdown into `[{author, rating, date, text, owner_reply}]`.
-3. **Analyse:** batches of 20–30 reviews return schema-validated JSON `{review_id, language, sentiment, topics[], severity 1-3}`.
-4. **Theme:** one LLM call groups negative-review topics into 3–7 labelled themes. No embeddings are needed.
-5. **Top 3 fixes:** one call over the themes returns `{title, rationale, evidence_count}`.
-6. **Reply:** one call per negative review, using the owner's tone profile.
+1. **Extract:** Fetch markdown is parsed into `{author, rating, date, text, owner_reply}`.
+2. **Analyse:** each review gets `{language, sentiment, topics[], severity}` using a versioned prompt (`ai/prompts/v2/analysis.txt`) and schema validation.
+3. **Theme:** negative-review topics are grouped into labelled themes.
+4. **Top 3 fixes:** one call over the themes returns `{title, rationale, evidence_count}`.
+5. **Reply:** one call per negative review, in the owner's tone.
 
 **Guardrails on every draft**
 
-- Prompt rules: no admission of fault with legal weight, no medical claims or advice, no refund or compensation promises, no blaming the reviewer, mention one concrete detail from the review, invite offline follow-up, 60–80 words.
-- A **banned-phrase check** (for example "our fault", "we admit", "guarantee", "refund", "cure", "diagnos", "compensat", "legal") sets `guardrail_flags` and triggers one automatic regeneration.
-- Pydantic schema validation with one retry on malformed JSON.
-- Every draft stores its `prompt_version`, and prompts are versioned in `prompts/`.
+- No admission of fault with legal weight, no medical claims, no refund or compensation promises, no blaming the reviewer; mention one concrete detail; invite offline follow-up.
+- A banned-phrase check sets `guardrail_flags` and triggers an automatic regeneration.
+- Schema validation with a retry on malformed JSON; every draft stores its `prompt_version`.
 
-## 🧪 Evaluation
+**Ask RepSync guardrails**
 
-A **30-review labelled evaluation set** (English, Hindi, Hinglish, across restaurants, clinics and salons) is used to measure quality. Targets:
+- Answers come only from a facts bundle built from the outlet's data; review text is treated as data, never as instructions.
+- Every number in an AI answer is checked against the facts. If any number cannot be found, the answer is replaced with a rule-based one.
+- RepSync has no search-rank data, so rank questions are answered with rating, velocity and complaint themes instead.
+
+## Evaluation
+
+A 30-review labelled set (English, Hindi and Hinglish, across restaurants, clinics and salons) measures quality.
 
 | Metric | Target |
 | --- | --- |
 | Sentiment accuracy | ≥ 85% |
 | Theme coherence (manual rating) | ≥ 4 / 5 |
-| Reply checklist pass rate (specific, on-tone, no banned phrase) | ≥ 90% |
+| Reply checklist pass rate | ≥ 90% |
 
-Results are published in [`docs/eval-results.md`](docs/eval-results.md).
+Results: [`docs/eval-results.md`](docs/eval-results.md).
 
-## 💰 Business Model
+## Deployment
+
+**Frontend on Vercel**
+
+- Build command `npm run build`, output directory `dist`.
+- Set `VITE_USE_MOCK=false` and `VITE_API_URL=https://repsync-backend.onrender.com`, then redeploy (Vite reads these at build time).
+- `vercel.json` rewrites every route to `index.html`, so direct links and refreshes on pages such as `/search` or `/outlet/...` work.
+
+**Backend on Render**
+
+- Configured by `render.yaml`: installs dependencies, initialises and seeds the database, and starts Uvicorn with `/health` as the health check.
+- For live data set `MOCK_TINYFISH=0`, `MOCK_LLM=0` and the TinyFish and Gemini/Groq keys.
+- Competitor scan results are stored on Render's disk and are cleared on each redeploy; run the scan again afterwards.
+- `.github/workflows/keep_alive.yml` pings `/health` every 14 minutes to reduce cold starts. It needs the `RENDER_BACKEND_URL` repository secret.
+
+## Business model
 
 | Plan | Price / outlet / month | Includes |
 | --- | --- | --- |
@@ -234,61 +304,62 @@ Results are published in [`docs/eval-results.md`](docs/eval-results.md).
 | **Growth** | ₹999 | 1 outlet, all platforms, daily sync, unlimited replies, alerts, competitor benchmark |
 | **Pro / Agency** | ₹1,999 | Multi-user, white-label PDF reports, priority sync, bulk approvals |
 
-**Lead magnet:** a free reputation audit (one sync, themes and 5 sample replies).
+**Lead magnet:** a free reputation audit (one sync, themes and sample replies).
 
-**Unit economics:** cost per outlet = LLM cost + TinyFish Agent cost + hosting share. Re-syncs are incremental (Fetch first, Agent only for new reviews) so the Growth plan keeps a healthy margin. The target gross margin is ≥ 70%, to be measured from real usage logs.
+**Unit economics:** cost per outlet is LLM cost plus TinyFish Agent cost plus a hosting share. Re-syncs use Fetch first and the Agent only for new reviews, keeping the target gross margin at 70% or more.
 
-**Go-to-market:** local marketing agencies (resell Pro), restaurant and salon associations, clinic networks, and free-audit outreach on WhatsApp and Instagram.
+**Go-to-market:** local marketing agencies (reselling Pro), restaurant and salon associations, clinic networks, and free-audit outreach on WhatsApp and Instagram.
 
-## ⚖️ Legal, Ethics and Compliance
+## Legal, ethics and compliance
 
-- **Owner-initiated:** the user enters their *own* business, so reviews about it are collected on demand.
-- **Public pages only:** no login or paywall bypass, small samples, throttled requests.
-- **Attribution kept:** reviews are stored as published, and owners can **delete an outlet and all its data**.
+- **Owner-initiated:** the user enters their own business, and its reviews are collected on demand.
+- **Public pages only:** no login or paywall bypass, small samples, throttled requests. Competitor reviewer names are never stored.
+- **Attribution kept:** reviews are stored as published, and owners can delete an outlet and all its data.
 - **Privacy:** aligned with India's DPDP Act: minimum personal data, no profiling of reviewers.
-- **Platform terms vary:** the production path is **official integrations** (for example the Google Business Profile API for owners' own listings) where available. TinyFish covers platforms with no API and powers the free audit.
+- **Platform terms vary:** the production path is official integrations (for example the Google Business Profile API) where available. TinyFish covers platforms with no API.
 - **AI replies are drafts only.** The owner approves every reply and posts it themselves.
 
-## 📁 Repository Structure
+## Repository structure
 
 ```
 RepSync/
+├── src/                          # React frontend
+│   ├── pages/                    # Home, Search, Tone, Pricing
+│   │   └── outlet/               # Outlet layout and tabs (Overview, Reviews, Replies, Insights, Activity)
+│   ├── features/extras/          # Competitors, Velocity, Posters, City map, Ask RepSync chatbot
+│   ├── components/               # Shared panels, LED-dot text, hero cards
+│   └── api/                      # API client and offline mock
 ├── backend/
 │   ├── app/
-│   │   ├── api/
-│   │   ├── services/{ingestion,analysis,replies}/
-│   │   ├── models/
-│   │   ├── llm/
-│   │   └── tinyfish/
+│   │   ├── api/                  # Core REST endpoints
+│   │   ├── features/extras/      # Competitor gaps, velocity, Ask RepSync, city map
+│   │   ├── services/             # Ingestion, analysis, replies, places (OpenStreetMap), pipeline
+│   │   ├── tinyfish/             # TinyFish client and cache
+│   │   └── models/
 │   └── tests/
-├── frontend/
-│   └── src/{pages,components,api,hooks}/
-├── data/{demo,cache,eval}/
+├── ai/                           # LLM client, analysis, replies, versioned prompts, evaluation
+├── data/
+│   ├── demo/                     # Sample competitors, city map, demo datasets
+│   └── cache/                    # Runtime cache (git-ignored)
 ├── docs/
-│   ├── architecture.png
-│   ├── tinyfish-usage.md
-│   ├── ai-approach.md
-│   └── eval-results.md
-├── .github/workflows/ci.yml
-├── Makefile
-├── README.md
+├── .github/workflows/            # CI and keep-alive
+├── render.yaml
+├── vercel.json
 └── .env.example
 ```
 
-## 🔭 Future Scope
+## Future scope
 
-- **Direct posting** of approved replies through official platform APIs (for example the Google Business Profile API)
-- **Live competitor benchmark** against nearby outlets, reusing the same collection pipeline
-- **Scheduled re-syncs and alerts** for new 1–2 star reviews, plus a weekly digest by email and WhatsApp
-- **Multi-outlet and agency view** with a reputation health score and pending replies across clients
-- **Tone learning** from the owner's past edits, so drafts need fewer changes over time
+- **Direct posting** of approved replies through official platform APIs
+- **Live city-wide map** built from real collection instead of a sample locality
+- **Scheduled re-syncs and alerts** for new 1–2 star reviews, with a weekly digest by email and WhatsApp
+- **Multi-outlet and agency view** with a reputation health score across clients
+- **Tone learning** from the owner's past edits
 - **Review-request campaigns** to help happy customers leave reviews
-- **More languages**, including Marathi, Tamil and other regional languages
-- **More platforms** beyond Google Maps, Zomato, Practo and JustDial
-- **Review-to-operations integrations** that flag recurring issues straight to staff
+- **More languages** (Marathi, Tamil and other regional languages) and more platforms
 - **Google OAuth** and live billing
 
-## 👥 Team
+## Team
 
 Built for **KRITICAL HACKS '26** (AssetMerkle × IGDTUW), AI/ML Track.
 
@@ -298,8 +369,3 @@ Built for **KRITICAL HACKS '26** (AssetMerkle × IGDTUW), AI/ML Track.
 | 2 | [**Param**](https://github.com/paramsharma01) | AI/LLM Engineer & Business Analyst | Built sentiment, themes, Top 3 Fixes and guardrailed reply drafting, plus the eval set, market research and unit economics. |
 | 3 | [**Rohit**](https://github.com/Rohit-pal01) | Backend, Database & DevOps Engineer | Built the FastAPI backend, database models, SSE streaming, approval workflow, auth, CI and deployment. |
 | 4 | [**Om**](https://github.com/ombhadri) | Frontend, UI/UX & Product Storyteller | Built the dashboard and design system, and made the demo video, deck, social post and owner interviews. |
-
-## 📄 License
-
-
----
