@@ -17,18 +17,19 @@ export default function TonePage() {
   const save = useMutation({ mutationFn: (x: Tone) => api.putTone(x) })
 
   if (!t) return (
-    <div className="max-w-xl mx-auto pt-16 text-center space-y-3">
+    <div className="max-w-xl mx-auto px-4 pt-16 text-center space-y-3">
       <div className="skeleton h-8 w-48 rounded mx-auto" />
       <div className="skeleton h-4 w-64 rounded mx-auto" />
     </div>
   )
 
   return (
-    <div className="max-w-xl mx-auto pt-6 fade-in">
+    <div className="max-w-xl mx-auto px-4 pt-12 pb-20 fade-in">
       <form className="panel p-6 space-y-6" onSubmit={(e) => { e.preventDefault(); save.mutate(t) }}>
         <div className="space-y-1.5">
-          <h1 className="text-2xl font-bold tracking-tight">Reply tone</h1>
-          <p className="text-sm text-ink/45 leading-relaxed">New drafts follow this. Replies you approve are never changed.</p>
+          <p className="label-overline">Reply tone</p>
+          <h1 className="rs-title text-[clamp(26px,3vw,36px)]">How your replies should sound</h1>
+          <p className="rs-copy text-sm">New drafts follow this style. Replies you have already approved are never changed.</p>
         </div>
 
         <fieldset className="space-y-3">
@@ -36,9 +37,9 @@ export default function TonePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {STYLES.map((s) => (
               <button type="button" key={s.value} aria-pressed={t.style === s.value} onClick={() => setT({ ...t, style: s.value })}
-                className={`panel !rounded-xl p-3 text-center transition-all duration-200 cursor-pointer ${t.style === s.value ? '!border-brand !bg-brandsoft shadow-sm' : 'hover:border-brand/30'}`}>
+                className={`rounded-2xl p-3 text-center transition-all duration-200 cursor-pointer ${t.style === s.value ? 'tile tile-speed' : 'border border-white/80 bg-white/60 hover:bg-white'}`}>
                 <span className="text-2xl block mb-1">{s.emoji}</span>
-                <span className={`text-sm font-medium ${t.style === s.value ? 'text-brand' : 'text-ink/60'}`}>{s.label}</span>
+                <span className={`text-sm font-medium ${t.style === s.value ? 'text-white' : 'text-ink/65'}`}>{s.label}</span>
               </button>
             ))}
           </div>

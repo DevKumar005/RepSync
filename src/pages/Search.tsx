@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { api } from '../api/client'
 import type { Candidate, Category } from '../types'
+import DotText from '../components/DotText'
 
 const CATS: Category[] = ['restaurant', 'clinic', 'salon']
 const CAT_EMOJI: Record<Category, string> = { restaurant: '🍽️', clinic: '🏥', salon: '💇' }
@@ -22,13 +23,14 @@ export default function Search() {
   const demo = useMutation({ mutationFn: (key: 'restaurant' | 'clinic') => api.demoOutlet(key), onSuccess: (o) => nav(`/outlet/${o.id}`) })
 
   return (
-    <div className="mx-auto max-w-xl space-y-8 pt-10 fade-in">
+    <div className="mx-auto max-w-xl space-y-8 px-4 pt-12 pb-20 fade-in">
       <div className="space-y-3">
-        <h1 className="text-[2rem] font-bold leading-tight tracking-tight">
-          One unanswered 1&#8209;star review<br /><span className="text-gradient">can cost you dozens of customers.</span>
+        <p className="label-overline">Find your outlet</p>
+        <h1 className="rs-title text-[clamp(28px,3.4vw,40px)]">
+          One unanswered <span className="rs-dot-accent"><DotText text="1" radius={1.9} height=".74em" /></span>-star review<br />can cost you dozens of customers.
         </h1>
-        <p className="text-ink/45 text-[15px] leading-relaxed">
-          We collect public reviews, surface what to fix, and draft replies you approve.
+        <p className="rs-copy text-[15px]">
+          Type your business name and city. We look it up, you confirm the right branch, and RepSync collects its public reviews, surfaces what to fix and drafts replies you approve.
         </p>
       </div>
 
@@ -53,7 +55,7 @@ export default function Search() {
               ))}
             </div>
           </fieldset>
-          <button className="btn btn-primary w-full !py-2.5" disabled={find.isPending}>
+          <button className="btn btn-primary w-full !py-3" disabled={find.isPending}>
             {find.isPending ? (
               <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
@@ -74,12 +76,12 @@ export default function Search() {
           <div className="grid gap-3 sm:grid-cols-2">
             {DEMOS.map((d) => (
               <button key={d.key} type="button" disabled={demo.isPending} onClick={() => demo.mutate(d.key)}
-                className="rounded-2xl border border-line bg-paper p-4 text-left hover:border-brand/40 hover:shadow-sm transition-all duration-200 disabled:opacity-50 group">
+                className="tile tile-context p-4 text-left transition-transform duration-200 hover:-translate-y-0.5 disabled:opacity-50 group">
                 <span className="text-2xl block mb-2">{d.emoji}</span>
-                <span className="block text-sm font-semibold text-ink/90 group-hover:text-brand transition-colors">
+                <span className="block text-sm font-semibold text-white">
                   {demo.isPending && demo.variables === d.key ? 'Loading…' : d.title}
                 </span>
-                <span className="block text-xs text-ink/45 mt-0.5">{d.blurb}</span>
+                <span className="block text-xs text-white/75 mt-0.5">{d.blurb}</span>
               </button>
             ))}
           </div>
@@ -97,7 +99,7 @@ export default function Search() {
               <ul className="divide-y divide-line">
                 {find.data.map((c) => (
                   <li key={c.id}>
-                    <label className="flex cursor-pointer items-center gap-3 px-5 py-4 hover:bg-paper transition-colors duration-150">
+                    <label className="flex cursor-pointer items-center gap-3 px-5 py-4 hover:bg-white/60 transition-colors duration-150">
                       <input type="radio" name="cand" checked={!!pick && pick.id === c.id} onChange={() => setPick(c)} className="accent-brand h-4 w-4" />
                       <span className="flex-1 min-w-0">
                         <span className="block font-medium text-sm">{c.name}</span>

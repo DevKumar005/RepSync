@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { extrasApi } from './api'
 import type { CityOutlet } from './types'
+import { SectionHead } from '../../components/Page'
 import { ErrorNote, Panel, SampleBadge } from './ui'
 
 const W = 800
@@ -99,14 +100,12 @@ export default function CityMapPage() {
   const ranked = [...outlets].sort((a, b) => b.rating - a.rating)
 
   return (
-    <div className="space-y-6 fade-in">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="mr-auto">
-          <h1 className="text-2xl font-bold tracking-tight">City Reputation Map</h1>
-          <p className="text-sm text-ink/50 mt-1">Who is rising and who is slipping in {q.data?.locality ?? 'your locality'}, over the last 60 days.</p>
-        </div>
-        <SampleBadge source={q.data?.source} label="Sample data: simulated locality" />
-      </div>
+    <div className="space-y-5">
+      <SectionHead
+        title="City reputation map"
+        sub={`Who is rising and who is slipping in ${q.data?.locality ?? 'your locality'}, over the last 60 days.`}
+        action={<SampleBadge source={q.data?.source} label="Sample data: simulated locality" />}
+      />
       {q.isError && <ErrorNote>Could not load the map: {(q.error as Error).message}</ErrorNote>}
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
         <section className="panel relative self-start overflow-hidden">
@@ -123,7 +122,7 @@ export default function CityMapPage() {
             role="img"
             aria-label={`Map of ${outlets.length} outlets in ${q.data?.locality ?? 'the locality'}`}
           >
-            <rect width={W} height={H} fill="rgb(var(--paper))" />
+            <rect width={W} height={H} fill="rgba(255,255,255,.45)" />
             <g transform={`translate(${view.x} ${view.y}) scale(${view.k})`}>
               {Array.from({ length: 9 }, (_, i) => (
                 <g key={i} stroke="rgb(var(--line))" strokeWidth={1 / view.k}>
@@ -199,7 +198,7 @@ export default function CityMapPage() {
             <ol className="divide-y divide-line">
               {ranked.map((o, i) => (
                 <li key={o.id}>
-                  <button className={`flex w-full items-center gap-3 px-5 py-2 text-left text-sm hover:bg-paper ${sel?.id === o.id ? 'bg-paper' : ''}`} onClick={() => setSelected(o.id)}>
+                  <button className={`flex w-full items-center gap-3 px-5 py-2 text-left text-sm hover:bg-white/60 ${sel?.id === o.id ? 'bg-white/60' : ''}`} onClick={() => setSelected(o.id)}>
                     <span className="w-5 text-ink/35 tabular-nums">{i + 1}</span>
                     <span className={`flex-1 truncate ${o.is_you ? 'font-semibold text-brand' : ''}`}>{o.name}</span>
                     <span className="tabular-nums">{o.rating.toFixed(1)}</span>
