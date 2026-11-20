@@ -22,15 +22,47 @@ export default function Search() {
   const demo = useMutation({ mutationFn: (key: 'restaurant' | 'clinic') => api.demoOutlet(key), onSuccess: (o) => nav(`/outlet/${o.id}`) })
 
   return (
-    <div className="mx-auto max-w-xl space-y-8 px-4 pt-12 pb-20 fade-in">
-      <div className="space-y-3">
-        <p className="label-overline">Find your outlet</p>
-        <h1 className="rs-title text-[clamp(28px,3.4vw,40px)]">
-          One unanswered <span className="rs-dot-accent"><DotText text="1" radius={1.9} height=".74em" /></span>-star review<br />can cost you dozens of customers.
-        </h1>
-        <p className="rs-copy text-[15px]">
-          Type your business name and city. We look it up, you confirm the right branch, and RepSync collects its public reviews, surfaces what to fix and drafts replies you approve.
-        </p>
+    <div className="rs-container grid items-start gap-8 pt-10 pb-20 fade-in lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)] lg:gap-14">
+      <div className="space-y-8 lg:pt-6">
+        <div className="space-y-3">
+          <p className="label-overline">Find your outlet</p>
+          <h1 className="rs-title text-[clamp(30px,3.6vw,52px)]">
+            One unanswered <span className="rs-dot-accent"><DotText text="1" radius={1.9} height=".74em" /></span>-star review can cost you dozens of customers.
+          </h1>
+          <p className="rs-copy text-[15px]">
+            Type your business name and city. We look it up, you confirm the right branch, and RepSync collects its public reviews, surfaces what to fix and drafts replies you approve.
+          </p>
+        </div>
+
+        {find.data && (
+          <section className="panel fade-in">
+            <h2 className="px-5 pt-5 pb-3 text-base font-semibold">Which one is yours?</h2>
+            {find.data.length === 0
+              ? <p className="px-5 pb-5 text-sm text-ink/45">No matches. Check the spelling or add the area to the city name.</p>
+              : (
+                <ul className="divide-y divide-line">
+                  {find.data.map((c) => (
+                    <li key={c.id}>
+                      <label className="flex cursor-pointer items-center gap-3 px-5 py-4 hover:bg-ink/[.035] transition-colors duration-150">
+                        <input type="radio" name="cand" checked={!!pick && pick.id === c.id} onChange={() => setPick(c)} className="accent-brand h-4 w-4" />
+                        <span className="flex-1 min-w-0">
+                          <span className="block font-medium text-sm">{c.name}</span>
+                          <span className="text-xs text-ink/45">{c.address}</span>
+                        </span>
+                        <span className="chip !text-[10px]">{c.source}</span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              )
+            }
+            <div className="border-t border-line px-5 py-4">
+              <button className="btn btn-primary" disabled={!pick || confirm.isPending} onClick={() => confirm.mutate()}>
+                {confirm.isPending ? 'Setting up…' : 'Confirm and collect reviews →'}
+              </button>
+            </div>
+          </section>
+        )}
       </div>
 
       <div className="panel p-6 space-y-5">
@@ -88,35 +120,6 @@ export default function Search() {
         </div>
       </div>
 
-      {find.data && (
-        <section className="panel fade-in">
-          <h2 className="px-5 pt-5 pb-3 text-base font-semibold">Which one is yours?</h2>
-          {find.data.length === 0
-            ? <p className="px-5 pb-5 text-sm text-ink/45">No matches. Check the spelling or add the area to the city name.</p>
-            : (
-              <ul className="divide-y divide-line">
-                {find.data.map((c) => (
-                  <li key={c.id}>
-                    <label className="flex cursor-pointer items-center gap-3 px-5 py-4 hover:bg-ink/[.035] transition-colors duration-150">
-                      <input type="radio" name="cand" checked={!!pick && pick.id === c.id} onChange={() => setPick(c)} className="accent-brand h-4 w-4" />
-                      <span className="flex-1 min-w-0">
-                        <span className="block font-medium text-sm">{c.name}</span>
-                        <span className="text-xs text-ink/45">{c.address}</span>
-                      </span>
-                      <span className="chip !text-[10px]">{c.source}</span>
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            )
-          }
-          <div className="border-t border-line px-5 py-4">
-            <button className="btn btn-primary" disabled={!pick || confirm.isPending} onClick={() => confirm.mutate()}>
-              {confirm.isPending ? 'Setting up…' : 'Confirm and collect reviews →'}
-            </button>
-          </div>
-        </section>
-      )}
     </div>
   )
 }

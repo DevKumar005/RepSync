@@ -46,8 +46,8 @@ export default function App() {
   const hideNote = () => { setNoteHidden(true); try { localStorage.setItem('hide-prototype-note', '1') } catch { } }
   return (
     <>
-      <header className="sticky top-0 z-40 h-[var(--header-h)] border-b border-ink/[.07] bg-[var(--header-bg)] backdrop-blur-xl">
-        <nav className="rs-container flex h-full items-center gap-0.5 sm:gap-1">
+      <header className="pointer-events-none fixed inset-x-0 top-0 z-40 flex h-[var(--header-h)] items-center">
+        <nav className="rs-container pointer-events-auto flex h-[52px] items-center gap-0.5 rounded-full border border-[var(--glass-border)] bg-[var(--header-bg)] pl-4 pr-1.5 sm:pl-5 sm:pr-2 shadow-[0_8px_30px_rgba(16,24,40,.10)] backdrop-blur-xl sm:gap-1">
           <NavLink to="/" className="mr-auto flex items-center gap-2 text-[17px] font-semibold tracking-tight text-ink" aria-label="RepSync home">
             Rep<span className="text-brand"><DotText text="Sync" pitchX={4} radius={1.8} height="15px" /></span>
           </NavLink>
@@ -70,6 +70,7 @@ export default function App() {
         </nav>
       </header>
 
+      <div className="rs-page">
       <Suspense fallback={<PageFallback />}>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -92,6 +93,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
+      </div>
 
       {!noteHidden && <div
         role="note"

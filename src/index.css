@@ -40,7 +40,8 @@
     --stage-veil: rgba(241, 243, 246, .1);
     --page-veil: rgba(241, 243, 246, .66);
     --glass-line: rgba(255, 255, 255, .36);
-    --header-h: 60px;
+    --header-h: 72px;
+    --edge: clamp(12px, 2vw, 32px);  /* side margin used everywhere: content runs nearly edge to edge */
     --poster-wide: url("https://d2ol7oe51mr4n9.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/5c3ec08f-2dbf-4c0a-8588-f6106a789443.webp");
     --poster-narrow: url("https://d2ol7oe51mr4n9.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/0f4926a4-e660-4df2-9195-2bfb3e341bdd.webp");
     color-scheme: light;
@@ -178,7 +179,10 @@
     line-height: 1.223;
   }
   /* One content width for header, stage and pages, matching three 429px cards */
-  .rs-container { width: min(100% - 2 * clamp(14px, 3.6vw, 54px), 1546px); margin-inline: auto; }
+  .rs-container { width: calc(100% - 2 * var(--edge)); margin-inline: auto; }
+  /* Pages start below the floating navbar; the homepage stage runs underneath it */
+  .rs-page { padding-top: var(--header-h); }
+  .rs-page:has(> .rs-home) { padding-top: 0; }
 
   .rs-copy { color: var(--copy); letter-spacing: -.017em; line-height: 1.62; }
   .rs-dot-accent { display: inline-block; color: rgb(var(--brand)); vertical-align: baseline; transform: translateY(.085em); }
@@ -250,9 +254,9 @@
   --card-ref-h: 554;
   --card-count: 3;
   --gap: clamp(8px, 1.5vw, 23px);
-  --gutter: clamp(14px, 3.6vw, 54px);
-  --card-cap: 500px;  /* cards grow past the 429px reference on large screens */
-  --content-max: calc(var(--card-count) * var(--card-cap) + (var(--card-count) - 1) * var(--gap));
+  --gutter: var(--edge);
+  --card-cap: 760px;  /* cards scale with the screen; height usually sets the limit */
+  --content-max: 100%;
   --pad-top: clamp(20px, 9.6vh, 94px);
   --pad-bottom: clamp(16px, 3vh, 52px);
   --masthead-gap: clamp(16px, 3vw, 40px);
@@ -263,9 +267,9 @@
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  height: calc(100svh - var(--header-h));
+  height: 100svh;
   overflow: hidden;
-  padding: calc(var(--pad-top) * .55) var(--gutter) var(--pad-bottom);
+  padding: calc(var(--header-h) + var(--pad-top) * .4) var(--gutter) var(--pad-bottom);
   background: linear-gradient(var(--stage-veil), var(--stage-veil)), var(--poster-wide) center / cover no-repeat, rgb(var(--paper));
 }
 .rs-home .stage-motion { position: absolute; inset: 0; z-index: -2; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
@@ -465,7 +469,7 @@
 /* Mobile: stack and scroll */
 @media (max-width: 767px) {
   .rs-home .stage {
-    height: auto; min-height: calc(100svh - var(--header-h)); overflow: visible;
+    height: auto; min-height: 100svh; overflow: visible;
     background: linear-gradient(var(--stage-veil), var(--stage-veil)), var(--poster-narrow) center top / 100% 100% no-repeat, rgb(var(--paper));
   }
   .rs-home .stage-motion--wide { display: none; }
