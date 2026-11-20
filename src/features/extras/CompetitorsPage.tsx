@@ -9,7 +9,7 @@ import VelocitySection from './VelocityChart'
 
 const pct = (r: number | null) => (r === null ? '–' : `${r % 1 === 0 ? r : r.toFixed(1)}%`)
 
-function GapGrid({ result }: { result: CompetitorResult }) {
+export function GapGrid({ result }: { result: CompetitorResult }) {
   const outlets = result.outlets ?? []
   const rows = result.matrix ?? []
   if (!rows.length) {

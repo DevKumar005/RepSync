@@ -2,6 +2,12 @@
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Sequence
 
+from sqlmodel import Session, select
+
+from backend.app.features.extras import competitors
+from backend.app.features.extras.dates import parse_posted_at
+from backend.app.models.entities import Outlet, Review
+
 WEEKS = 12
 RECENT_WEEKS = 2
 PRIOR_WEEKS = 4
@@ -59,3 +65,21 @@ def week_labels(now: datetime, weeks: int = WEEKS) -> List[str]:
 
 def utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def velocity_payload(session: Session, outlet: Outlet) -> dict:
+    now = utc_now()
+    owner_dates = [
+        parse_posted_at(r.posted_at, now)
+        for r in session.exec(select(Review).where(Review.outlet_id == outlet.id)).all()
+    ]
+    series = [build_series("you", outlet.name, owner_dates, now)]
+    source = "sample" if outlet.is_demo else "live"
+    result = competitors.load_result(outlet.id)
+    if result and result.get("status") == "done":
+        for o in result["outlets"][1:]:
+            dates = [parse_posted_at(d) for d in result.get("dates", {}).get(o["key"], [])]
+            series.append(build_series(o["key"], o["name"], dates, now))
+        if result.get("source") == "sample":
+            source = "sample"
+    return {"weeks": week_labels(now), "series": series, "source": source, "note": SAMPLE_NOTE}
