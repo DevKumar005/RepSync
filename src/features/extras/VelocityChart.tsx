@@ -55,7 +55,7 @@ export function VelocityBadges({ data }: { data: VelocityResponse }) {
         }
         return (
           <li key={s.key} className="rounded-full border border-line bg-paper px-2.5 py-1 text-[11px] text-ink/55" title={s.dates_note}>
-            {label}: {t.status === 'ok' ? `steady (${t.change_pct! > 0 ? '+' : ''}${t.change_pct}%)` : 'not enough data for a trend'} · n={s.sample_size}
+            {label}: {t.status !== 'ok' ? 'not enough data for a trend' : (t.change_pct ?? 0) >= 15 ? `rising (+${t.change_pct}%)` : `steady (${(t.change_pct ?? 0) > 0 ? '+' : ''}${t.change_pct}%)`} · n={s.sample_size}
           </li>
         )
       })}
