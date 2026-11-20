@@ -122,7 +122,7 @@ export default function CityMapPage() {
             role="img"
             aria-label={`Map of ${outlets.length} outlets in ${q.data?.locality ?? 'the locality'}`}
           >
-            <rect width={W} height={H} fill="rgba(255,255,255,.45)" />
+            <rect width={W} height={H} fill="rgb(var(--ink) / .02)" />
             <g transform={`translate(${view.x} ${view.y}) scale(${view.k})`}>
               {Array.from({ length: 9 }, (_, i) => (
                 <g key={i} stroke="rgb(var(--line))" strokeWidth={1 / view.k}>
@@ -170,7 +170,7 @@ export default function CityMapPage() {
             <span><span className="status-dot status-dot-ok" /> Rating rising</span>
             <span><span className="status-dot status-dot-neg" /> Rating falling</span>
             <span><span className="status-dot" style={{ background: PIN.flat }} /> Flat</span>
-            <span className="text-brand font-semibold">◯ Your outlet</span>
+            <span className="inline-flex items-center gap-1 font-semibold text-brand"><span className="inline-block h-2.5 w-2.5 rounded-full border-2 border-brand" /> Your outlet</span>
             <span className="ml-auto">Scroll or pinch to zoom, drag to pan</span>
           </div>
         </section>
@@ -198,7 +198,7 @@ export default function CityMapPage() {
             <ol className="divide-y divide-line">
               {ranked.map((o, i) => (
                 <li key={o.id}>
-                  <button className={`flex w-full items-center gap-3 px-5 py-2 text-left text-sm hover:bg-white/60 ${sel?.id === o.id ? 'bg-white/60' : ''}`} onClick={() => setSelected(o.id)}>
+                  <button className={`flex w-full items-center gap-3 px-5 py-2 text-left text-sm hover:bg-ink/[.035] ${sel?.id === o.id ? 'bg-ink/[.04]' : ''}`} onClick={() => setSelected(o.id)}>
                     <span className="w-5 text-ink/35 tabular-nums">{i + 1}</span>
                     <span className={`flex-1 truncate ${o.is_you ? 'font-semibold text-brand' : ''}`}>{o.name}</span>
                     <span className="tabular-nums">{o.rating.toFixed(1)}</span>

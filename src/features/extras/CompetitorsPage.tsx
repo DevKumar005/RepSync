@@ -81,7 +81,7 @@ function CandidatePicker({ id, onScan, busy }: { id: string; onScan: (p: Competi
           <ul className="grid gap-2 sm:grid-cols-2">
             {list.map((c) => (
               <li key={c.name}>
-                <label className="flex cursor-pointer items-start gap-2 rounded-xl border border-line px-3 py-2 hover:bg-white/60">
+                <label className="flex cursor-pointer items-start gap-2 rounded-xl border border-line px-3 py-2 hover:bg-ink/[.035]">
                   <input type="checkbox" className="accent-brand mt-1" checked={picked.includes(c.name)} onChange={() => toggle(c.name)} />
                   <span className="min-w-0">
                     <span className="block text-sm font-medium">{c.name}</span>
@@ -189,7 +189,7 @@ export function CompetitorsSection({ id }: { id: string }) {
         <Panel title="What to do about it">
           <ul className="grid gap-3 px-5 pb-5 md:grid-cols-3">
             {data.advice!.map((a) => (
-              <li key={a.theme} className="rounded-2xl border border-line bg-white/50 p-4 space-y-2">
+              <li key={a.theme} className="rounded-2xl border border-line bg-ink/[.025] p-4 space-y-2">
                 <StatusChip status={a.status} />
                 <p className="text-sm leading-relaxed">{a.text}</p>
                 {(data.quotes?.[a.theme] ?? []).map((q, i) => (

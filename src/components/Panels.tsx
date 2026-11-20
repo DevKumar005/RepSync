@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Bar, BarChart, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { api } from '../api/client'
 import DotText from './DotText'
+import { useMode } from '../theme'
 import type { DraftStatus, Review, ReviewFilters, SyncEvent, Theme, TinyFishCall } from '../types'
 
 const Stars = ({ n: raw }: { n: number }) => {
@@ -90,7 +91,7 @@ export function FixesPanel({ id }: { id: string }) {
       ) : (
         <ol className="divide-y divide-line">
           {data.map((f) => (
-            <li key={f.rank} className="flex gap-4 px-5 py-4 hover:bg-white/50 transition-colors duration-150 group">
+            <li key={f.rank} className="flex gap-4 px-5 py-4 hover:bg-ink/[.035] transition-colors duration-150 group">
               <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brandsoft text-sm font-bold text-brand shrink-0 group-hover:scale-105 transition-transform">{f.rank}</span>
               <div className="min-w-0">
                 <div className="font-semibold text-sm text-ink/90">{f.title}</div>
@@ -108,9 +109,10 @@ export function FixesPanel({ id }: { id: string }) {
 export function ThemePanel({ id, selected, onSelect }: { id: string; selected?: string; onSelect: (t?: string) => void }) {
   const { data } = useQuery({ queryKey: ['themes', id], queryFn: () => api.themes(id) })
   const sel: Theme | undefined = data?.find((t) => t.id === selected)
-  const hot = '#ad314d'
-  const dim = '#e8c3cd'
-  const text = '#2a2a2a'
+  const dark = useMode() === 'dark'
+  const hot = dark ? '#8aa8f0' : '#25408f'
+  const dim = dark ? '#2a3554' : '#c9d4ef'
+  const text = dark ? '#e5e7eb' : '#1f2937'
   return (
     <section className="panel p-5">
       <h2 className="text-[13px] font-semibold uppercase tracking-wider text-ink/35 flex items-center gap-1.5">
@@ -127,8 +129,8 @@ export function ThemePanel({ id, selected, onSelect }: { id: string; selected?: 
           <ResponsiveContainer width="100%" height={data.length * 44 + 16}>
             <BarChart data={data} layout="vertical" margin={{ left: 0, right: 24 }}>
               <XAxis type="number" hide /><YAxis type="category" dataKey="label" width={140} tick={{ fontSize: 13, fill: text }} axisLine={false} tickLine={false} />
-              <Tooltip formatter={(v) => `${v} reviews`} cursor={{ fill: 'rgba(255,255,255,.5)' }}
-                contentStyle={{ background: '#fff', border: '1px solid rgba(58,25,39,.1)', borderRadius: 12 }} itemStyle={{ color: text }} />
+              <Tooltip formatter={(v) => `${v} reviews`} cursor={{ fill: dark ? 'rgba(255,255,255,.04)' : 'rgba(15,23,42,.03)' }}
+                contentStyle={{ background: dark ? '#141a26' : '#fff', border: `1px solid ${dark ? 'rgba(255,255,255,.08)' : 'rgba(15,23,42,.08)'}`, borderRadius: 12 }} itemStyle={{ color: text }} />
               <Bar dataKey="count" radius={[0, 6, 6, 0]} isAnimationActive={false} onClick={(d: any) => onSelect(d.id === selected ? undefined : d.id)}>
                 {data.map((t) => <Cell key={t.id} cursor="pointer" fill={!selected || t.id === selected ? hot : dim} />)}
               </Bar>
@@ -171,7 +173,7 @@ export function ReviewFeed({ id, theme }: { id: string; theme?: string }) {
       ) : (
         <ul className="divide-y divide-line">
           {data.map((r) => (
-            <li key={r.id} className="p-4 hover:bg-white/50 transition-colors duration-150">
+            <li key={r.id} className="p-4 hover:bg-ink/[.035] transition-colors duration-150">
               <div className="flex flex-wrap items-center gap-2 text-sm">
                 <span className="chip text-[11px]">{r.platform.replace(/_/g, ' ')}</span>
                 <Stars n={r.rating} />
@@ -179,7 +181,7 @@ export function ReviewFeed({ id, theme }: { id: string; theme?: string }) {
                 <span className="text-ink/40 text-xs">{r.posted_at}</span>
                 {r.sentiment === 'negative' && (
                   <span className={`chip text-[11px] ${r.has_owner_reply ? '!bg-possoft !text-pos !border-pos/20' : '!bg-negsoft !text-neg !border-neg/20'}`}>
-                    {r.has_owner_reply ? '✓ Owner replied' : '⚠ No reply yet'}
+                    {r.has_owner_reply ? 'Owner replied' : 'No reply yet'}
                   </span>
                 )}
               </div>
@@ -208,7 +210,7 @@ function DraftCard({ review, outletId }: { review: Review; outletId: string }) {
   const locked = d.status === 'approved' || d.status === 'posted'
   const busy = patch.isPending || regen.isPending
   return (
-    <li className="p-4 hover:bg-white/40 transition-colors duration-150">
+    <li className="p-4 hover:bg-ink/[.035] transition-colors duration-150">
       <div className="flex items-center gap-2 text-sm">
         <Stars n={review.rating} />
         <span className="font-semibold text-ink/90">{review.author}</span>
@@ -256,7 +258,7 @@ export function ReplyQueue({ id }: { id: string }) {
       {!list ? <Loading /> : list.length === 0 ? (
         <Empty icon={
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        }>All caught up 🎉 New negative reviews will appear here with a draft reply.</Empty>
+        }>All caught up. New negative reviews will appear here with a draft reply.</Empty>
       ) : (
         <ul className="divide-y divide-line">{list.map((r) => <DraftCard key={r.draft!.id + r.draft!.status + r.draft!.text} review={r} outletId={id} />)}</ul>
       )}
@@ -301,7 +303,7 @@ export function ActivityLog({ id, live, syncing }: { id: string; live: SyncEvent
       ) : (
         <ul className="divide-y divide-line border-t border-line text-xs">
           {data.map((c) => (
-            <li key={c.id} className="flex items-start gap-2.5 px-5 py-3 hover:bg-white/50 transition-colors duration-150">
+            <li key={c.id} className="flex items-start gap-2.5 px-5 py-3 hover:bg-ink/[.035] transition-colors duration-150">
               <span className={`chip shrink-0 w-14 text-center !text-[10px] !font-semibold !rounded-md ${tag[c.endpoint]}`}>{c.endpoint}</span>
               <div className="min-w-0 flex-1">
                 <div className="truncate text-ink/65 leading-relaxed">{c.input}</div>

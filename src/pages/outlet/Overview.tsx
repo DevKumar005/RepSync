@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import { FixesPanel, SummaryBar } from '../../components/Panels'
@@ -16,7 +16,7 @@ function Card({ title, to, cta, children, badge }: { title: string; to: string; 
         {badge}
       </div>
       <div className="flex-1 px-5 pb-4">{children}</div>
-      <div className="border-t border-white/70 px-5 py-3">
+      <div className="border-t border-ink/[.07] px-5 py-3">
         <NavLink to={to} className="text-[13px] font-medium text-brand hover:underline underline-offset-4">{cta} →</NavLink>
       </div>
     </section>
@@ -47,9 +47,9 @@ function CompetitorSnapshot({ id }: { id: string }) {
       ) : (
         <ul className="space-y-2.5">
           {rows.map((r) => (
-            <li key={r.theme} className="flex items-center gap-3 text-sm">
+            <li key={r.theme} className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-sm">
               <span className="flex-1 capitalize">{r.theme}</span>
-              <span className="tabular-nums text-ink/55">you {r.cells[0].rate ?? 0}% · {r.versus_name?.replace(' (sample)', '')} {r.cells.find((c) => c.key === r.versus_key)?.rate ?? 0}%</span>
+              <span className="order-last w-full tabular-nums text-xs text-ink/55 sm:order-none sm:w-auto sm:text-sm">you {r.cells[0].rate ?? 0}% · {r.versus_name?.replace(' (sample)', '')} {r.cells.find((c) => c.key === r.versus_key)?.rate ?? 0}%</span>
               <StatusChip status={r.status} />
             </li>
           ))}
@@ -83,22 +83,27 @@ function VelocitySnapshot({ id }: { id: string }) {
   )
 }
 
-function AskSnapshot({ id }: { id: string }) {
-  const nav = useNavigate()
+function AskSnapshot() {
+  const { openChat } = useOutlet()
   const [q, setQ] = useState('')
-  const go = (text: string) => nav(`/outlet/${id}/ask?q=${encodeURIComponent(text)}`)
+  const go = (text: string) => { openChat(text); setQ('') }
   return (
-    <Card title="Ask RepSync" to={`/outlet/${id}/ask`} cta="Open assistant">
+    <section className="panel flex flex-col">
+      <div className="px-5 pt-5 pb-3">
+        <h2 className="text-[13px] font-semibold uppercase tracking-[.1em] text-ink/45">Ask RepSync</h2>
+      </div>
+      <div className="flex-1 px-5 pb-5">
       <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); if (q.trim().length > 1) go(q.trim()) }}>
         <input className="field !py-2" value={q} maxLength={300} onChange={(e) => setQ(e.target.value)} placeholder="What should I fix first?" aria-label="Ask a question" />
         <button className="btn btn-primary !py-2" disabled={q.trim().length < 2}>Ask</button>
       </form>
       <div className="mt-3 flex flex-wrap gap-1.5">
         {['How do I compare with competitors?', 'Mera rank kyun gira?'].map((s) => (
-          <button key={s} className="chip hover:bg-white" onClick={() => go(s)}>{s}</button>
+          <button key={s} className="chip hover:bg-ink/[.05]" onClick={() => go(s)}>{s}</button>
         ))}
       </div>
-    </Card>
+      </div>
+    </section>
   )
 }
 
@@ -147,7 +152,7 @@ export default function Overview() {
       </div>
       {extrasEnabled && (
         <div className="grid gap-5 md:grid-cols-3">
-          <AskSnapshot id={id} />
+          <AskSnapshot />
           <PostersSnapshot id={id} />
           <MapSnapshot id={id} />
         </div>

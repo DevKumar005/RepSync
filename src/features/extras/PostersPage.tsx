@@ -175,7 +175,7 @@ function PosterEditor({ review, outletName, onClose }: { review: Review; outletN
           </button>
           {error && <p role="alert" className="text-sm text-neg">{error}</p>}
         </div>
-        <div className="overflow-auto rounded-2xl border border-line bg-white/50 p-4">
+        <div className="overflow-auto rounded-2xl border border-line bg-ink/[.025] p-4">
           <div style={{ width: w * scale, height: h * scale }} className="mx-auto shadow-lg">
             <div style={{ transform: `scale(${scale})`, transformOrigin: 'top left', width: w, height: h }}>
               <div ref={node}>

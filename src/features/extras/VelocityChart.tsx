@@ -1,17 +1,21 @@
 import { useQuery } from '@tanstack/react-query'
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { SectionHead } from '../../components/Page'
+import { useMode } from '../../theme'
 import { useOutlet } from '../../pages/outlet/OutletLayout'
 import { extrasApi } from './api'
 import type { VelocityResponse } from './types'
 import { ErrorNote, Panel, SampleBadge } from './ui'
 
-const PALETTE = { you: '#ad314d', others: ['#7d5bb0', '#e0703d', '#3f7d6e'], grid: 'rgba(58,25,39,.1)', text: '#5a5a5a' }
+const PALETTE = {
+  light: { you: '#25408f', others: ['#0f766e', '#b54708', '#64748b'], grid: 'rgba(15,23,42,.08)', text: '#475467' },
+  dark: { you: '#8aa8f0', others: ['#5eead4', '#fbbf24', '#94a3b8'], grid: 'rgba(255,255,255,.08)', text: '#a3abb9' },
+}
 
 const shortDate = (iso: string) => new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
 
 export function VelocityView({ data, height = 260 }: { data: VelocityResponse; height?: number }) {
-  const p = PALETTE
+  const p = PALETTE[useMode()]
   const rows = data.weeks.map((w, i) => ({
     week: `w/c ${shortDate(w)}`,
     ...Object.fromEntries(data.series.map((s) => [s.key, s.counts[i] ?? 0])),
@@ -47,12 +51,12 @@ export function VelocityBadges({ data }: { data: VelocityResponse }) {
         if (t.status === 'warning') {
           return (
             <li key={s.key} className="rounded-full border border-neg/25 bg-negsoft px-2.5 py-1 text-[11px] font-semibold text-neg">
-              ⚠ {label}: reviews down {Math.abs(t.change_pct ?? 0)}% (last 2 weeks vs previous 4)
+              {label}: reviews down {Math.abs(t.change_pct ?? 0)}% (last 2 weeks vs previous 4)
             </li>
           )
         }
         return (
-          <li key={s.key} className="rounded-full border border-line bg-white/50 px-2.5 py-1 text-[11px] text-ink/55" title={s.dates_note}>
+          <li key={s.key} className="rounded-full border border-line bg-ink/[.025] px-2.5 py-1 text-[11px] text-ink/55" title={s.dates_note}>
             {label}: {t.status !== 'ok' ? 'not enough data for a trend' : (t.change_pct ?? 0) >= 15 ? `rising (+${t.change_pct}%)` : `steady (${(t.change_pct ?? 0) > 0 ? '+' : ''}${t.change_pct}%)`} · n={s.sample_size}
           </li>
         )

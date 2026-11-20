@@ -6,10 +6,9 @@ import type { Candidate, Category } from '../types'
 import DotText from '../components/DotText'
 
 const CATS: Category[] = ['restaurant', 'clinic', 'salon']
-const CAT_EMOJI: Record<Category, string> = { restaurant: '🍽️', clinic: '🏥', salon: '💇' }
 const DEMOS = [
-  { key: 'restaurant', title: 'Demo: Restaurant', blurb: 'Kake Da Dhaba · reviews, themes, replies', emoji: '🍛' },
-  { key: 'clinic', title: 'Demo: Clinic', blurb: 'Dental clinic · patient feedback, replies', emoji: '🦷' },
+  { key: 'restaurant', title: 'Demo: Restaurant', blurb: 'Kake Da Dhaba · reviews, themes, replies' },
+  { key: 'clinic', title: 'Demo: Clinic', blurb: 'Dental clinic · patient feedback, replies' },
 ] as const
 
 export default function Search() {
@@ -50,7 +49,7 @@ export default function Search() {
               {CATS.map((c) => (
                 <button type="button" key={c} aria-pressed={category === c} onClick={() => setCategory(c)}
                   className={`btn capitalize flex items-center gap-1.5 ${category === c ? 'btn-primary' : ''}`}>
-                  <span>{CAT_EMOJI[c]}</span>{c}
+                  {c}
                 </button>
               ))}
             </div>
@@ -77,7 +76,6 @@ export default function Search() {
             {DEMOS.map((d) => (
               <button key={d.key} type="button" disabled={demo.isPending} onClick={() => demo.mutate(d.key)}
                 className="tile tile-context p-4 text-left transition-transform duration-200 hover:-translate-y-0.5 disabled:opacity-50 group">
-                <span className="text-2xl block mb-2">{d.emoji}</span>
                 <span className="block text-sm font-semibold text-white">
                   {demo.isPending && demo.variables === d.key ? 'Loading…' : d.title}
                 </span>
@@ -99,7 +97,7 @@ export default function Search() {
               <ul className="divide-y divide-line">
                 {find.data.map((c) => (
                   <li key={c.id}>
-                    <label className="flex cursor-pointer items-center gap-3 px-5 py-4 hover:bg-white/60 transition-colors duration-150">
+                    <label className="flex cursor-pointer items-center gap-3 px-5 py-4 hover:bg-ink/[.035] transition-colors duration-150">
                       <input type="radio" name="cand" checked={!!pick && pick.id === c.id} onChange={() => setPick(c)} className="accent-brand h-4 w-4" />
                       <span className="flex-1 min-w-0">
                         <span className="block font-medium text-sm">{c.name}</span>

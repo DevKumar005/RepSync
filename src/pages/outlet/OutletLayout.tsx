@@ -1,11 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet, useOutletContext, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import type { SyncEvent } from '../../types'
 import { extrasEnabled } from '../../features/extras/flags'
 
-export interface OutletCtx { id: string; live: SyncEvent[]; syncing: boolean; sync: () => void }
+const ChatWidget = lazy(() => import('../../features/extras/ChatWidget'))
+
+export interface OutletCtx { id: string; live: SyncEvent[]; syncing: boolean; sync: () => void; openChat: (question?: string) => void }
 export const useOutlet = () => useOutletContext<OutletCtx>()
 
 const TABS: { to: string; label: string; extra?: boolean }[] = [
@@ -16,14 +18,13 @@ const TABS: { to: string; label: string; extra?: boolean }[] = [
   { to: 'competitors', label: 'Competitors', extra: true },
   { to: 'velocity', label: 'Velocity', extra: true },
   { to: 'posters', label: 'Posters', extra: true },
-  { to: 'ask', label: 'Ask RepSync', extra: true },
   { to: 'map', label: 'City map', extra: true },
   { to: 'activity', label: 'Activity' },
 ]
 
 const tab = ({ isActive }: { isActive: boolean }) =>
   `shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-[13px] transition-colors duration-200 ${
-    isActive ? 'bg-white text-ink font-medium shadow-[0_1px_3px_rgba(58,25,39,.12)]' : 'text-ink/60 hover:text-ink hover:bg-white/60'
+    isActive ? 'pill-active font-medium' : 'pill-idle'
   }`
 
 export default function OutletLayout() {
@@ -35,6 +36,9 @@ export default function OutletLayout() {
   const [err, setErr] = useState('')
   const close = useRef<() => void>()
   const outlet = useQuery({ queryKey: ['outlet', id], queryFn: () => api.outlet(id) })
+  const [chatOpen, setChatOpen] = useState(false)
+  const [chatSeed, setChatSeed] = useState<string | null>(null)
+  const openChat = useCallback((question?: string) => { if (question) setChatSeed(question); setChatOpen(true) }, [])
 
   const sync = useCallback(async () => {
     setLive([]); setErr(''); setSyncing(true)
@@ -90,7 +94,13 @@ export default function OutletLayout() {
         ))}
       </nav>
 
-      <Outlet context={{ id, live, syncing, sync } satisfies OutletCtx} />
+      <Outlet context={{ id, live, syncing, sync, openChat } satisfies OutletCtx} />
+
+      {extrasEnabled && (
+        <Suspense fallback={null}>
+          <ChatWidget id={id} open={chatOpen} onOpenChange={setChatOpen} seed={chatSeed} onSeedUsed={() => setChatSeed(null)} />
+        </Suspense>
+      )}
     </div>
   )
 }
