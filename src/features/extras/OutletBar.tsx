@@ -14,6 +14,7 @@ export default function OutletBar() {
     <nav aria-label="Outlet tools" className="mb-6 flex gap-1 overflow-x-auto rounded-xl border border-line bg-surface p-1">
       <NavLink end to={base} className={tab}>Dashboard</NavLink>
       <NavLink to={`${base}/competitors`} className={tab}>Competitors</NavLink>
+      <NavLink to={`${base}/posters`} className={tab}>Posters</NavLink>
     </nav>
   )
 }
