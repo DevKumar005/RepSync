@@ -9,7 +9,7 @@ const PLANS = [
 export default function Pricing() {
   const [picked, setPicked] = useState('')
   return (
-    <div className="space-y-10 px-4 pt-12 pb-20 max-w-5xl mx-auto fade-in">
+    <div className="rs-container space-y-10 pt-10 pb-20 fade-in">
       <div className="space-y-2 text-center md:text-left">
         <p className="label-overline">Pricing</p>
         <h1 className="rs-title text-[clamp(28px,3.4vw,42px)]">Priced for one outlet, not a chain</h1>

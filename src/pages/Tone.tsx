@@ -17,18 +17,19 @@ export default function TonePage() {
   const save = useMutation({ mutationFn: (x: Tone) => api.putTone(x) })
 
   if (!t) return (
-    <div className="max-w-xl mx-auto px-4 pt-16 text-center space-y-3">
+    <div className="rs-container pt-16 text-center space-y-3">
       <div className="skeleton h-8 w-48 rounded mx-auto" />
       <div className="skeleton h-4 w-64 rounded mx-auto" />
     </div>
   )
 
   return (
-    <div className="max-w-xl mx-auto px-4 pt-12 pb-20 fade-in">
-      <form className="panel p-6 space-y-6" onSubmit={(e) => { e.preventDefault(); save.mutate(t) }}>
+    <div className="rs-container pt-10 pb-20 fade-in">
+      <form className="panel grid gap-8 p-6 lg:grid-cols-2 lg:gap-12 lg:p-10" onSubmit={(e) => { e.preventDefault(); save.mutate(t) }}>
+        <div className="space-y-6">
         <div className="space-y-1.5">
           <p className="label-overline">Reply tone</p>
-          <h1 className="rs-title text-[clamp(26px,3vw,36px)]">How your replies should sound</h1>
+          <h1 className="rs-title text-[clamp(28px,3.2vw,44px)]">How your replies should sound</h1>
           <p className="rs-copy text-sm">New drafts follow this style. Replies you have already approved are never changed.</p>
         </div>
 
@@ -44,10 +45,12 @@ export default function TonePage() {
             ))}
           </div>
         </fieldset>
+        </div>
 
+        <div className="space-y-6">
         <label className="block space-y-2">
           <span className="text-sm font-medium text-ink/70">Sample replies you like</span>
-          <textarea className="field font-normal" rows={4} value={t.sample_replies}
+          <textarea className="field font-normal" rows={6} value={t.sample_replies}
             onChange={(e) => setT({ ...t, sample_replies: e.target.value })}
             placeholder="Paste one or two replies you have written before" />
         </label>
@@ -65,6 +68,7 @@ export default function TonePage() {
           </button>
           {save.isSuccess && <span role="status" className="text-sm text-pos flex items-center gap-1">✓ Saved</span>}
           {save.isError && <span role="alert" className="text-sm text-neg">Could not save: {(save.error as Error).message}</span>}
+        </div>
         </div>
       </form>
     </div>
