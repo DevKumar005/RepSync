@@ -1,4 +1,5 @@
 """HTTP routes for the extras features. Registered in main.py only when ENABLE_EXTRAS is on."""
+import json
 from typing import List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
@@ -87,3 +88,15 @@ class AskRequest(BaseModel):
 @limiter.limit("20/minute")
 def ask_repsync(request: Request, id: str, req: AskRequest, session: Session = Depends(get_session)):
     return ask.answer_question(session, _outlet_or_404(session, id), req.question)
+
+
+# --- Feature 5: City Reputation Map (sample fixture only) ---
+
+@router.get("/api/outlets/{id}/city-map")
+def city_map(id: str, session: Session = Depends(get_session)):
+    outlet = _outlet_or_404(session, id)
+    data = json.loads((competitors.DEMO_DIR / "city_map.json").read_text(encoding="utf-8"))
+    for o in data["outlets"]:
+        if o.get("is_you"):
+            o["name"] = f"{outlet.name} (you)"
+    return data

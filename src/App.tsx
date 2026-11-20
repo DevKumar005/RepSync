@@ -10,6 +10,7 @@ import { extrasEnabled } from './features/extras/flags'
 import OutletBar from './features/extras/OutletBar'
 import CompetitorsPage from './features/extras/CompetitorsPage'
 import PostersPage from './features/extras/PostersPage'
+import CityMapPage from './features/extras/CityMapPage'
 
 // Active nav link styles — pill highlight for current route
 const link = ({ isActive }: { isActive: boolean }) =>
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="/pricing" element={<Pricing />} />
           {extrasEnabled && <Route path="/outlet/:id/competitors" element={<CompetitorsPage />} />}
           {extrasEnabled && <Route path="/outlet/:id/posters" element={<PostersPage />} />}
+          {extrasEnabled && <Route path="/outlet/:id/map" element={<CityMapPage />} />}
           <Route path="*" element={
             <div className="text-center py-20 fade-in">
               <p className="text-5xl mb-4">🔍</p>

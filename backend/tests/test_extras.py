@@ -306,3 +306,12 @@ def test_ask_endpoint_validation(client, engine):
     assert client.post(f"/api/outlets/{oid}/ask", json={"question": "x" * 301}).status_code == 422
     body = client.post(f"/api/outlets/{oid}/ask", json={"question": "What should I fix first?"}).json()
     assert body["answer"] and body["grounded"] is True
+
+
+def test_city_map_is_sample_and_highlights_owner(client, engine):
+    oid = _demo_id(engine)
+    data = client.get(f"/api/outlets/{oid}/city-map").json()
+    assert data["source"] == "sample"
+    assert 8 <= len(data["outlets"]) <= 12
+    mine = [o for o in data["outlets"] if o.get("is_you")]
+    assert len(mine) == 1 and mine[0]["name"] == "Kake Da Dhaba (you)"

@@ -1,7 +1,7 @@
 import { api, isMock } from '../../api/client'
 import type { SyncEvent } from '../../types'
-import { MOCK_COMPETITORS, MOCK_VELOCITY_SERIES } from './mockData'
-import type { AskResponse, CandidatesResponse, CompetitorResult, VelocityResponse } from './types'
+import { MOCK_CITY_MAP, MOCK_COMPETITORS, MOCK_VELOCITY_SERIES } from './mockData'
+import type { AskResponse, CandidatesResponse, CityMap, CompetitorResult, VelocityResponse } from './types'
 
 // Same base URL rule as src/api/client.ts
 const BASE: string = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
@@ -100,5 +100,10 @@ export const extrasApi = {
       : call('GET', `/api/outlets/${id}/velocity`),
   ask: (id: string, question: string): Promise<AskResponse> =>
     isMock ? wait(null, 500).then(() => mockAsk(id, question)) : call('POST', `/api/outlets/${id}/ask`, { question }),
+  cityMap: async (id: string): Promise<CityMap> => {
+    if (!isMock) return call('GET', `/api/outlets/${id}/city-map`)
+    const outlet = await api.outlet(id)
+    return wait({ ...MOCK_CITY_MAP, outlets: MOCK_CITY_MAP.outlets.map((o) => (o.is_you ? { ...o, name: `${outlet.name} (you)` } : o)) })
+  },
   call,
 }
