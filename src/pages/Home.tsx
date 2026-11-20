@@ -109,7 +109,7 @@ export default function Home() {
       <section className="rs-container pb-20">
         <div className="tile tile-ink flex flex-col gap-6 p-7 lg:flex-row lg:items-center">
           <ul className="grid flex-1 grid-cols-2 gap-x-6 gap-y-2 text-sm text-white/85 md:grid-cols-4">
-            {TRUST.map((t) => <li key={t} className="flex items-center gap-2"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#8aa8f0]" />{t}</li>)}
+            {TRUST.map((t) => <li key={t} className="flex items-center gap-2"><span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#e5aea9]" />{t}</li>)}
           </ul>
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-sm text-white/70">From ₹499 / outlet / month</span>

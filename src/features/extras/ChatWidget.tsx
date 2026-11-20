@@ -108,7 +108,7 @@ export default function ChatWidget({ id, open, onOpenChange, seed, onSeedUsed }:
             )}
             {turns.map((t, i) => (
               <div key={i} ref={i === turns.length - 1 ? latest : undefined} className="scroll-mt-3 space-y-2">
-                <p className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-gradient-to-b from-[#3a5cc0] to-[#1b2f6b] px-3.5 py-2 text-sm text-white">{t.q}</p>
+                <p className="ml-auto w-fit max-w-[85%] rounded-2xl rounded-br-md bg-gradient-to-b from-[#437591] to-[#2a4f63] px-3.5 py-2 text-sm text-white">{t.q}</p>
                 {!t.a && !t.error && <p className="text-sm text-ink/45">Thinking…</p>}
                 {t.error && <p role="alert" className="text-sm text-neg">{t.error}</p>}
                 {t.a && (
@@ -134,7 +134,7 @@ export default function ChatWidget({ id, open, onOpenChange, seed, onSeedUsed }:
       )}
 
       <button
-        className="fixed bottom-4 right-4 z-50 flex h-14 items-center gap-2 rounded-full bg-gradient-to-b from-[#3a5cc0] to-[#1b2f6b] px-5 text-white shadow-[0_10px_30px_rgba(27,47,107,.35)] transition-transform duration-200 hover:-translate-y-0.5"
+        className="fixed bottom-4 right-4 z-50 flex h-14 items-center gap-2 rounded-full bg-gradient-to-b from-[#437591] to-[#2a4f63] px-5 text-white shadow-[0_10px_30px_rgba(42,79,99,.35)] transition-transform duration-200 hover:-translate-y-0.5"
         onClick={() => onOpenChange(!open)}
         aria-expanded={open}
         aria-label={open ? 'Close Ask RepSync' : 'Open Ask RepSync'}
