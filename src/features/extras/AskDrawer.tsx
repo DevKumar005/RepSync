@@ -57,7 +57,7 @@ export default function AskDrawer({ id }: { id: string }) {
         Ask RepSync
       </button>
       {open && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/30" onClick={() => setOpen(false)}>
+        <div className="fixed inset-0 z-[60] flex justify-end bg-black/30" onClick={() => setOpen(false)}>
           <aside
             role="dialog"
             aria-label="Ask RepSync"
