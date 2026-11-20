@@ -21,7 +21,7 @@
 
 ## 📸 Preview
 
-https://repsync-chi.vercel.app
+https://repsync-2026.vercel.app
 
 ---
 
