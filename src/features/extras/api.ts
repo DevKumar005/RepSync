@@ -1,7 +1,7 @@
 import { api, isMock } from '../../api/client'
 import type { SyncEvent } from '../../types'
-import { MOCK_COMPETITORS } from './mockData'
-import type { CandidatesResponse, CompetitorResult } from './types'
+import { MOCK_COMPETITORS, MOCK_VELOCITY_SERIES } from './mockData'
+import type { CandidatesResponse, CompetitorResult, VelocityResponse } from './types'
 
 // Same base URL rule as src/api/client.ts
 const BASE: string = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
@@ -36,6 +36,10 @@ const mockStages = [
   'Competitor scan complete',
 ]
 
+const mockScanDone = () => mockScanStartedAt !== null && Date.now() - mockScanStartedAt >= MOCK_SCAN_MS
+const weekLabels = (weeks = 12) =>
+  Array.from({ length: weeks }, (_, i) => new Date(Date.now() - 7 * (weeks - i) * 86400000).toISOString().slice(0, 10))
+
 export const extrasApi = {
   competitors: (id: string): Promise<CompetitorResult> => {
     if (!isMock) return call('GET', `/api/outlets/${id}/competitors`)
@@ -59,5 +63,14 @@ export const extrasApi = {
       setTimeout(() => on({ type: i % 2 && i < 6 ? 'tinyfish_call' : 'stage', source: 'competitors', message, ts: new Date().toISOString() }), (i + 1) * 300))
     return () => timers.forEach(clearTimeout)
   },
+  velocity: (id: string): Promise<VelocityResponse> =>
+    isMock
+      ? wait({
+          weeks: weekLabels(),
+          series: mockScanDone() ? MOCK_VELOCITY_SERIES : MOCK_VELOCITY_SERIES.slice(0, 1),
+          source: 'sample',
+          note: 'Counts come from the reviews RepSync collected (up to 50 per platform), not the total number of reviews. Relative dates like "one month ago" are approximate.',
+        })
+      : call('GET', `/api/outlets/${id}/velocity`),
   call,
 }

@@ -38,13 +38,19 @@ def trend(counts: List[int]) -> dict:
 
 def build_series(key: str, name: str, dates: Sequence[Optional[datetime]], now: datetime) -> dict:
     counts = weekly_counts(dates, now)
-    return {
-        "key": key,
-        "name": name,
-        "counts": counts,
-        "sample_size": sum(1 for d in dates if d is not None),
-        "trend": trend(counts),
-    }
+    known = [d for d in dates if d is not None]
+    series = {"key": key, "name": name, "counts": counts, "sample_size": len(known), "trend": trend(counts)}
+    # Some collectors stamp every review with the scrape time; a single-day spread is not a real trend
+    if len(known) >= 5 and (max(known) - min(known)) < timedelta(days=1):
+        series["trend"] = {**series["trend"], "status": "insufficient_data", "change_pct": None}
+        series["dates_note"] = "Review dates were not available from the source, so they all show the collection day."
+    return series
+
+
+SAMPLE_NOTE = (
+    "Counts come from the reviews RepSync collected (up to 50 per platform), not the total number of reviews. "
+    "Relative dates like \"one month ago\" are approximate."
+)
 
 
 def week_labels(now: datetime, weeks: int = WEEKS) -> List[str]:
