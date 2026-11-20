@@ -123,3 +123,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # Register all API endpoints
 app.include_router(router)
 
+# Optional extras (competitor matrix, velocity, ask). Off unless ENABLE_EXTRAS is set.
+if os.getenv("ENABLE_EXTRAS", "0").lower().strip() in {"1", "true", "yes"}:
+    from backend.app.features.extras.router import router as extras_router
+    app.include_router(extras_router)
+

@@ -6,6 +6,9 @@ import Home from './pages/Home'
 import Pricing from './pages/Pricing'
 import Search from './pages/Search'
 import TonePage from './pages/Tone'
+import { extrasEnabled } from './features/extras/flags'
+import OutletBar from './features/extras/OutletBar'
+import CompetitorsPage from './features/extras/CompetitorsPage'
 
 // Active nav link styles — pill highlight for current route
 const link = ({ isActive }: { isActive: boolean }) =>
@@ -45,12 +48,14 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-8">
+        {extrasEnabled && <OutletBar />}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/search" element={<Search />} />
           <Route path="/outlet/:id" element={<Dashboard />} />
           <Route path="/tone" element={<TonePage />} />
           <Route path="/pricing" element={<Pricing />} />
+          {extrasEnabled && <Route path="/outlet/:id/competitors" element={<CompetitorsPage />} />}
           <Route path="*" element={
             <div className="text-center py-20 fade-in">
               <p className="text-5xl mb-4">🔍</p>

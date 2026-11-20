@@ -1,0 +1,473 @@
+{
+ "source": "sample",
+ "note": "Simulated competitor reviews for the demo. Outlets and reviews are fictional.",
+ "category": "restaurant",
+ "locality": "Connaught Place, New Delhi",
+ "collected_at": null,
+ "competitors": [
+  {
+   "name": "Tandoor Junction (sample)",
+   "area": "Janpath, New Delhi",
+   "reviews": [
+    {
+     "text": "Table was dirty and there were flies near the counter.",
+     "rating": 1.0,
+     "posted_at": "10 hours ago",
+     "topics": [
+      "hygiene"
+     ]
+    },
+    {
+     "text": "Found a hair in the curry and the plates looked unclean.",
+     "rating": 1.0,
+     "posted_at": "3 days ago",
+     "topics": [
+      "hygiene"
+     ]
+    },
+    {
+     "text": "टेबल पर गंदगी थी, किसी ने साफ नहीं किया।",
+     "rating": 1.0,
+     "posted_at": "a week ago",
+     "topics": [
+      "hygiene"
+     ]
+    },
+    {
+     "text": "Waited 40 minutes for the main course.",
+     "rating": 1.0,
+     "posted_at": "10 days ago",
+     "topics": [
+      "slow service"
+     ]
+    },
+    {
+     "text": "Food arrived within ten minutes even on a Friday night. Loved the dal.",
+     "rating": 5.0,
+     "posted_at": "14 days ago",
+     "topics": []
+    },
+    {
+     "text": "खाना बहुत स्वादिष्ट था, सर्विस भी जल्दी मिली।",
+     "rating": 4.0,
+     "posted_at": "17 days ago",
+     "topics": []
+    },
+    {
+     "text": "Great value thali, generous portions.",
+     "rating": 5.0,
+     "posted_at": "21 days ago",
+     "topics": []
+    },
+    {
+     "text": "Biryani was fragrant and well cooked. Will come back.",
+     "rating": 5.0,
+     "posted_at": "24 days ago",
+     "topics": []
+    },
+    {
+     "text": "Bahut accha khana, staff bhi friendly hai.",
+     "rating": 4.0,
+     "posted_at": "28 days ago",
+     "topics": []
+    },
+    {
+     "text": "Tandoori platter was perfectly charred. Good music.",
+     "rating": 5.0,
+     "posted_at": "31 days ago",
+     "topics": []
+    },
+    {
+     "text": "Lassi was thick and fresh. Nice seating outside.",
+     "rating": 5.0,
+     "posted_at": "35 days ago",
+     "topics": []
+    },
+    {
+     "text": "Polite staff and quick billing. Good experience.",
+     "rating": 4.0,
+     "posted_at": "38 days ago",
+     "topics": []
+    },
+    {
+     "text": "Washroom had a bad smell, not hygienic at all.",
+     "rating": 2.0,
+     "posted_at": "42 days ago",
+     "topics": [
+      "hygiene"
+     ]
+    },
+    {
+     "text": "Kitchen area looked dirty from the window. Not coming back.",
+     "rating": 2.0,
+     "posted_at": "45 days ago",
+     "topics": [
+      "hygiene"
+     ]
+    },
+    {
+     "text": "Dal was bland and the rotis were stale.",
+     "rating": 1.0,
+     "posted_at": "49 days ago",
+     "topics": [
+      "food quality"
+     ]
+    },
+    {
+     "text": "Butter chicken was rich and the naan came out hot. Quick service too.",
+     "rating": 4.0,
+     "posted_at": "52 days ago",
+     "topics": []
+    },
+    {
+     "text": "Paneer tikka was smoky and fresh. Staff were polite.",
+     "rating": 5.0,
+     "posted_at": "56 days ago",
+     "topics": []
+    },
+    {
+     "text": "Ekdum mast chole bhature, service bhi fast thi.",
+     "rating": 5.0,
+     "posted_at": "59 days ago",
+     "topics": []
+    },
+    {
+     "text": "Family dinner went smoothly, kids loved the kulfi.",
+     "rating": 4.0,
+     "posted_at": "63 days ago",
+     "topics": []
+    },
+    {
+     "text": "Clean place, friendly waiter, food on time.",
+     "rating": 5.0,
+     "posted_at": "66 days ago",
+     "topics": []
+    },
+    {
+     "text": "Best rajma chawal in the area, quick and tasty.",
+     "rating": 5.0,
+     "posted_at": "70 days ago",
+     "topics": []
+    },
+    {
+     "text": "Ordered for office lunch, packed neatly and delivered hot.",
+     "rating": 4.0,
+     "posted_at": "73 days ago",
+     "topics": []
+    },
+    {
+     "text": "Paneer butter masala was creamy, rotis soft.",
+     "rating": 5.0,
+     "posted_at": "77 days ago",
+     "topics": []
+    },
+    {
+     "text": "स्टाफ बहुत अच्छा था और खाना गरम मिला।",
+     "rating": 5.0,
+     "posted_at": "80 days ago",
+     "topics": []
+    }
+   ]
+  },
+  {
+   "name": "Masala Lane (sample)",
+   "area": "Barakhamba Road, New Delhi",
+   "reviews": [
+    {
+     "text": "Too expensive for such small portions.",
+     "rating": 1.0,
+     "posted_at": "a week ago",
+     "topics": [
+      "overpriced"
+     ]
+    },
+    {
+     "text": "Hidden service charge added to the bill without asking.",
+     "rating": 1.0,
+     "posted_at": "14 days ago",
+     "topics": [
+      "overpriced"
+     ]
+    },
+    {
+     "text": "Costly drinks and the bill had extra charges.",
+     "rating": 1.0,
+     "posted_at": "16 days ago",
+     "topics": [
+      "overpriced"
+     ]
+    },
+    {
+     "text": "Waiter was rude when we asked for water twice.",
+     "rating": 1.0,
+     "posted_at": "18 days ago",
+     "topics": [
+      "rude staff"
+     ]
+    },
+    {
+     "text": "Staff was arrogant and did not care about our order.",
+     "rating": 1.0,
+     "posted_at": "21 days ago",
+     "topics": [
+      "rude staff"
+     ]
+    },
+    {
+     "text": "Very slow service, we had to remind them three times.",
+     "rating": 3.0,
+     "posted_at": "23 days ago",
+     "topics": [
+      "slow service"
+     ]
+    },
+    {
+     "text": "Family dinner went smoothly, kids loved the kulfi.",
+     "rating": 4.0,
+     "posted_at": "25 days ago",
+     "topics": []
+    },
+    {
+     "text": "Clean place, friendly waiter, food on time.",
+     "rating": 5.0,
+     "posted_at": "28 days ago",
+     "topics": []
+    },
+    {
+     "text": "Best rajma chawal in the area, quick and tasty.",
+     "rating": 5.0,
+     "posted_at": "one month ago",
+     "topics": []
+    },
+    {
+     "text": "Ordered for office lunch, packed neatly and delivered hot.",
+     "rating": 4.0,
+     "posted_at": "32 days ago",
+     "topics": []
+    },
+    {
+     "text": "Paneer butter masala was creamy, rotis soft.",
+     "rating": 5.0,
+     "posted_at": "35 days ago",
+     "topics": []
+    },
+    {
+     "text": "Overpriced thali for very average food.",
+     "rating": 2.0,
+     "posted_at": "37 days ago",
+     "topics": [
+      "overpriced"
+     ]
+    },
+    {
+     "text": "Bahut mehnga hai, quantity bhi kam.",
+     "rating": 2.0,
+     "posted_at": "39 days ago",
+     "topics": [
+      "overpriced"
+     ]
+    },
+    {
+     "text": "Prices are way too high for what you get. Overpriced.",
+     "rating": 2.0,
+     "posted_at": "42 days ago",
+     "topics": [
+      "overpriced"
+     ]
+    },
+    {
+     "text": "Manager shouted at the staff in front of guests, very unprofessional.",
+     "rating": 2.0,
+     "posted_at": "45 days ago",
+     "topics": [
+      "rude staff"
+     ]
+    },
+    {
+     "text": "Waited 40 minutes for the main course.",
+     "rating": 2.0,
+     "posted_at": "49 days ago",
+     "topics": [
+      "slow service"
+     ]
+    },
+    {
+     "text": "Great value thali, generous portions.",
+     "rating": 5.0,
+     "posted_at": "52 days ago",
+     "topics": []
+    },
+    {
+     "text": "Biryani was fragrant and well cooked. Will come back.",
+     "rating": 5.0,
+     "posted_at": "56 days ago",
+     "topics": []
+    },
+    {
+     "text": "Bahut accha khana, staff bhi friendly hai.",
+     "rating": 4.0,
+     "posted_at": "59 days ago",
+     "topics": []
+    },
+    {
+     "text": "Tandoori platter was perfectly charred. Good music.",
+     "rating": 5.0,
+     "posted_at": "63 days ago",
+     "topics": []
+    },
+    {
+     "text": "Lassi was thick and fresh. Nice seating outside.",
+     "rating": 5.0,
+     "posted_at": "70 days ago",
+     "topics": []
+    },
+    {
+     "text": "Polite staff and quick billing. Good experience.",
+     "rating": 4.0,
+     "posted_at": "77 days ago",
+     "topics": []
+    }
+   ]
+  },
+  {
+   "name": "Hari Bhari Rasoi (sample)",
+   "area": "Gole Market, New Delhi",
+   "reviews": [
+    {
+     "text": "Too crowded, no seating even at lunch time.",
+     "rating": 1.0,
+     "posted_at": "10 hours ago",
+     "topics": [
+      "poor management"
+     ]
+    },
+    {
+     "text": "Booking was not honoured, overcrowded waiting area.",
+     "rating": 1.0,
+     "posted_at": "yesterday",
+     "topics": [
+      "poor management"
+     ]
+    },
+    {
+     "text": "Dal was bland and the rotis were stale.",
+     "rating": 2.0,
+     "posted_at": "3 days ago",
+     "topics": [
+      "food quality"
+     ]
+    },
+    {
+     "text": "Bahut der lagi khana aane mein.",
+     "rating": 2.0,
+     "posted_at": "5 days ago",
+     "topics": [
+      "slow service"
+     ]
+    },
+    {
+     "text": "Ordered for office lunch, packed neatly and delivered hot.",
+     "rating": 4.0,
+     "posted_at": "a week ago",
+     "topics": []
+    },
+    {
+     "text": "Paneer butter masala was creamy, rotis soft.",
+     "rating": 5.0,
+     "posted_at": "9 days ago",
+     "topics": []
+    },
+    {
+     "text": "स्टाफ बहुत अच्छा था और खाना गरम मिला।",
+     "rating": 5.0,
+     "posted_at": "11 days ago",
+     "topics": []
+    },
+    {
+     "text": "Malai kofta was delicious. Service was prompt.",
+     "rating": 4.0,
+     "posted_at": "14 days ago",
+     "topics": []
+    },
+    {
+     "text": "Butter chicken was rich and the naan came out hot. Quick service too.",
+     "rating": 5.0,
+     "posted_at": "16 days ago",
+     "topics": []
+    },
+    {
+     "text": "Paneer tikka was smoky and fresh. Staff were polite.",
+     "rating": 5.0,
+     "posted_at": "18 days ago",
+     "topics": []
+    },
+    {
+     "text": "Total chaos at the counter on Sunday, orders mixed up.",
+     "rating": 2.0,
+     "posted_at": "21 days ago",
+     "topics": [
+      "poor management"
+     ]
+    },
+    {
+     "text": "Cramped seating, could not move between tables.",
+     "rating": 2.0,
+     "posted_at": "24 days ago",
+     "topics": [
+      "poor management"
+     ]
+    },
+    {
+     "text": "Paneer was undercooked and the gravy was oily.",
+     "rating": 3.0,
+     "posted_at": "28 days ago",
+     "topics": [
+      "food quality"
+     ]
+    },
+    {
+     "text": "Tandoori platter was perfectly charred. Good music.",
+     "rating": 5.0,
+     "posted_at": "31 days ago",
+     "topics": []
+    },
+    {
+     "text": "Lassi was thick and fresh. Nice seating outside.",
+     "rating": 5.0,
+     "posted_at": "35 days ago",
+     "topics": []
+    },
+    {
+     "text": "Polite staff and quick billing. Good experience.",
+     "rating": 4.0,
+     "posted_at": "38 days ago",
+     "topics": []
+    },
+    {
+     "text": "Value for money, will recommend to friends.",
+     "rating": 5.0,
+     "posted_at": "42 days ago",
+     "topics": []
+    },
+    {
+     "text": "Nice ambience, dal makhani was the highlight.",
+     "rating": 5.0,
+     "posted_at": "49 days ago",
+     "topics": []
+    },
+    {
+     "text": "Food arrived within ten minutes even on a Friday night. Loved the dal.",
+     "rating": 4.0,
+     "posted_at": "56 days ago",
+     "topics": []
+    },
+    {
+     "text": "खाना बहुत स्वादिष्ट था, सर्विस भी जल्दी मिली।",
+     "rating": 5.0,
+     "posted_at": "63 days ago",
+     "topics": []
+    }
+   ]
+  }
+ ]
+}
