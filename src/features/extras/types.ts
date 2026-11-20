@@ -25,7 +25,7 @@ export interface CompetitorCandidate { name: string; url: string | null; area: s
 export interface CandidatesResponse { source: DataSource; candidates: CompetitorCandidate[]; message?: string }
 
 export interface Trend { status: 'ok' | 'warning' | 'insufficient_data'; recent_avg: number; prior_avg: number; change_pct: number | null }
-export interface VelocitySeries { key: string; name: string; counts: number[]; sample_size: number; trend: Trend }
+export interface VelocitySeries { key: string; name: string; counts: number[]; sample_size: number; trend: Trend; dates_note?: string }
 export interface VelocityResponse { weeks: string[]; series: VelocitySeries[]; source: DataSource; note: string }
 
 export type ChartKind = 'themes' | 'velocity' | 'gap'

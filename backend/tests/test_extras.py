@@ -13,6 +13,7 @@ from backend.app.features.extras import advice, competitors
 from backend.app.features.extras.dates import parse_posted_at
 from backend.app.features.extras.gaps import compute_gap_matrix, top_gaps
 from backend.app.features.extras.router import router as extras_router
+from backend.app.features.extras.velocity import build_series, trend, weekly_counts
 from backend.app.limiter import limiter
 from backend.app.models.entities import Outlet
 from backend.app.seed import seed_demo_outlets, seed_demo_user, seed_platforms
@@ -170,3 +171,42 @@ def test_scan_endpoint_and_unknown_outlet(client, engine):
     oid = _demo_id(engine, "The White Dental Clinic")
     assert client.post(f"/api/outlets/{oid}/competitors/scan", json={}).json()["status"] in {"started", "running"}
     assert client.get("/api/outlets/nope/competitors").status_code == 404
+
+
+# --- velocity ---
+
+def test_weekly_counts_buckets_oldest_first():
+    dates = [NOW - timedelta(days=d) for d in (0, 1, 6.9, 7, 13, 83, 84, 200)] + [None]
+    counts = weekly_counts(dates, NOW)
+    assert len(counts) == 12
+    assert counts[-1] == 3          # 0, 1 and 6.9 days ago
+    assert counts[-2] == 2          # 7 and 13 days ago
+    assert counts[0] == 1           # 83 days ago; 84+ days falls outside the 12-week window
+    assert sum(counts) == 6
+
+
+def test_trend_warning_ok_and_small_sample():
+    assert trend([0] * 6 + [3, 3, 3, 3, 1, 0])["status"] == "warning"       # 0.5/wk vs 3/wk
+    assert trend([0] * 6 + [3, 3, 3, 3, 3, 2])["status"] == "ok"            # -17%
+    small = trend([0] * 6 + [1, 1, 1, 1, 0, 0])                              # prior window only 4 reviews
+    assert small["status"] == "insufficient_data" and small["change_pct"] is None
+
+
+def test_series_flags_single_day_dates():
+    s = build_series("you", "X", [NOW] * 8, NOW)
+    assert s["trend"]["status"] == "insufficient_data" and "dates_note" in s
+
+
+def test_velocity_endpoint_with_sample_scan(client, engine):
+    oid = _demo_id(engine)
+    before = client.get(f"/api/outlets/{oid}/velocity").json()
+    assert [s["key"] for s in before["series"]] == ["you"] and len(before["weeks"]) == 12
+    assert before["source"] == "sample"
+    asyncio.run(competitors.run_scan(oid, []))
+    after = client.get(f"/api/outlets/{oid}/velocity").json()
+    by_key = {s["key"]: s for s in after["series"]}
+    assert set(by_key) == {"you", "A", "B", "C"}
+    assert by_key["B"]["trend"]["status"] == "warning"     # Masala Lane sample slows down recently
+    assert by_key["A"]["trend"]["status"] == "ok"
+    assert by_key["you"]["trend"]["status"] == "insufficient_data"
+    assert "not the total number of reviews" in after["note"]

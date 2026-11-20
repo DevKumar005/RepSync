@@ -3,12 +3,13 @@ from typing import List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
-from sqlmodel import Session
+from sqlmodel import Session, select
 
 from backend.app.db import get_session
-from backend.app.features.extras import competitors
+from backend.app.features.extras import competitors, velocity
+from backend.app.features.extras.dates import parse_posted_at
 from backend.app.limiter import limiter
-from backend.app.models.entities import Outlet
+from backend.app.models.entities import Outlet, Review
 
 router = APIRouter(tags=["extras"])
 
@@ -68,3 +69,28 @@ def competitor_result(id: str, session: Session = Depends(get_session)):
         "live": competitors.live_enabled(info),
         "sample_available": competitors.sample_key(info) is not None,
     }
+
+
+# --- Feature 3: Review velocity ---
+
+def velocity_payload(session: Session, outlet: Outlet) -> dict:
+    now = velocity.utc_now()
+    owner_dates = [
+        parse_posted_at(r.posted_at, now)
+        for r in session.exec(select(Review).where(Review.outlet_id == outlet.id)).all()
+    ]
+    series = [velocity.build_series("you", outlet.name, owner_dates, now)]
+    source = "sample" if outlet.is_demo else "live"
+    result = competitors.load_result(outlet.id)
+    if result and result.get("status") == "done":
+        for o in result["outlets"][1:]:
+            dates = [parse_posted_at(d) for d in result.get("dates", {}).get(o["key"], [])]
+            series.append(velocity.build_series(o["key"], o["name"], dates, now))
+        if result.get("source") == "sample":
+            source = "sample"
+    return {"weeks": velocity.week_labels(now), "series": series, "source": source, "note": velocity.SAMPLE_NOTE}
+
+
+@router.get("/api/outlets/{id}/velocity")
+def outlet_velocity(id: str, session: Session = Depends(get_session)):
+    return velocity_payload(session, _outlet_or_404(session, id))

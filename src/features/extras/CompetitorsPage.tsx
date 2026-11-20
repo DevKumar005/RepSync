@@ -5,6 +5,7 @@ import type { SyncEvent } from '../../types'
 import { extrasApi } from './api'
 import type { CompetitorCandidate, CompetitorResult, GapRow } from './types'
 import { ErrorNote, Panel, SampleBadge, StatusChip } from './ui'
+import VelocitySection from './VelocityChart'
 
 const pct = (r: number | null) => (r === null ? '–' : `${r % 1 === 0 ? r : r.toFixed(1)}%`)
 
@@ -216,6 +217,7 @@ export default function CompetitorsPage() {
         </p>
       </div>
       <CompetitorsSection id={id} />
+      <VelocitySection id={id} />
     </div>
   )
 }
