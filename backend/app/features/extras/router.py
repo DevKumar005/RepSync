@@ -3,13 +3,12 @@ from typing import List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
-from sqlmodel import Session, select
+from sqlmodel import Session
 
 from backend.app.db import get_session
-from backend.app.features.extras import competitors, velocity
-from backend.app.features.extras.dates import parse_posted_at
+from backend.app.features.extras import ask, competitors, velocity
 from backend.app.limiter import limiter
-from backend.app.models.entities import Outlet, Review
+from backend.app.models.entities import Outlet
 
 router = APIRouter(tags=["extras"])
 
@@ -73,24 +72,18 @@ def competitor_result(id: str, session: Session = Depends(get_session)):
 
 # --- Feature 3: Review velocity ---
 
-def velocity_payload(session: Session, outlet: Outlet) -> dict:
-    now = velocity.utc_now()
-    owner_dates = [
-        parse_posted_at(r.posted_at, now)
-        for r in session.exec(select(Review).where(Review.outlet_id == outlet.id)).all()
-    ]
-    series = [velocity.build_series("you", outlet.name, owner_dates, now)]
-    source = "sample" if outlet.is_demo else "live"
-    result = competitors.load_result(outlet.id)
-    if result and result.get("status") == "done":
-        for o in result["outlets"][1:]:
-            dates = [parse_posted_at(d) for d in result.get("dates", {}).get(o["key"], [])]
-            series.append(velocity.build_series(o["key"], o["name"], dates, now))
-        if result.get("source") == "sample":
-            source = "sample"
-    return {"weeks": velocity.week_labels(now), "series": series, "source": source, "note": velocity.SAMPLE_NOTE}
-
-
 @router.get("/api/outlets/{id}/velocity")
 def outlet_velocity(id: str, session: Session = Depends(get_session)):
-    return velocity_payload(session, _outlet_or_404(session, id))
+    return velocity.velocity_payload(session, _outlet_or_404(session, id))
+
+
+# --- Feature 4: Ask RepSync (read-only) ---
+
+class AskRequest(BaseModel):
+    question: str = Field(..., min_length=2, max_length=ask.MAX_QUESTION_CHARS)
+
+
+@router.post("/api/outlets/{id}/ask")
+@limiter.limit("20/minute")
+def ask_repsync(request: Request, id: str, req: AskRequest, session: Session = Depends(get_session)):
+    return ask.answer_question(session, _outlet_or_404(session, id), req.question)

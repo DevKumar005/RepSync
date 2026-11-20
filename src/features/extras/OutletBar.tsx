@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
+import AskDrawer from './AskDrawer'
 
 const tab = ({ isActive }: { isActive: boolean }) =>
   `px-3 py-1.5 text-[13px] font-medium rounded-lg whitespace-nowrap transition-colors ${
@@ -11,10 +12,11 @@ export default function OutletBar() {
   if (!m) return null
   const base = `/outlet/${m[1]}`
   return (
-    <nav aria-label="Outlet tools" className="mb-6 flex gap-1 overflow-x-auto rounded-xl border border-line bg-surface p-1">
+    <nav aria-label="Outlet tools" className="mb-6 flex items-center gap-1 overflow-x-auto rounded-xl border border-line bg-surface p-1">
       <NavLink end to={base} className={tab}>Dashboard</NavLink>
       <NavLink to={`${base}/competitors`} className={tab}>Competitors</NavLink>
       <NavLink to={`${base}/posters`} className={tab}>Posters</NavLink>
+      <AskDrawer id={m[1]} />
     </nav>
   )
 }

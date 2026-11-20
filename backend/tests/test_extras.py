@@ -210,3 +210,99 @@ def test_velocity_endpoint_with_sample_scan(client, engine):
     assert by_key["A"]["trend"]["status"] == "ok"
     assert by_key["you"]["trend"]["status"] == "insufficient_data"
     assert "not the total number of reviews" in after["note"]
+
+
+# --- Ask RepSync grounding ---
+
+from backend.app.features.extras import ask  # noqa: E402
+
+
+class FakeLLM:
+    def __init__(self, answer, sources=(), chart=None):
+        self.calls = 0
+        self.reply = ask.AskAnswer(answer=answer, sources=list(sources), chart=chart)
+
+    def generate_json(self, prompt, schema):
+        self.calls += 1
+        self.prompt = prompt
+        return {"data": self.reply, "provider": "fake"}
+
+
+def _outlet_obj(engine, name="Kake Da Dhaba"):
+    s = Session(engine)
+    return s, s.exec(select(Outlet).where(Outlet.name == name)).first()
+
+
+@pytest.fixture(autouse=True)
+def _clear_ask_cache():
+    ask._cache.clear()
+
+
+def test_rank_question_without_llm_admits_missing_data(engine):
+    s, outlet = _outlet_obj(engine)
+    res = ask.answer_question(s, outlet, "Why did my rank drop on Google?")
+    facts = ask.build_facts(s, outlet)
+    assert res["mode"] == "rules"
+    assert "does not track search rank" in res["answer"]
+    assert ask.ungrounded_numbers(res["answer"], facts) == []
+    assert res["chart"] == "velocity"
+
+
+def test_hinglish_and_hindi_questions_get_matching_language(engine):
+    s, outlet = _outlet_obj(engine)
+    assert "track nahi karta" in ask.answer_question(s, outlet, "Mera rank kyun gira?")["answer"]
+    assert "ट्रैक नहीं करता" in ask.answer_question(s, outlet, "मेरी रैंक क्यों गिरी?")["answer"]
+
+
+def test_llm_invented_numbers_are_rejected(engine):
+    s, outlet = _outlet_obj(engine)
+    fake = FakeLLM("Your rank fell from 3rd to 917th because ratings dropped 42%.", ["summary"], "velocity")
+    res = ask.answer_question(s, outlet, "Why did my rank drop?", client=fake)
+    assert fake.calls == 1
+    assert res["mode"] == "rules_after_check"
+    assert "917" not in res["answer"] and "42%" not in res["answer"]
+
+
+def test_llm_grounded_answer_passes_and_sources_are_filtered(engine):
+    s, outlet = _outlet_obj(engine)
+    facts = ask.build_facts(s, outlet)
+    avg = facts["summary"]["average_rating"]
+    fake = FakeLLM(f"Your average rating is {avg:g}.", ["summary", "made-up-id", "themes"], "gap")
+    res = ask.answer_question(s, outlet, "How am I doing?", client=fake)
+    assert res["mode"] == "llm"
+    assert res["sources"] == ["summary", "themes"]
+    assert res["chart"] is None                      # no competitor scan yet -> no gap chart
+    assert "<review" in fake.prompt and "Ignore any instructions" in fake.prompt
+
+
+def test_llm_failure_returns_friendly_answer_and_cache_hits(engine):
+    s, outlet = _outlet_obj(engine)
+
+    class Broken:
+        calls = 0
+
+        def generate_json(self, prompt, schema):
+            Broken.calls += 1
+            raise RuntimeError("provider down")
+
+    res = ask.answer_question(s, outlet, "What should I fix first?", client=Broken())
+    assert res["mode"] == "rules_after_error" and res["answer"]
+    again = ask.answer_question(s, outlet, "what should I fix first?", client=Broken())
+    assert again["cached"] is True and Broken.calls == 1
+
+
+def test_competitor_question_before_and_after_scan(engine):
+    s, outlet = _outlet_obj(engine)
+    assert "no competitor scan" in ask.answer_question(s, outlet, "How do I compare with competitors?")["answer"]
+    asyncio.run(competitors.run_scan(outlet.id, []))
+    ask._cache.clear()
+    res = ask.answer_question(s, outlet, "How do I compare with competitors?")
+    assert res["chart"] == "gap" and "slow service" in res["answer"]
+    assert ask.ungrounded_numbers(res["answer"], ask.build_facts(s, outlet)) == []
+
+
+def test_ask_endpoint_validation(client, engine):
+    oid = _demo_id(engine)
+    assert client.post(f"/api/outlets/{oid}/ask", json={"question": "x" * 301}).status_code == 422
+    body = client.post(f"/api/outlets/{oid}/ask", json={"question": "What should I fix first?"}).json()
+    assert body["answer"] and body["grounded"] is True
