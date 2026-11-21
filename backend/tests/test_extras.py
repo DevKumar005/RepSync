@@ -16,6 +16,7 @@ from backend.app.features.extras.router import router as extras_router
 from backend.app.features.extras.velocity import build_series, trend, weekly_counts
 from backend.app.limiter import limiter
 from backend.app.models.entities import Outlet
+from backend.app.services.ingestion.schemas import TinyFishCallLog
 from backend.app.seed import seed_demo_outlets, seed_demo_user, seed_platforms
 
 NOW = datetime(2026, 11, 20, 12, 0, tzinfo=timezone.utc)
@@ -171,6 +172,58 @@ def test_scan_endpoint_and_unknown_outlet(client, engine):
     oid = _demo_id(engine, "The White Dental Clinic")
     assert client.post(f"/api/outlets/{oid}/competitors/scan", json={}).json()["status"] in {"started", "running"}
     assert client.get("/api/outlets/nope/competitors").status_code == 404
+
+
+# --- live competitor collection (fake TinyFish) ---
+
+class FakeTinyFish:
+    def __init__(self, results, agent_reviews=()):
+        self.results, self.agent_reviews = results, list(agent_reviews)
+        self.fetched, self.agent_urls = [], []
+
+    def search(self, query):
+        return self.results, TinyFishCallLog(endpoint="search", input=query, status="ok", duration_ms=1, items_returned=len(self.results))
+
+    def fetch(self, url):
+        self.fetched.append(url)
+        return "", TinyFishCallLog(endpoint="fetch", input=url, status="failed", duration_ms=1)
+
+    def run_agent(self, url, platform, max_reviews):
+        self.agent_urls.append(url)
+        return self.agent_reviews[:max_reviews], TinyFishCallLog(
+            endpoint="agent", input=url, status="ok", duration_ms=1, items_returned=len(self.agent_reviews), steps_used=3)
+
+
+def _collect(engine, tf, name="Haldiram's", skip_agent=False):
+    oid = _demo_id(engine)
+    info = {"id": oid, "name": "Kake Da Dhaba", "category": "restaurant", "city": "New Delhi", "address": "", "is_demo": False}
+    with Session(engine) as s:
+        return asyncio.run(competitors._collect_live(info, {"key": "A", "name": name, "url": None}, s, tf, skip_agent))
+
+
+def test_live_collect_skips_other_sites_and_other_places(engine):
+    tf = FakeTinyFish([
+        {"url": "https://www.zomato.com/ncr/best-restaurants-cp", "title": "Top 10 restaurants"},
+        {"url": "https://www.google.com/maps/place/Saravana+Bhavan/@28.6,77.2", "title": "Saravana Bhavan"},
+        {"url": "https://www.google.com/maps/place/Haldiram's+CP/@28.6,77.2", "title": "Haldiram's"},
+    ], agent_reviews=[{"text": "Chole bhature were great", "rating": 5}])
+    out = _collect(engine, tf)
+    assert tf.fetched == ["https://www.google.com/maps/place/Haldiram's+CP/@28.6,77.2"]
+    assert out["url"] == tf.fetched[0] and out["reviews"][0]["text"] == "Chole bhature were great"
+
+
+def test_live_collect_falls_back_to_maps_search_instead_of_giving_up(engine):
+    tf = FakeTinyFish([], agent_reviews=[{"text": f"Review {i}", "rating": 4} for i in range(15)])
+    out = _collect(engine, tf, name="Bikanervala")
+    assert tf.agent_urls == ["https://www.google.com/maps/search/?api=1&query=Bikanervala+New+Delhi"]
+    assert len(out["reviews"]) == competitors.AGENT_MAX_REVIEWS
+
+
+def test_live_collect_uses_search_snippets_when_fetch_is_blocked(engine):
+    snippet = "Ordered the thali, food was cold and service was slow. Staff were rude and the wait was long."
+    tf = FakeTinyFish([{"url": "https://www.google.com/maps/place/Bikanervala", "title": "Bikanervala - CP", "snippet": snippet}])
+    out = _collect(engine, tf, name="Bikanervala", skip_agent=True)
+    assert [r["text"] for r in out["reviews"]] == [snippet]
 
 
 # --- velocity ---

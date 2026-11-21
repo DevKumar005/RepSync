@@ -10,7 +10,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Optional
-from urllib.parse import unquote
+from urllib.parse import quote_plus, unquote
 
 from sqlmodel import Session, select
 
@@ -28,7 +28,7 @@ RESULT_DIR = ROOT_DIR / "data" / "cache" / "extras"
 MAX_COMPETITORS = 3
 MAX_REVIEWS = 50
 AGENT_ESCALATE_BELOW = 10
-AGENT_MAX_REVIEWS = 20
+AGENT_MAX_REVIEWS = 10  # the agent's 65s cap discards everything on timeout, so ask for what it can finish
 LOW_SAMPLE = 10  # fewer analysed reviews than this gets a "small sample" warning in the UI
 DEMO_OUTLETS = {"Kake Da Dhaba": "restaurant", "The White Dental Clinic": "clinic"}
 DISCOVERY_QUERIES = {
@@ -290,26 +290,50 @@ def _agent_budget_exhausted(session: Session) -> bool:
     return sum(c.steps_used for c in calls) >= int(os.getenv("AGENT_DAILY_STEP_BUDGET", "500"))
 
 
+def _pick_maps_url(results: List[dict], name: str) -> Optional[str]:
+    """First Google Maps place link that belongs to this business. Other sites and other places are skipped."""
+    words = [w for w in re.findall(r"[a-z0-9]+", name.lower()) if len(w) >= 3 and w != "the"]
+    for item in results:
+        u = item.get("url") or item.get("link") or ""
+        if "/maps/place/" not in u:
+            continue
+        place = unquote(u.split("/maps/place/")[1].split("/")[0]).replace("+", " ").lower()
+        if not words or any(w in place for w in words):
+            return u
+    return None
+
+
+def _maps_search_url(name: str, city: str) -> str:
+    """Same fallback the owner collector uses: the agent opens the top matching result from here."""
+    return f"https://www.google.com/maps/search/?api=1&query={quote_plus(f'{name} {city}')}"
+
+
 async def _collect_live(info: dict, comp: dict, session: Session, tf, skip_agent: bool) -> dict:
-    from backend.app.services.ingestion.collector import _agent_escalation_semaphore
+    from backend.app.services.ingestion.collector import (
+        _agent_escalation_semaphore,
+        _extract_reviews_from_search_snippets,
+    )
     from backend.app.services.ingestion.extractor import extract_reviews_from_markdown
 
     oid, name = info["id"], comp["name"]
     url = comp.get("url")
+    snippets: List[dict] = []
     if not url:
-        query = f"{name} {info['city']} google maps reviews"
+        query = f"{name} {info['category']} {info['city']} google maps reviews"
         results, log = await asyncio.to_thread(tf.search, query)
         _log_call(session, oid, "search", {"query": query, "competitor": name}, log)
         await _emit(oid, "tinyfish_call", f"TinyFish Search: {name} ({log.items_returned} results)", log.status)
-        urls = [r.get("url") or r.get("link") or "" for r in results]
-        url = next((u for u in urls if "/maps/place/" in u), None) or next((u for u in urls if u), None)
-    if not url:
-        return {**comp, "url": None, "reviews": []}
+        snippets = _extract_reviews_from_search_snippets(results, platform="google_maps", business_name=name)
+        url = _pick_maps_url(results, name) or _maps_search_url(name, info["city"])
 
     markdown, f_log = await asyncio.to_thread(tf.fetch, url)
     _log_call(session, oid, "fetch", {"url": url, "competitor": name}, f_log)
     raw = await asyncio.to_thread(extract_reviews_from_markdown, markdown, "Google Maps") if markdown else []
     await _emit(oid, "tinyfish_call", f"TinyFish Fetch: {name}, {len(raw)} reviews", f_log.status)
+
+    if not raw and snippets:
+        raw.extend(snippets)
+        await _emit(oid, "tinyfish_call", f"TinyFish Search: {name}, {len(snippets)} reviews from search snippets", "ok")
 
     if len(raw) < AGENT_ESCALATE_BELOW and not skip_agent:
         async with _agent_escalation_semaphore:
