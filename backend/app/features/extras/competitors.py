@@ -133,6 +133,12 @@ async def _emit(outlet_id: str, event_type: str, message: str, status: str = "ru
     )
 
 
+def _avg_rating(reviews: List[dict]) -> Optional[float]:
+    """Mean star rating of the collected reviews (not the platform's overall rating)."""
+    ratings = [r["rating"] for r in reviews if r.get("rating") is not None]
+    return round(sum(ratings) / len(ratings), 1) if ratings else None
+
+
 def build_result(info: dict, owner: List[dict], competitors: List[dict], source: str, collected_at: datetime) -> dict:
     """Pure aggregation step. Competitor dicts: {key, name, url?, reviews: [{text, rating, posted_at, topics?}]}."""
     owner_topics = analyze_topics(owner) if owner else []
@@ -169,7 +175,7 @@ def build_result(info: dict, owner: List[dict], competitors: List[dict], source:
              "low_sample": len(owner_topics) < LOW_SAMPLE},
             *[
                 {"key": c["key"], "name": c["name"], "n": len(comp_topics[c["key"]]), "url": c.get("url"),
-                 "low_sample": len(comp_topics[c["key"]]) < LOW_SAMPLE}
+                 "low_sample": len(comp_topics[c["key"]]) < LOW_SAMPLE, "rating": _avg_rating(c["reviews"][:MAX_REVIEWS])}
                 for c in competitors
             ],
         ],
@@ -234,17 +240,24 @@ async def discover(info: dict, session: Session) -> dict:
         candidates.append({"name": name, "url": url if url and "/maps/place/" in url else None, "area": None})
 
     if len(candidates) < MAX_COMPETITORS:
-        # Free fallback: OpenStreetMap places of the same category in the same locality
+        # Free fallback: same-category OpenStreetMap places around the outlet, nearest first
+        from backend.app.features.extras.city_map import nearby_candidates
         from backend.app.services.places import search_places
 
-        places = await asyncio.to_thread(
-            search_places, f"{info['category']}s in {locality}" if locality else f"{info['category']}s", info["city"], info["category"]
-        )
+        places = await asyncio.to_thread(nearby_candidates, info)
+        if not places:
+            places = [
+                {"name": p["name"], "url": None, "area": p["address"]}
+                for p in await asyncio.to_thread(
+                    search_places, f"{info['category']}s in {locality}" if locality else f"{info['category']}s",
+                    info["city"], info["category"],
+                )
+            ]
         for p in places:
             if p["name"].lower() in seen or own in p["name"].lower():
                 continue
             seen.add(p["name"].lower())
-            candidates.append({"name": p["name"], "url": None, "area": p["address"]})
+            candidates.append(p)
     return {"source": "live", "candidates": candidates[:6]}
 
 

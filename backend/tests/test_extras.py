@@ -9,7 +9,7 @@ from sqlmodel import Session, SQLModel, create_engine, select
 
 import backend.app.models.entities  # noqa: F401
 from backend.app.db import get_session
-from backend.app.features.extras import advice, competitors
+from backend.app.features.extras import advice, city_map, competitors
 from backend.app.features.extras.dates import parse_posted_at
 from backend.app.features.extras.gaps import compute_gap_matrix, top_gaps
 from backend.app.features.extras.router import router as extras_router
@@ -315,3 +315,86 @@ def test_city_map_is_sample_and_highlights_owner(client, engine):
     assert 8 <= len(data["outlets"]) <= 12
     mine = [o for o in data["outlets"] if o.get("is_you")]
     assert len(mine) == 1 and mine[0]["name"] == "Kake Da Dhaba (you)"
+    assert data["center"] == {"lat": mine[0]["lat"], "lng": mine[0]["lng"]}
+
+
+def _live_outlet(engine, address="Shop 12, Khan Market") -> str:
+    with Session(engine) as s:
+        o = Outlet(name="Chai Point", category="restaurant", city="New Delhi", address=address, is_demo=False)
+        s.add(o)
+        s.commit()
+        return o.id
+
+
+NEARBY = [
+    {"id": "osm-node-1", "name": "Big Chill Cafe", "lat": 28.6, "lng": 77.23, "address": "Khan Market", "distance_m": 120},
+    {"id": "osm-node-2", "name": "Chai Point", "lat": 28.6, "lng": 77.23, "address": "", "distance_m": 0},
+    {"id": "osm-node-3", "name": "Perch", "lat": 28.6, "lng": 77.23, "address": "", "distance_m": 300},
+]
+
+
+@pytest.fixture(name="inline_locate")
+def inline_locate_fixture(monkeypatch):
+    """Run the background OpenStreetMap lookup inline so tests see its result on the next request."""
+    monkeypatch.setattr(city_map, "_in_background", lambda fn: fn())
+
+
+def test_city_map_live_uses_real_places_and_caches(client, engine, monkeypatch, inline_locate):
+    calls = {"geocode": 0, "nearby": 0}
+
+    def fake_geocode(name, address, city):
+        calls["geocode"] += 1
+        return (28.6, 77.227)
+
+    def fake_nearby(lat, lng, category, radius_m=1500):
+        calls["nearby"] += 1
+        return list(NEARBY)
+
+    monkeypatch.setattr(city_map.geo, "geocode", fake_geocode)
+    monkeypatch.setattr(city_map.geo, "nearby", fake_nearby)
+    oid = _live_outlet(engine)
+    competitors.save_result(oid, {"status": "done", "outlets": [
+        {"key": "you", "name": "Chai Point", "n": 0},
+        {"key": "A", "name": "Big Chill Cafe, Khan Market", "n": 30, "rating": 3.9},
+    ]})
+
+    assert client.get(f"/api/outlets/{oid}/city-map").json()["status"] == "locating"
+    data = client.get(f"/api/outlets/{oid}/city-map").json()
+    assert data["source"] == "live" and data["status"] == "ok" and data["places_status"] == "ok"
+    assert data["center"] == {"lat": 28.6, "lng": 77.227}
+    names = [o["name"] for o in data["outlets"]]
+    assert names == ["Chai Point (you)", "Big Chill Cafe", "Perch"]  # own OSM entry is dropped
+    big_chill, perch = data["outlets"][1], data["outlets"][2]
+    assert big_chill["scanned"] and big_chill["rating"] == 3.9 and big_chill["reviews_analysed"] == 30
+    assert not perch["scanned"] and perch["rating"] is None
+    assert all(o["rating_change_60d"] is None for o in data["outlets"])  # no rating history yet
+
+    client.get(f"/api/outlets/{oid}/city-map")
+    assert calls == {"geocode": 1, "nearby": 1}
+
+
+def test_city_map_live_without_location(client, engine, monkeypatch, inline_locate):
+    calls = []
+    monkeypatch.setattr(city_map.geo, "geocode", lambda *a: calls.append(a))
+    oid = _live_outlet(engine, address="")
+    client.get(f"/api/outlets/{oid}/city-map")
+    data = client.get(f"/api/outlets/{oid}/city-map").json()
+    assert data["status"] == "no_location" and data["outlets"] == [] and data["center"] is None
+    client.get(f"/api/outlets/{oid}/city-map")
+    assert len(calls) == 1  # a failed address is not retried on every page load
+
+
+def test_city_map_keeps_coordinates_when_places_are_down(client, engine, monkeypatch, inline_locate):
+    monkeypatch.setattr(city_map.geo, "geocode", lambda *a: (28.6, 77.2))
+    monkeypatch.setattr(city_map.geo, "nearby", lambda *a, **k: None)
+    oid = _live_outlet(engine)
+    client.get(f"/api/outlets/{oid}/city-map")
+    data = client.get(f"/api/outlets/{oid}/city-map").json()
+    assert data["status"] == "ok" and data["places_status"] == "unavailable"
+    assert [o["id"] for o in data["outlets"]] == ["you"]
+
+
+def test_same_place_matching():
+    assert city_map._same_place("Big Chill Cafe, Khan Market", "Big Chill Cafe")
+    assert not city_map._same_place("Cafe", "Cafe Delhi Heights")  # too short to match on a substring
+    assert not city_map._same_place("", "Perch")
