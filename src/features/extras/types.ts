@@ -32,7 +32,19 @@ export type ChartKind = 'themes' | 'velocity' | 'gap'
 export interface AskResponse { answer: string; sources: string[]; chart: ChartKind | null; grounded: boolean }
 
 export interface CityOutlet {
-  id: string; name: string; lat: number; lng: number; rating: number
-  rating_change_60d: number; reviews_per_week: number; is_you?: boolean
+  id: string; name: string; lat: number; lng: number; address?: string; distance_m?: number
+  /** Average stars of the reviews RepSync analysed; null when the place has not been scanned */
+  rating: number | null
+  /** Only known for sample data until rating history is collected */
+  rating_change_60d: number | null
+  reviews_per_week: number | null
+  reviews_analysed?: number | null
+  is_you?: boolean
+  scanned?: boolean
 }
-export interface CityMap { source: DataSource; locality: string; city: string; note: string; outlets: CityOutlet[] }
+export interface CityMap {
+  source: DataSource; status: 'ok' | 'locating' | 'no_location'; locality: string; city: string; note: string
+  center: { lat: number; lng: number } | null; radius_m: number
+  places_status?: 'ok' | 'loading' | 'unavailable'
+  outlets: CityOutlet[]
+}

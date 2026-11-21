@@ -1,215 +1,217 @@
-import { useMemo, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
-import { extrasApi } from './api'
-import type { CityOutlet } from './types'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { LngLatBounds, Map as MapLibre, Marker, NavigationControl, setWorkerUrl } from 'maplibre-gl'
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
+import 'maplibre-gl/dist/maplibre-gl.css'
+import type { CityMap, CityOutlet } from './types'
+import { useCityMap } from './useCityMap'
 import { SectionHead } from '../../components/Page'
+import { useMode } from '../../theme'
 import { ErrorNote, Panel, SampleBadge } from './ui'
 
-const W = 800
-const H = 560
-const PAD = 60
-const MIN_ZOOM = 1
-const MAX_ZOOM = 6
+setWorkerUrl(workerUrl)
 
-type View = { k: number; x: number; y: number }
+// OpenFreeMap: free OpenStreetMap vector tiles, no key
+const STYLE = { light: 'https://tiles.openfreemap.org/styles/positron', dark: 'https://tiles.openfreemap.org/styles/dark' }
 
-/** Equirectangular projection of lat/lng into the SVG box, keeping aspect ratio. */
-function useProjection(outlets: CityOutlet[]) {
-  return useMemo(() => {
-    if (!outlets.length) return () => ({ x: W / 2, y: H / 2 })
-    const lats = outlets.map((o) => o.lat)
-    const lngs = outlets.map((o) => o.lng)
-    const midLat = ((Math.min(...lats) + Math.max(...lats)) / 2) * (Math.PI / 180)
-    const minX = Math.min(...lngs) * Math.cos(midLat)
-    const maxX = Math.max(...lngs) * Math.cos(midLat)
-    const minY = Math.min(...lats)
-    const maxY = Math.max(...lats)
-    const scale = Math.min((W - 2 * PAD) / (maxX - minX || 1), (H - 2 * PAD) / (maxY - minY || 1))
-    const offX = (W - (maxX - minX) * scale) / 2
-    const offY = (H - (maxY - minY) * scale) / 2
-    return (o: { lat: number; lng: number }) => ({
-      x: offX + (o.lng * Math.cos(midLat) - minX) * scale,
-      y: H - (offY + (o.lat - minY) * scale),
-    })
-  }, [outlets])
+type PinKind = 'you' | 'rising' | 'falling' | 'flat' | 'scanned' | 'unscanned'
+const kindOf = (o: CityOutlet): PinKind => {
+  if (o.is_you) return 'you'
+  if (o.rating_change_60d !== null) return o.rating_change_60d > 0.05 ? 'rising' : o.rating_change_60d < -0.05 ? 'falling' : 'flat'
+  return o.scanned ? 'scanned' : 'unscanned'
 }
 
-const trendOf = (o: CityOutlet) => (o.rating_change_60d > 0.05 ? 'rising' : o.rating_change_60d < -0.05 ? 'falling' : 'flat')
-const PIN = { rising: 'rgb(var(--pos))', falling: 'rgb(var(--neg))', flat: 'rgb(var(--ink) / 0.45)' }
+/** Polygon approximating a circle of radius_m around the centre, for the search-radius ring. */
+function ring(c: { lat: number; lng: number }, radiusM: number) {
+  const dLat = radiusM / 111320
+  const dLng = dLat / Math.cos((c.lat * Math.PI) / 180)
+  const coords = Array.from({ length: 65 }, (_, i) => {
+    const a = (i / 64) * 2 * Math.PI
+    return [c.lng + dLng * Math.cos(a), c.lat + dLat * Math.sin(a)]
+  })
+  return { type: 'Feature' as const, properties: {}, geometry: { type: 'Polygon' as const, coordinates: [coords] } }
+}
+
+function addRing(map: MapLibre, data: CityMap) {
+  if (!data.center || map.getSource('radius')) return
+  // Theme tokens are "r g b" triplets; read after the theme class flips, since setStyle reloads the ring
+  const brand = `rgb(${getComputedStyle(document.documentElement).getPropertyValue('--brand').trim().split(/\s+/).join(',')})`
+  map.addSource('radius', { type: 'geojson', data: ring(data.center, data.radius_m) })
+  map.addLayer({ id: 'radius-fill', type: 'fill', source: 'radius', paint: { 'fill-color': brand, 'fill-opacity': 0.06 } })
+  map.addLayer({ id: 'radius-line', type: 'line', source: 'radius', paint: { 'line-color': brand, 'line-opacity': 0.5, 'line-width': 1.5, 'line-dasharray': [2, 2] } })
+}
+
+function OutletMap({ data, selected, onSelect }: { data: CityMap; selected: string | null; onSelect: (id: string) => void }) {
+  const box = useRef<HTMLDivElement>(null)
+  const map = useRef<MapLibre | null>(null)
+  const mode = useMode()
+  const pins = useRef(new Map<string, Marker>())
+  const styleMode = useRef(mode)
+  const dataRef = useRef(data)
+  dataRef.current = data
+
+  useEffect(() => {
+    if (!box.current || !data.center) return
+    const dLat = data.radius_m / 111320
+    const dLng = dLat / Math.cos((data.center.lat * Math.PI) / 180)
+    const m = new MapLibre({
+      container: box.current,
+      style: STYLE[styleMode.current],
+      bounds: new LngLatBounds([data.center.lng - dLng, data.center.lat - dLat], [data.center.lng + dLng, data.center.lat + dLat]),
+      fitBoundsOptions: { padding: 24 },
+      attributionControl: { compact: true },
+      dragRotate: false,
+      pitchWithRotate: false,
+    })
+    m.touchZoomRotate.disableRotation()
+    m.addControl(new NavigationControl({ showCompass: false }), 'top-right')
+    m.on('style.load', () => addRing(m, dataRef.current))
+    map.current = m
+    return () => { m.remove(); map.current = null; pins.current.clear() }
+  }, [data.center?.lat, data.center?.lng])
+
+  useEffect(() => {
+    if (!map.current || styleMode.current === mode) return
+    styleMode.current = mode
+    map.current.setStyle(STYLE[mode])
+  }, [mode])
+
+  useEffect(() => {
+    const m = map.current
+    if (!m) return
+    pins.current.forEach((p) => p.remove())
+    pins.current.clear()
+    // Draw "you" last so it sits on top of nearby pins
+    for (const o of [...data.outlets].sort((a, b) => Number(!!a.is_you) - Number(!!b.is_you))) {
+      const el = document.createElement('button')
+      el.type = 'button'
+      el.className = 'map-pin'
+      el.dataset.kind = kindOf(o)
+      el.title = o.name
+      el.setAttribute('aria-label', `${o.name}${o.rating !== null ? `, rating ${o.rating}` : o.scanned ? '' : ', not scanned'}`)
+      el.addEventListener('click', (e) => { e.stopPropagation(); onSelect(o.id) })
+      pins.current.set(o.id, new Marker({ element: el }).setLngLat([o.lng, o.lat]).addTo(m))
+    }
+  }, [data.outlets, data.center?.lat, data.center?.lng, onSelect])
+
+  useEffect(() => {
+    pins.current.forEach((p, id) => p.getElement().setAttribute('aria-pressed', String(id === selected)))
+    const o = data.outlets.find((x) => x.id === selected)
+    const m = map.current
+    if (!o || !m) return
+    // Nearby places often sit metres apart, so zoom in far enough to tell the selected pin from its neighbours
+    const crowded = data.outlets.some((x) => x.id !== o.id && Math.abs(x.lat - o.lat) < 0.0006 && Math.abs(x.lng - o.lng) < 0.0006)
+    if (crowded && m.getZoom() < 17) m.easeTo({ center: [o.lng, o.lat], zoom: 17 })
+    else if (!m.getBounds().contains([o.lng, o.lat])) m.easeTo({ center: [o.lng, o.lat] })
+  }, [selected, data.outlets])
+
+  return <div ref={box} className="h-[420px] w-full sm:h-[540px]" role="region" aria-label={`Map of places near ${data.locality}`} />
+}
+
+const LEGEND: { kind: PinKind; label: string; sampleOnly?: boolean }[] = [
+  { kind: 'you', label: 'Your outlet' },
+  { kind: 'rising', label: 'Rating rising', sampleOnly: true },
+  { kind: 'falling', label: 'Rating falling', sampleOnly: true },
+  { kind: 'flat', label: 'No change', sampleOnly: true },
+  { kind: 'scanned', label: 'Scanned competitor' },
+  { kind: 'unscanned', label: 'Not scanned' },
+]
+
+function Details({ o, data, outletId }: { o: CityOutlet; data: CityMap; outletId: string }) {
+  const stat = (label: string, value: string, cls = '') => (
+    <div><dt className="text-xs text-ink/45">{label}</dt><dd className={`text-lg font-semibold ${cls}`}>{value}</dd></div>
+  )
+  const change = o.rating_change_60d
+  return (
+    <Panel title={o.is_you ? 'Your outlet' : 'Selected place'}>
+      <div className="space-y-3 px-5 pb-5">
+        <div>
+          <p className="font-semibold">{o.name}</p>
+          {(o.address || o.distance_m !== undefined) && (
+            <p className="text-xs text-ink/45">{[o.address, o.distance_m !== undefined && !o.is_you ? `${o.distance_m} m away` : null].filter(Boolean).join(' · ')}</p>
+          )}
+        </div>
+        {o.scanned ? (
+          <dl className="grid grid-cols-2 gap-3 text-sm">
+            {stat(data.source === 'sample' ? 'Rating' : 'Avg. review rating', o.rating !== null ? o.rating.toFixed(1) : '–')}
+            {change !== null && stat('60-day change', `${change > 0 ? '+' : ''}${change.toFixed(1)}`, change > 0 ? 'text-pos' : change < 0 ? 'text-neg' : '')}
+            {o.reviews_per_week !== null && stat('Reviews / week', String(o.reviews_per_week))}
+            {o.reviews_analysed != null && stat('Reviews analysed', String(o.reviews_analysed))}
+          </dl>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-sm text-ink/60">Not scanned yet, so there are no review numbers for this place.</p>
+            <Link className="btn !py-1 !text-xs" to={`/outlet/${outletId}/competitors?add=${encodeURIComponent(o.name)}`}>Add to competitor comparison →</Link>
+          </div>
+        )}
+        {data.source === 'live' && o.scanned && !o.is_you && (
+          <p className="text-[11px] text-ink/40">Average of the public reviews RepSync analysed, not the platform's overall rating.</p>
+        )}
+      </div>
+    </Panel>
+  )
+}
 
 export default function CityMapPage() {
   const { id = '' } = useParams()
-  const q = useQuery({ queryKey: ['extras', 'city-map', id], queryFn: () => extrasApi.cityMap(id) })
-  const outlets = q.data?.outlets ?? []
-  const project = useProjection(outlets)
-  const [view, setView] = useState<View>({ k: 1, x: 0, y: 0 })
+  const q = useCityMap(id)
+  const data = q.data
   const [selected, setSelected] = useState<string | null>(null)
-  const svg = useRef<SVGSVGElement>(null)
-  const pointers = useRef(new Map<number, { x: number; y: number }>())
-  const lastPinch = useRef<number | null>(null)
-  const dragged = useRef(false)
-
-  const toSvg = (clientX: number, clientY: number) => {
-    const r = svg.current!.getBoundingClientRect()
-    return { x: ((clientX - r.left) / r.width) * W, y: ((clientY - r.top) / r.height) * H }
-  }
-  const zoomAt = (factor: number, cx = W / 2, cy = H / 2) =>
-    setView((v) => {
-      const k = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, v.k * factor))
-      const f = k / v.k
-      return k === MIN_ZOOM ? { k, x: 0, y: 0 } : { k, x: cx - (cx - v.x) * f, y: cy - (cy - v.y) * f }
-    })
-
-  const onWheel = (e: React.WheelEvent) => {
-    const p = toSvg(e.clientX, e.clientY)
-    zoomAt(e.deltaY < 0 ? 1.2 : 1 / 1.2, p.x, p.y)
-  }
-  const onPointerDown = (e: React.PointerEvent) => {
-    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
-    dragged.current = false
-  }
-  const onPointerMove = (e: React.PointerEvent) => {
-    const prev = pointers.current.get(e.pointerId)
-    if (!prev) return
-    pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
-    const pts = [...pointers.current.values()]
-    if (pts.length === 2) {
-      // Pinch zoom around the midpoint of both fingers
-      const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y)
-      if (lastPinch.current) {
-        const mid = toSvg((pts[0].x + pts[1].x) / 2, (pts[0].y + pts[1].y) / 2)
-        zoomAt(dist / lastPinch.current, mid.x, mid.y)
-      }
-      lastPinch.current = dist
-      dragged.current = true
-      return
-    }
-    const r = svg.current!.getBoundingClientRect()
-    const dx = ((e.clientX - prev.x) / r.width) * W
-    const dy = ((e.clientY - prev.y) / r.height) * H
-    if (Math.abs(dx) + Math.abs(dy) > 1) dragged.current = true
-    setView((v) => (v.k === 1 ? v : { ...v, x: v.x + dx, y: v.y + dy }))
-  }
-  const onPointerUp = (e: React.PointerEvent) => {
-    pointers.current.delete(e.pointerId)
-    if (pointers.current.size < 2) lastPinch.current = null
-  }
-
+  const outlets = data?.outlets ?? []
   const sel = outlets.find((o) => o.id === selected) ?? outlets.find((o) => o.is_you)
-  const ranked = [...outlets].sort((a, b) => b.rating - a.rating)
+  const isSample = data?.source === 'sample'
+  // Rated places first (best first), then unscanned places nearest first
+  const ordered = [...outlets].sort((a, b) =>
+    a.rating !== null && b.rating !== null ? b.rating - a.rating : a.rating !== null ? -1 : b.rating !== null ? 1 : (a.distance_m ?? 0) - (b.distance_m ?? 0))
+  const nearbyCount = outlets.filter((o) => !o.is_you).length
 
   return (
     <div className="space-y-5">
       <SectionHead
         title="City reputation map"
-        sub={`Who is rising and who is slipping in ${q.data?.locality ?? 'your locality'}, over the last 60 days.`}
-        action={<SampleBadge source={q.data?.source} label="Sample data: simulated locality" />}
+        sub={isSample
+          ? `Who is rising and who is slipping in ${data?.locality ?? 'your locality'}, over the last 60 days.`
+          : `Similar places within ${((data?.radius_m ?? 1500) / 1000).toFixed(1)} km of your outlet${data?.locality ? ` in ${data.locality}` : ''}.`}
+        action={<SampleBadge source={data?.source} label="Sample data: simulated competitors" />}
       />
       {q.isError && <ErrorNote>Could not load the map: {(q.error as Error).message}</ErrorNote>}
-      <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-        <section className="panel relative self-start overflow-hidden">
-          <svg
-            ref={svg}
-            viewBox={`0 0 ${W} ${H}`}
-            className="block h-auto w-full touch-none select-none"
-            style={{ cursor: view.k > 1 ? 'grab' : 'default' }}
-            onWheel={onWheel}
-            onPointerDown={onPointerDown}
-            onPointerMove={onPointerMove}
-            onPointerUp={onPointerUp}
-            onPointerCancel={onPointerUp}
-            role="img"
-            aria-label={`Map of ${outlets.length} outlets in ${q.data?.locality ?? 'the locality'}`}
-          >
-            <rect width={W} height={H} fill="rgb(var(--ink) / .02)" />
-            <g transform={`translate(${view.x} ${view.y}) scale(${view.k})`}>
-              {Array.from({ length: 9 }, (_, i) => (
-                <g key={i} stroke="rgb(var(--line))" strokeWidth={1 / view.k}>
-                  <line x1={(i * W) / 8} y1={0} x2={(i * W) / 8} y2={H} />
-                  <line x1={0} y1={(i * H) / 8} x2={W} y2={(i * H) / 8} />
-                </g>
-              ))}
-              {[80, 150, 220].map((r) => (
-                <circle key={r} cx={W / 2} cy={H / 2} r={r} fill="none" stroke="rgb(var(--line))" strokeWidth={6 / view.k} />
-              ))}
-              <text x={W / 2} y={H / 2 + 4} textAnchor="middle" fontSize={13 / view.k} fill="rgb(var(--ink) / 0.3)">{q.data?.locality}</text>
-              {outlets.map((o) => {
-                const p = project(o)
-                const r = (o.is_you ? 13 : 9) / Math.sqrt(view.k)
-                const active = sel?.id === o.id
-                return (
-                  <g
-                    key={o.id}
-                    transform={`translate(${p.x} ${p.y})`}
-                    className="cursor-pointer"
-                    onClick={() => { if (!dragged.current) setSelected(o.id) }}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={`${o.name}, rating ${o.rating}`}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setSelected(o.id) }}
-                  >
-                    {o.is_you && <circle r={r + 7 / Math.sqrt(view.k)} fill="none" stroke="rgb(var(--brand))" strokeWidth={3 / Math.sqrt(view.k)} />}
-                    <circle r={r} fill={PIN[trendOf(o)]} stroke={active ? 'rgb(var(--ink))' : 'rgb(var(--surface))'} strokeWidth={(active ? 3 : 2) / Math.sqrt(view.k)} />
-                    {(view.k >= 1.8 || o.is_you) && (
-                      <text y={-r - 6 / view.k} textAnchor="middle" fontSize={12 / Math.sqrt(view.k)} fontWeight={o.is_you ? 700 : 500} fill="rgb(var(--ink))">
-                        {o.name}
-                      </text>
-                    )}
-                  </g>
-                )
-              })}
-            </g>
-          </svg>
-          <div className="absolute right-3 top-3 flex flex-col gap-1">
-            <button className="btn !px-2.5 !py-1 bg-surface" aria-label="Zoom in" onClick={() => zoomAt(1.4)}>+</button>
-            <button className="btn !px-2.5 !py-1 bg-surface" aria-label="Zoom out" onClick={() => zoomAt(1 / 1.4)}>−</button>
-            <button className="btn !px-2 !py-1 bg-surface !text-[10px]" aria-label="Reset view" onClick={() => setView({ k: 1, x: 0, y: 0 })}>Reset</button>
-          </div>
-          <div className="flex flex-wrap gap-4 border-t border-line px-4 py-2.5 text-[11px] text-ink/55">
-            <span><span className="status-dot status-dot-ok" /> Rating rising</span>
-            <span><span className="status-dot status-dot-neg" /> Rating falling</span>
-            <span><span className="status-dot" style={{ background: PIN.flat }} /> Flat</span>
-            <span className="inline-flex items-center gap-1 font-semibold text-brand"><span className="inline-block h-2.5 w-2.5 rounded-full border-2 border-brand" /> Your outlet</span>
-            <span className="ml-auto">Scroll or pinch to zoom, drag to pan</span>
-          </div>
+      {data?.status === 'no_location' && <ErrorNote>{data.note}</ErrorNote>}
+      {(q.isLoading || data?.status === 'locating') && (
+        <section className="panel flex h-[420px] items-center justify-center sm:h-[540px]" aria-live="polite">
+          <p className="flex items-center gap-2 text-sm text-ink/55"><span className="status-dot status-dot-ok pulse-live" /> Finding your outlet and nearby places on OpenStreetMap…</p>
         </section>
-        <div className="space-y-6">
-          {sel && (
-            <Panel title={sel.is_you ? 'Your outlet' : 'Selected outlet'}>
-              <div className="space-y-3 px-5 pb-5">
-                <p className="font-semibold">{sel.name}</p>
-                <dl className="grid grid-cols-2 gap-3 text-sm">
-                  <div><dt className="text-xs text-ink/45">Rating</dt><dd className="text-lg font-semibold">{sel.rating.toFixed(1)}</dd></div>
-                  <div>
-                    <dt className="text-xs text-ink/45">60-day change</dt>
-                    <dd className={`text-lg font-semibold ${sel.rating_change_60d > 0 ? 'text-pos' : sel.rating_change_60d < 0 ? 'text-neg' : ''}`}>
-                      {sel.rating_change_60d > 0 ? '+' : ''}{sel.rating_change_60d.toFixed(1)}
-                    </dd>
-                  </div>
-                  <div><dt className="text-xs text-ink/45">Reviews / week</dt><dd className="text-lg font-semibold">{sel.reviews_per_week}</dd></div>
-                  <div><dt className="text-xs text-ink/45">Rating order (sample)</dt><dd className="text-lg font-semibold">#{ranked.findIndex((o) => o.id === sel.id) + 1} of {ranked.length}</dd></div>
-                </dl>
-                <p className="text-[11px] text-ink/40">{q.data?.note}</p>
-              </div>
-            </Panel>
-          )}
-          <Panel title="By rating">
-            <ol className="divide-y divide-line">
-              {ranked.map((o, i) => (
-                <li key={o.id}>
-                  <button className={`flex w-full items-center gap-3 px-5 py-2 text-left text-sm hover:bg-ink/[.035] ${sel?.id === o.id ? 'bg-ink/[.04]' : ''}`} onClick={() => setSelected(o.id)}>
-                    <span className="w-5 text-ink/35 tabular-nums">{i + 1}</span>
-                    <span className={`flex-1 truncate ${o.is_you ? 'font-semibold text-brand' : ''}`}>{o.name}</span>
-                    <span className="tabular-nums">{o.rating.toFixed(1)}</span>
-                    <span className="status-dot" style={{ background: PIN[trendOf(o)] }} />
-                  </button>
-                </li>
+      )}
+      {data?.status === 'ok' && (
+        <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
+          <section className="panel self-start overflow-hidden">
+            <OutletMap data={data} selected={sel?.id ?? null} onSelect={setSelected} />
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-line px-4 py-2.5 text-[11px] text-ink/55">
+              {LEGEND.filter((l) => isSample ? l.kind !== 'scanned' && l.kind !== 'unscanned' : !l.sampleOnly).map((l) => (
+                <span key={l.kind} className="inline-flex items-center gap-1.5"><span className="map-pin map-pin-legend" data-kind={l.kind} aria-hidden /> {l.label}</span>
               ))}
-            </ol>
-          </Panel>
+              {data.places_status === 'loading' && <span className="ml-auto">Loading nearby places…</span>}
+              {data.places_status === 'unavailable' && <span className="ml-auto text-warn">Nearby places couldn't load (OpenStreetMap is busy). Try again later.</span>}
+            </div>
+          </section>
+          <div className="space-y-6">
+            {sel && <Details o={sel} data={data} outletId={id} />}
+            <Panel title={isSample ? 'By rating' : `Nearby (${nearbyCount})`}>
+              <ol className="max-h-[360px] divide-y divide-line overflow-y-auto">
+                {ordered.map((o) => (
+                  <li key={o.id}>
+                    <button className={`flex w-full items-center gap-3 px-5 py-2 text-left text-sm hover:bg-ink/[.035] ${sel?.id === o.id ? 'bg-ink/[.04]' : ''}`} onClick={() => setSelected(o.id)}>
+                      <span className="map-pin map-pin-legend shrink-0" data-kind={kindOf(o)} aria-hidden />
+                      <span className={`flex-1 truncate ${o.is_you ? 'font-semibold text-brand' : ''}`}>{o.name}</span>
+                      <span className="tabular-nums text-ink/60">{o.rating !== null ? o.rating.toFixed(1) : o.distance_m !== undefined ? `${o.distance_m} m` : ''}</span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+              <p className="border-t border-line px-5 py-2.5 text-[11px] text-ink/40">{data.note}</p>
+            </Panel>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

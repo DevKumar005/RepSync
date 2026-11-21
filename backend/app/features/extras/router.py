@@ -1,5 +1,4 @@
 """HTTP routes for the extras features. Registered in main.py only when ENABLE_EXTRAS is on."""
-import json
 from typing import List, Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
@@ -7,7 +6,7 @@ from pydantic import BaseModel, Field
 from sqlmodel import Session
 
 from backend.app.db import get_session
-from backend.app.features.extras import ask, competitors, velocity
+from backend.app.features.extras import ask, city_map, competitors, velocity
 from backend.app.limiter import limiter
 from backend.app.models.entities import Outlet
 
@@ -90,13 +89,8 @@ def ask_repsync(request: Request, id: str, req: AskRequest, session: Session = D
     return ask.answer_question(session, _outlet_or_404(session, id), req.question)
 
 
-# --- Feature 5: City Reputation Map (sample fixture only) ---
+# --- Feature 5: City Reputation Map ---
 
 @router.get("/api/outlets/{id}/city-map")
-def city_map(id: str, session: Session = Depends(get_session)):
-    outlet = _outlet_or_404(session, id)
-    data = json.loads((competitors.DEMO_DIR / "city_map.json").read_text(encoding="utf-8"))
-    for o in data["outlets"]:
-        if o.get("is_you"):
-            o["name"] = f"{outlet.name} (you)"
-    return data
+def city_map_view(id: str, session: Session = Depends(get_session)):
+    return city_map.city_map_payload(session, _outlet_or_404(session, id))
