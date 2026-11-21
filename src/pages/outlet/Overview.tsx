@@ -6,6 +6,7 @@ import { FixesPanel, SummaryBar } from '../../components/Panels'
 import { extrasApi } from '../../features/extras/api'
 import { extrasEnabled } from '../../features/extras/flags'
 import { SampleBadge, StatusChip } from '../../features/extras/ui'
+import { useCityMap } from '../../features/extras/useCityMap'
 import { useOutlet } from './OutletLayout'
 
 function Card({ title, to, cta, children, badge }: { title: string; to: string; cta: string; children: React.ReactNode; badge?: React.ReactNode }) {
@@ -120,15 +121,21 @@ function PostersSnapshot({ id }: { id: string }) {
 }
 
 function MapSnapshot({ id }: { id: string }) {
-  const { data } = useQuery({ queryKey: ['extras', 'city-map', id], queryFn: () => extrasApi.cityMap(id) })
-  const ranked = [...(data?.outlets ?? [])].sort((a, b) => b.rating - a.rating)
-  const pos = ranked.findIndex((o) => o.is_you)
-  const rising = ranked.filter((o) => o.rating_change_60d > 0.05).length
+  const { data } = useCityMap(id)
+  const outlets = data?.outlets ?? []
+  const rated = outlets.filter((o) => o.rating !== null).sort((a, b) => b.rating! - a.rating!)
+  const pos = rated.findIndex((o) => o.is_you)
+  const rising = outlets.filter((o) => (o.rating_change_60d ?? 0) > 0.05).length
+  const nearby = outlets.filter((o) => !o.is_you).length
   return (
     <Card title="City map" to={`/outlet/${id}/map`} cta="Open map" badge={<SampleBadge source={data?.source} label="Sample" />}>
       {!data ? <div className="skeleton h-10 w-full" /> : (
         <p className="text-sm text-ink/65">
-          In {data.locality}, you are <strong className="text-ink">#{pos + 1} of {ranked.length}</strong> by rating. {rising} outlets are rising over the last 60 days.
+          {data.status === 'locating' ? 'Finding your outlet on the map…'
+            : data.status === 'no_location' ? "We couldn't find your address on the map yet."
+            : data.source === 'sample' ? <>In {data.locality}, you are <strong className="text-ink">#{pos + 1} of {rated.length}</strong> by rating. {rising} outlets are rising over the last 60 days.</>
+            : <><strong className="text-ink">{nearby}</strong> similar {nearby === 1 ? 'place' : 'places'} within {(data.radius_m / 1000).toFixed(1)} km of you.{' '}
+              {rated.length > 1 && pos >= 0 ? <>You are <strong className="text-ink">#{pos + 1} of {rated.length}</strong> among scanned places by review rating.</> : 'Scan competitors to compare ratings.'}</>}
         </p>
       )}
     </Card>

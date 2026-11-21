@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { SyncEvent } from '../../types'
 import { extrasApi } from './api'
@@ -65,10 +65,17 @@ function CandidatePicker({ id, onScan, busy }: { id: string; onScan: (p: Competi
   const cands = useQuery({ queryKey: ['extras', 'candidates', id], queryFn: () => extrasApi.candidates(id) })
   const [picked, setPicked] = useState<string[]>([])
   const [custom, setCustom] = useState('')
+  const [params] = useSearchParams()
   const list = cands.data?.candidates ?? []
-  useEffect(() => { if (list.length && !picked.length) setPicked(list.slice(0, 3).map((c) => c.name)) }, [list.length])
-  const toggle = (n: string) => setPicked((p) => (p.includes(n) ? p.filter((x) => x !== n) : p.length < 3 ? [...p, n] : p))
   const live = cands.data?.source === 'live'
+  useEffect(() => {
+    if (!list.length || picked.length) return
+    // "Add to competitor comparison" on the city map links here with ?add=<name>
+    const add = live ? params.get('add')?.trim().slice(0, 100) : undefined
+    const rest = list.map((c) => c.name).filter((n) => n !== add)
+    setPicked(add ? [add, ...rest.slice(0, 2)] : rest.slice(0, 3))
+  }, [list.length])
+  const toggle = (n: string) => setPicked((p) => (p.includes(n) ? p.filter((x) => x !== n) : p.length < 3 ? [...p, n] : p))
 
   return (
     <div className="px-5 pb-5 space-y-3">

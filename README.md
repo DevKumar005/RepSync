@@ -46,7 +46,7 @@ An owner searches for their business by name and city, picks the right branch, a
 | **Competitors** | Compares complaint rates with up to 3 nearby competitors, theme by theme. Each gap is labelled a threat (fix it) or an opportunity (advertise it). |
 | **Velocity** | Reviews per week over 12 weeks for you and each competitor, with a warning when momentum drops by 30% or more. |
 | **Posters** | Turns a 5-star review into an Instagram post (1080×1080) or WhatsApp status (1080×1920) image in the owner's brand colour. Hindi is supported. The logo never leaves the browser. |
-| **City map** | Who is rising and who is slipping in the locality, on an offline map with the owner's outlet highlighted. |
+| **City map** | The owner's outlet and similar places within 1.5 km on a real street map (MapLibre + OpenFreeMap tiles), with ratings for the outlet and any scanned competitors. Tap an unscanned place to add it to the competitor comparison. |
 | **Activity** | Every TinyFish Search, Fetch and Agent call, with timing, items found and cache hits. |
 | **Ask RepSync** | A floating chatbot on every outlet page. Ask in English, Hindi or Hinglish; answers use only the outlet's own data. |
 
@@ -71,6 +71,7 @@ An owner searches for their business by name and city, picks the right branch, a
 | Step | Service | Notes |
 | --- | --- | --- |
 | **Find the outlet** | OpenStreetMap (Nominatim) | Free, no API key. Returns up to 10 matching branches with real addresses. Throttled to 1 request per second per the Nominatim usage policy. |
+| **Nearby places** | OpenStreetMap (Overpass, Nominatim as fallback) | Free, no API key. Geocodes the outlet once, finds same-category places within 1.5 km, and caches them for 7 days. Runs in the background so the map page never blocks. |
 | **Collect reviews** | TinyFish Search → Fetch → Agent | Search finds each platform's review page, Fetch turns it into markdown, the Agent is used only when Fetch finds no reviews. |
 | **Analyse** | Gemini, with Groq as fallback | Sentiment, complaint topics, themes and top 3 fixes, through one `LLMClient`. |
 | **Draft replies** | Gemini / Groq | One reply per unanswered negative review, in the owner's tone, checked by the guardrails. |
@@ -101,7 +102,8 @@ RepSync can run fully live or fully offline. This is controlled by two backend v
 | Ask RepSync | Gemini / Groq, numbers verified | Rule-based answers from the outlet's data |
 | Competitors | Live scan for outlets you add | Fictional sample competitors, labelled |
 | Demo outlets | Always sample (seeded in `backend/app/seed.py`) | Always sample |
-| City map | Always sample (`data/demo/city_map.json`) | Always sample |
+| City map | Live (OpenStreetMap) for outlets you add | Live (OpenStreetMap) for outlets you add |
+| City map, demo outlets | Sample competitors on the real map (`data/demo/city_map.json`) | Same |
 
 The frontend has its own offline mode as well: unless `VITE_USE_MOCK=false` is set at build time, it runs entirely on built-in sample data and never calls the backend.
 
@@ -129,7 +131,7 @@ flowchart TD
       C --> X["Extras: competitors, velocity,<br/>Ask RepSync, city map"]
     end
 
-    C --> O[OpenStreetMap Nominatim]
+    C --> O[OpenStreetMap Nominatim + Overpass]
     D --> T1[TinyFish Search]
     D --> T2[TinyFish Fetch]
     D --> T3["TinyFish Agent<br/>(escalation only)"]
@@ -144,9 +146,9 @@ flowchart TD
 
 | Layer | Choice |
 | --- | --- |
-| **Frontend** | React 18, Vite, TypeScript, Tailwind CSS, Recharts, TanStack Query, React Router, html-to-image |
+| **Frontend** | React 18, Vite, TypeScript, Tailwind CSS, Recharts, TanStack Query, React Router, html-to-image, MapLibre GL (OpenFreeMap tiles) |
 | **Backend** | Python 3.12, FastAPI, Uvicorn, Pydantic v2, SQLModel, httpx, tenacity, sse-starlette, slowapi |
-| **Data collection** | TinyFish Search, Fetch and Agent; OpenStreetMap Nominatim for outlet search |
+| **Data collection** | TinyFish Search, Fetch and Agent; OpenStreetMap Nominatim and Overpass for outlet search and nearby places |
 | **LLM** | Gemini (primary, strong on Hindi and Hinglish), Groq (fallback), behind one `LLMClient` |
 | **Database** | PostgreSQL (Supabase) in deployment, SQLite locally |
 | **Jobs** | FastAPI background tasks with progress streamed over Server-Sent Events. No Celery or Redis. |
@@ -245,7 +247,7 @@ Copy `.env.example` to `.env`. Never commit real keys.
 | `GET` | `/api/outlets/{id}/competitors` | Latest gap matrix, advice and quotes |
 | `GET` | `/api/outlets/{id}/velocity` | Reviews per week for 12 weeks, with trend flags |
 | `POST` | `/api/outlets/{id}/ask` | Ask RepSync (read-only, cached for 10 minutes) |
-| `GET` | `/api/outlets/{id}/city-map` | Sample locality map |
+| `GET` | `/api/outlets/{id}/city-map` | Outlet and nearby places (`status: locating` while the background lookup runs) |
 
 Full interactive docs: `/docs`.
 
